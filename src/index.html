@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Migasfree Play</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link href="styles/style.css" rel="stylesheet" type="text/css" media="screen,projection,print" />
+    <link href="styles/material-icons-font.css" rel="stylesheet" type="text/css" media="screen,projection,print" />
+    <link href="styles/material-icons.min.css" rel="stylesheet" type="text/css" media="screen,projection,print" />
+    <link href="styles/roboto-fontface.css" rel="stylesheet" type="text/css" media="screen,projection,print" />
+    <link href="styles/materialize.min.css" rel="stylesheet" type="text/css" media="screen,projection,print" />
+    <link href="styles/sweetalert2.min.css" rel="stylesheet" type="text/css" media="screen,projection,print" />
+
+</head>
+
+
+<body class="grey lighten-4">
+    <div id="menu-bar" class="navbar-fixed noPrint">
+        <nav>
+            <div class="nav-wrapper blue-grey lighten-2">
+                <span id="machine" class="brand-logo left"></span>
+                <ul id="nav-mobile" class="right hide-on-small-only">
+                    <li><a id="menu-apps" class="waves-effect waves-light"><i class="material-icons">apps</i></a></li>
+                    <li><a id="menu-printers" class="waves-effect waves-light"><i class="material-icons">local_printshop</i></a></li>
+                    <li><a id="menu-console" class="waves-effect waves-light"><i class="material-icons">subtitles</i></a></li>
+                    <li><a id="menu-label" class="waves-effect waves-light"><i class="material-icons">computer</i></a></li>
+                    <li><a id="menu-settings" class="waves-effect waves-light"><i class="material-icons">settings</i></a></li>
+                    <li><a id="auth" class="hide"></a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+    <main>
+        <div id="container"></div>
+    </main>
+
+    <footer id="footer-bar" class="flow-text page-footer grey lighten-4">
+        <p class="center">&copy; 2017 migasfree team</p>
+    </footer>
+
+    <script language="JavaScript" type="text/javascript" src="app/jquery.min.js"></script>
+    <script language="JavaScript" type="text/javascript" src="app/materialize.min.js"></script>
+
+    <script language="JavaScript" type="text/javascript" src="app/sweetalert2.min.js"></script>
+
+    <script language="JavaScript" type="text/javascript" src="app/qrcode.js"></script>
+
+    <script language="JavaScript" type="text/javascript" src="app/mustache.js"></script>
+
+    <script language="JavaScript" type="text/javascript" src="app/app.js"></script>
+
+    <script language="JavaScript" type="text/javascript">
+    $(document).ready(function() {
+        $('select').material_select();
+        $('.tooltipped').tooltip({delay: 100});
+        spinner('machine');
+        ready();
+        document.body.addEventListener('click', supportExternalLinks, false);
+    });
+
+    $('select').on('contentChanged', function() {
+        $(this).material_select();
+    });
+    </script>
+</body>
+</html>

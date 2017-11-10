@@ -1,0 +1,34 @@
+{
+  "name": "migasfree-play",
+  "description": "Migasfree Play",
+  "version": "0.1.0",
+  "main": "index.html",
+  "repository": "tofill",
+  "chromium-args": "--disable-ios-password-suggestions --enable-logging --remote-debugging-port=9999",
+  "window": {
+    "icon": "assets/migasfree-play.png",
+    "title": "Migasfree Play",
+    "toolbar": true,
+    "width": 800,
+    "height": 800,
+    "min_width": 600,
+    "show": true
+  },
+  "build": {
+    "nwVersion": "0.25.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dist": "build --tasks win-x86,win-x64,linux-x86,linux-x64 --mirror https://dl.nwjs.io/ .",
+    "linux-x64": "build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
+    "start": "run --x32 --mirror https://dl.nwjs.io/ ."
+  },
+  "author": "",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "marked": "^0.3.6"
+  },
+  "devDependencies": {
+    "nwjs-builder-phoenix": "^1.14.5"
+  }
+}

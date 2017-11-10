@@ -1,0 +1,17 @@
+.horizontal {
+    border: 3px dashed black;
+    float: left;
+}
+.card-image, .card-stacked, .card-content {
+    float: left;
+}
+.card-action {
+    display: none;
+}
+p {
+    margin: 4;
+}
+#name {
+    font-weight: bold;
+    margin-top: 15px;
+}
