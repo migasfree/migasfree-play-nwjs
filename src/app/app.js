@@ -147,7 +147,8 @@ function tooltip(id, text) {
 function getGlobalData() {
     var myArgs = gui.App.argv;
     var execSync = require('child_process').execSync;
-
+    var fs = require('fs');
+    
     readSettings();
 
     global.TERMINAL = (function() {
@@ -259,6 +260,11 @@ function getGlobalData() {
 
     if (typeof global.sync == 'undefined') {
         global.sync = (myArgs == "sync")
+    }
+    if (typeof global.token == 'undefined') {
+		if (fs.existsSync('token')) {
+            global.token = 'token ' + fs.readFileSync('token', 'utf8');
+        }
     }
     if (typeof global.conf == 'undefined') {
         global.conf=execSync('python -c "from __future__ import print_function;from migasfree_client import settings;print(settings.CONF_FILE,end=\'\')"')
@@ -419,9 +425,7 @@ function queryPrintersPage(url) {
     $.ajax({
         url: url,
         type: 'GET',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('authorization', 'token 18133c708d153fba1b0b1d4c77735a614ef981fa');
-        },
+        beforeSend: addTokenHeader,
         data: {},
         success: function (data) {
             showPrinterItem(data);
@@ -451,9 +455,7 @@ function getDevice(logicaldev) {
     $.ajax({
         url: url,
         type: 'GET',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('authorization', 'token 18133c708d153fba1b0b1d4c77735a614ef981fa');
-        },
+        beforeSend: addTokenHeader,
         data: {},
         success: function (dev) {
             $("#printers").append(renderPrinter(logicaldev, dev));
@@ -479,15 +481,17 @@ function showPrinterItem(data) {
     $('.collapsible').collapsible();  // FIXME
 }
 
+function addTokenHeader(xhr) {
+     xhr.setRequestHeader('authorization', global.token);
+}
+
 
 function getAttributeCID() {
-    url = 'http://' + global.server + '/api/v1/token/attributes/'
+    var url = 'http://' + global.server + '/api/v1/token/attributes/'
     $.ajax({
         url: url,
         type: 'GET',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('authorization', 'token 18133c708d153fba1b0b1d4c77735a614ef981fa');
-        },
+        beforeSend: addTokenHeader,
         data: {"property_att__prefix": "CID", "value": global.cid},
         success: function (data) {
             if (data.count==1) {
@@ -499,13 +503,11 @@ function getAttributeCID() {
 }
 
 function changeAttributesPrinter(element, id, atts) {
-    url = 'http://' + global.server + '/api/v1/token/devices/logical/' + id + '/';
+    var url = 'http://' + global.server + '/api/v1/token/devices/logical/' + id + '/';
     $.ajax({
         url : url,
         type : 'PATCH',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('authorization', 'token 18133c708d153fba1b0b1d4c77735a614ef981fa');
-        },
+        beforeSend: addTokenHeader,
         contentType : 'application/json',
         data: JSON.stringify({"attributes": atts}),
         success: function (data) {
@@ -528,9 +530,7 @@ function installPrinter(element, id) {
     $.ajax({
         url: url,
         type: 'GET',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('authorization', 'token 18133c708d153fba1b0b1d4c77735a614ef981fa');
-        },
+        beforeSend: addTokenHeader,
         data: {},
         success: function (data) {
             var atts =  data.attributes;
@@ -547,9 +547,7 @@ function uninstallPrinter(element, id) {
     $.ajax({
         url: url,
         type: 'GET',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('authorization', 'token 18133c708d153fba1b0b1d4c77735a614ef981fa');
-        },
+        beforeSend: addTokenHeader,
         data: {},
         success: function (data) {
 
