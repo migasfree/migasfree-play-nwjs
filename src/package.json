@@ -14,21 +14,9 @@
     "min_width": 600,
     "show": true
   },
-  "build": {
-    "nwVersion": "0.25.4"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dist": "build --tasks win-x86,win-x64,linux-x86,linux-x64 --mirror https://dl.nwjs.io/ .",
-    "linux-x64": "build --tasks linux-x64 --mirror https://dl.nwjs.io/ .",
-    "start": "run --x32 --mirror https://dl.nwjs.io/ ."
-  },
-  "author": "",
+  "author": "Alberto Gacías - José Antonio Chavarría",
   "license": "GPL-3.0",
   "dependencies": {
     "marked": "^0.3.6"
-  },
-  "devDependencies": {
-    "nwjs-builder-phoenix": "^1.14.5"
   }
 }
