@@ -257,14 +257,23 @@ function getGlobalData() {
             }
         };
     })();
-
     if (typeof global.sync == 'undefined') {
         global.sync = (myArgs == "sync")
     }
     if (typeof global.token == 'undefined') {
-		if (fs.existsSync('token')) {
-            global.token = 'token ' + fs.readFileSync('token', 'utf8');
-        }
+		var tokenfile =  process.cwd()+"/token";
+		if (fs.existsSync(tokenfile)) {
+            global.token = 'token ' + fs.readFileSync(tokenfile, 'utf8');
+        } else {
+		    swal({
+                title: 'Error',
+                type: "error",
+                html: "Token not found in file: <b>" + tokenfile + "</b>",
+                focusConfirm: true,
+                showCancelButton: false
+                }
+            );
+		}
     }
     if (typeof global.conf == 'undefined') {
         global.conf=execSync('python -c "from __future__ import print_function;from migasfree_client import settings;print(settings.CONF_FILE,end=\'\')"')
@@ -488,18 +497,20 @@ function addTokenHeader(xhr) {
 
 function getAttributeCID() {
     var url = 'http://' + global.server + '/api/v1/token/attributes/'
-    $.ajax({
-        url: url,
-        type: 'GET',
-        beforeSend: addTokenHeader,
-        data: {"property_att__prefix": "CID", "value": global.cid},
-        success: function (data) {
-            if (data.count==1) {
-                global.att_cid = data.results[0].id;
-            }
-        },
-        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
-    });
+    if (typeof global.label=='string') {
+		$.ajax({
+			url: url,
+			type: 'GET',
+			beforeSend: addTokenHeader,
+			data: {"property_att__prefix": "CID", "value": global.cid},
+			success: function (data) {
+				if (data.count==1) {
+					global.att_cid = data.results[0].id;
+				}
+			},
+			error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
+		});
+    }
 }
 
 function changeAttributesPrinter(element, id, atts) {
