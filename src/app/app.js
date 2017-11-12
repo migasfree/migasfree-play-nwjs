@@ -451,7 +451,7 @@ function queryPrintersPage(url) {
 
 function getDevice(logicaldev) {
 
-    url = 'http://' + global.server + '/api/v1/token/devices/devices/' + logicaldev.device.id + '/'
+    var url = 'http://' + global.server + '/api/v1/token/devices/devices/' + logicaldev.device.id + '/'
     $.ajax({
         url: url,
         type: 'GET',
@@ -615,9 +615,9 @@ function renderPrinter(logicaldev, dev) {
     var fs = require('fs');
 
     if (dev.connection.name=="TCP") {
-        icon = "assets/printer-net.png";
+        var icon = "assets/printer-net.png";
     } else {
-        icon = "assets/printer-local.png";
+        var icon = "assets/printer-local.png";
     }
 
     var data = {
