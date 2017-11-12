@@ -5,6 +5,7 @@ then
   exit
 fi
 
+rm -rf usr/share/migasfree-play
 mkdir -p usr/share/migasfree-play
 cp -r ../src/* usr/share/migasfree-play/
 cd usr/share/migasfree-play/
