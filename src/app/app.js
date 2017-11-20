@@ -148,7 +148,8 @@ function getGlobalData() {
     var myArgs = gui.App.argv;
     var execSync = require('child_process').execSync;
     var fs = require('fs');
-    
+    var path = require('path');
+
     readSettings();
 
     global.TERMINAL = (function() {
@@ -261,11 +262,11 @@ function getGlobalData() {
         global.sync = (myArgs == "sync")
     }
     if (typeof global.token == 'undefined') {
-		var tokenfile =  process.cwd()+"/token";
-		if (fs.existsSync(tokenfile)) {
+        var tokenfile =  path.join(process.cwd(),"token");
+        if (fs.existsSync(tokenfile)) {
             global.token = 'token ' + fs.readFileSync(tokenfile, 'utf8');
         } else {
-		    swal({
+            swal({
                 title: 'Error',
                 type: "error",
                 html: "Token not found in file: <b>" + tokenfile + "</b>",
@@ -273,7 +274,7 @@ function getGlobalData() {
                 showCancelButton: false
                 }
             );
-		}
+        }
     }
     if (typeof global.conf == 'undefined') {
         global.conf=execSync('python -c "from __future__ import print_function;from migasfree_client import settings;print(settings.CONF_FILE,end=\'\')"')
