@@ -498,19 +498,19 @@ function addTokenHeader(xhr) {
 
 function getAttributeCID() {
     var url = 'http://' + global.server + '/api/v1/token/attributes/'
-    if (typeof global.label=='string') {
-		$.ajax({
-			url: url,
-			type: 'GET',
-			beforeSend: addTokenHeader,
-			data: {"property_att__prefix": "CID", "value": global.cid},
-			success: function (data) {
-				if (data.count==1) {
-					global.att_cid = data.results[0].id;
-				}
-			},
-			error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
-		});
+    if (typeof global.label != 'undefined') {
+    $.ajax({
+        url: url,
+        type: 'GET',
+        beforeSend: addTokenHeader,
+        data: {"property_att__prefix": "CID", "value": global.cid},
+        success: function (data) {
+        	if (data.count==1) {
+        	    global.att_cid = data.results[0].id;
+        	}
+        },
+        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
+    });
     }
 }
 
