@@ -150,6 +150,14 @@ function getGlobalData() {
     var fs = require('fs');
     var path = require('path');
 
+    if (typeof global.search== 'undefined') {
+        global.search = "";
+    }
+
+    if (typeof global.searchPrint== 'undefined') {
+        global.searchPrint = "";
+    }
+
     readSettings();
 
     global.TERMINAL = (function() {
@@ -323,9 +331,7 @@ function getGlobalData() {
     if (typeof global.level== 'undefined') {
         global.level = "";
     }
-    if (typeof global.search== 'undefined') {
-        global.search = "";
-    }
+
 
     if (typeof global.pks_availables== 'undefined') {
         global.pks_availables = getPkgNames();
@@ -423,9 +429,9 @@ function showPrinters() {
 function queryPrinters() {
     $('#printers').html('');
     $('#preload-next').show();
-
-    var url = "http://" + global.server + "/api/v1/token/devices/logical/";
-
+    var url = "http://" + global.server + "/api/v1/token/devices/logical/availables/" +
+		"?cid=" +  global.label["id"] +
+        "&q=" + global.searchPrint ;
     spinner('preload-next');
     queryPrintersPage(url);
 }
@@ -460,7 +466,6 @@ function queryPrintersPage(url) {
 
 
 function getDevice(logicaldev) {
-
     var url = 'http://' + global.server + '/api/v1/token/devices/devices/' + logicaldev.device.id + '/'
     $.ajax({
         url: url,
@@ -484,9 +489,9 @@ function getDevice(logicaldev) {
 
 function showPrinterItem(data) {
     $.each(data.results, function(i, item) {
-        if (item.device.name.search( RegExp(global.searchPrint, "i")) >=0 ) {
-            getDevice(item)
-        }
+        //if (item.device.name.search( RegExp(global.searchPrint, "i")) >=0 ) {
+            getDevice(item);
+        //}
     });
     $('.collapsible').collapsible();  // FIXME
 }
@@ -662,18 +667,19 @@ function showApps() {
 
 
 function queryCategories() {
-    var url="http://" + global.server + "/api/v1/public/catalog/apps/categories/";
-    $.getJSON(url, {})
-        .done(function(data) {
-           global.categories = data;
+    var url="http://" + global.server + "/api/v1/token/catalog/apps/categories/";      
+    $.ajax({
+        url: url,
+        type: 'GET',
+        beforeSend: addTokenHeader,
+        data: {},
+        success: function (data) {
+		   global.categories = data;
            global.categories[0] = "All";
-           showCategories(global.categories);
-           //console.log(global.categories);
-        })
-        .fail(function(jqxhr, textStatus, error) {
-            var err = textStatus + ", " + error;
-            alert( "Request Failed: " + err );
-        });
+           showCategories(global.categories);        
+        },
+        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
+    });      
 }
 
 function queryApps() {
@@ -686,11 +692,11 @@ function queryApps() {
         categoryFilter="&category=" + global.category
     }
 
-    var url = "http://" + global.server + "/api/v1/public/catalog/apps/" +
-        "?packages_by_project__project__name=" + global.project +
+    var url = "http://" + global.server + "/api/v1/token/catalog/apps/availables/" +
+        "?cid=" +  global.label["id"]+
         "&level=" + global.level +
-        categoryFilter +
-        "&ordering=-score,name";
+        "&q=" + global.search +
+        categoryFilter;
 
     spinner('preload-next');
     queryAppsPage(url);
@@ -698,9 +704,14 @@ function queryApps() {
 
 function queryAppsPage(url) {
 
-    if (jqxhr) jqxhr.abort();
-    jqxhr = $.getJSON(url, {})
-        .done(function(data) {
+    //if (jqxhr) jqxhr.abort();       
+        
+    $.ajax({
+        url: url,
+        type: 'GET',
+        beforeSend: addTokenHeader,
+        data: {},
+        success: function (data) {
             $.each(data.results, function(i, item) {
                 $.each(item.packages_by_project, function(i, pkgs) {
                     if (pkgs.project.name == global.project) {
@@ -727,8 +738,9 @@ function queryAppsPage(url) {
             } else {
                 $('#preload-next').hide();
             }
-
-        });
+        },
+        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
+    });      
 
 }
 
@@ -736,7 +748,7 @@ function showAppItem(data) {
     $.each(data.results, function(i, item) {
         if (item.category.id == global.category || global.category == 0) {
             if (item.level.id == global.level || global.level == "")  {
-                if (item.name.search( RegExp(global.search, "i")) >=0 || item.description.search( RegExp(global.search, "i")) >=0 ) {
+     //           if (item.name.search( RegExp(global.search, "i")) >=0 || item.description.search( RegExp(global.search, "i")) >=0 ) {
                     $.each(item.packages_by_project, function(i, pkgs) {
                         if (pkgs.project.name == global.project) {
                             $("#apps").append(renderApp(item));
@@ -747,7 +759,7 @@ function showAppItem(data) {
                             );
                         }
                     });
-                }
+       //         }
             }
         }
     });
