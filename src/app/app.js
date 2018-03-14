@@ -69,7 +69,7 @@ function ready() {
         });
 
         win.show();
-        showApps();
+        //showApps();
     }
 
     $('#menu-console').click(showSync);
@@ -319,6 +319,7 @@ function getGlobalData() {
             global.cid = global.label["id"];
             getAttributeCID();
             labelDone();
+            showApps();
         });
     } else {
         labelDone();
@@ -681,6 +682,7 @@ function queryCategories() {
         error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
     });      
 }
+
 
 function queryApps() {
     $('#apps').html('');
