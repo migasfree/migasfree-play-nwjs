@@ -3,6 +3,17 @@
         <div><i class="material-icons large center grey-text">person</i></div>
     </div>
     <div class="col s12 m6 center-align">
-        <a class="waves-effect waves-light btn-floating" onclick="$('#auth').text('');showLogin()"><i class="material-icons center">close</i></a>
+        <a id="close" class="waves-effect waves-light btn-floating">
+            <i class="material-icons center">close</i>
+        </a>
     </div>
 </div>
+
+<script type="text/javascript">
+    (function() {
+        $("#close").on("click", function () {
+            $("#auth").text("");
+            showLogin();
+        });
+    })();
+</script>
