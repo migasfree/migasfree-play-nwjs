@@ -3,11 +3,10 @@
         <div><i class="material-icons large center grey-text">person</i></div>
     </div>
     <div class="col s12 m6 center-align flow-text">
-        <div><input id="user" name="user" type="text" placeholder="User" ></div>
+        <div><input id="user" name="user" type="text" placeholder="User" /></div>
 
         <div>
-            <!-- readonly prevents autofill password -->
-            <input id="password" name="password" type="password" placeholder="Password" readonly onfocus="this.removeAttribute('readonly');">
+            <input id="password" name="password" type="password" placeholder="Password" autocomplete="off" />
         </div>
     </div>
 </div>
