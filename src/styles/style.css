@@ -9,11 +9,11 @@ main {
 }
 
 h1 {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 #password{
-  -webkit-text-security: disc;
+    -webkit-text-security: disc;
 }
 
 #console-output {
@@ -35,8 +35,8 @@ h1 {
 }
 
 @-webkit-keyframes blinker {
-  from {opacity: 1.0;}
-  to {opacity: 0.0;}
+    from {opacity: 1.0;}
+    to {opacity: 0.0;}
 }
 .blink{
     text-decoration: blink;
@@ -50,35 +50,104 @@ h1 {
 #apps .title {
     font-size: 150%;
     display: block;
-    margin: 0px 0;
+    margin: 0;
 }
+
 #apps .category {
     font-size: 70%;
     padding-left: 8px;
 }
+
 #apps .rating {
     font-size: 20%;
-    padding: 0px 0;
+    padding: 0;
 }
+
 #apps .icon {
     width: 48px;
     height: 48px;
 }
+
 #apps .avatar {
     position: relative;
 }
+
 #apps .avatar i {
     position: absolute;
     top: 34px;
     left: 20px;
 }
+
 hr {
     width: 50%;
     border: none;
     border-bottom: 4px solid grey;
 }
 
+.normal-size {
+    height: 3cm;
+    width: 12cm;
+}
 
+.small-size {
+    height: 2cm;
+    width: 8cm;
+}
+
+.bordered {
+    border: 2px solid #000;
+}
+
+.bordered :first-of-type {
+    padding: 0;
+}
+
+.card-content :first-of-type {
+    font-size: 18px;
+}
+
+.normal-size .card-content,
+.small-size .card-content {
+    padding: 0 !important;
+}
+
+.card-content p {
+    font-size: 12px;
+}
+
+.small-size .card-content :first-of-type {
+    font-size: 12px;
+}
+
+.small-size .card-content p {
+    font-size: 8px;
+}
+
+.qrcode {
+    position: relative;
+    left: -4px;
+}
+
+.qrcode > p {
+    font-size: 8px;
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.qrcode-large {
+    position: relative;
+    left: -5px;
+}
+
+.qrcode-large > p {
+    font-size: 10px;
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    margin-left: 0;
+    margin-right: 0;
+}
 
 @media print {
     .noPrint {
@@ -93,6 +162,3 @@ hr {
     }
     .noPrint {}
 }
-
-
-
