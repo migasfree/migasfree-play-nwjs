@@ -1,7 +1,7 @@
 {
   "name": "migasfree-play",
   "description": "Migasfree Play",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "index.html",
   "repository": "tofill",
   "chromium-args": "--disable-ios-password-suggestions --enable-logging --remote-debugging-port=9999",
@@ -9,8 +9,8 @@
     "icon": "assets/migasfree-play.png",
     "title": "Migasfree Play",
     "toolbar": true,
-    "width": 800,
-    "height": 800,
+    "width": 600,
+    "height": 600,
     "min_width": 600,
     "show": true
   },
