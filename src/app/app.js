@@ -1,15 +1,11 @@
 "use strict";
 
-
-
 var gui = require('nw.gui');
 var path = require('path');
 var win = gui.Window.get();
 var confFile = 'settings.json';
 var consoleLog = path.join(gui.__dirname, 'console.log');
 var jqxhr;
-
-
 
 (function() {
     document.onkeydown = function (e) {
@@ -50,7 +46,6 @@ function ready() {
     win.minimize();
 
     if (global.sync) {
-
         // delete file console.out
         fs.unlinkSync(consoleLog);
 
@@ -60,16 +55,14 @@ function ready() {
         showSync();
         sync();
     } else {
-
         fs.stat(consoleLog, function(err, stat) {
-            if(err == null) {
+            if (err == null) {
                 // consoleLog exists
                 global.TERMINAL.add(fs.readFileSync(consoleLog, 'utf8'));
             }
         });
 
         win.show();
-        //showApps();
     }
 
     $('#menu-console').click(showSync);
@@ -81,27 +74,27 @@ function ready() {
 
 function runAsUserSync(cmd) {
     var execSync = require('child_process').execSync;
-    if (getOS()=="Linux") {
-        cmd=replaceAll(cmd, '"' ,'\\\"' );
-        execSync('sudo su -c "' + cmd + '" ' + global.user );
-    } else if (getOS()=="Windows") {
+
+    if (getOS() == "Linux") {
+        cmd = replaceAll(cmd, '"' , '\\\"');
+        execSync('sudo su -c "' + cmd + '" ' + global.user);
+    } else if (getOS() == "Windows") {
         execSync(cmd);
     }
 }
 
 function runAsUser(cmd) {
     var exec = require('child_process').exec;
-    if (getOS()=="Linux") {
-        cmd=replaceAll(cmd, '"' ,'\\\"' );
-        exec('sudo su -c "' + cmd + '" ' + global.user );
-    } else if (getOS()=="Windows") {
+
+    if (getOS() == "Linux") {
+        cmd = replaceAll(cmd, '"' , '\\\"');
+        exec('sudo su -c "' + cmd + '" ' + global.user);
+    } else if (getOS() == "Windows") {
         exec(cmd);
     }
 }
 
-
 function supportExternalLinks(event) {
-
     var href;
     var isExternal = false;
 
@@ -122,11 +115,9 @@ function supportExternalLinks(event) {
                 "uuid": global.uuid
             }
             href = Mustache.render(href,data);
-            var script= 'python -c "import webbrowser;webbrowser.open(\'' + href + '\')"';
+            var script= 'python -c "import webbrowser; webbrowser.open(\'' + href + '\')"';
             runAsUser(script);
-
         } else if (element.parentElement) {
-
             crawlDom(element.parentElement);
         }
     }
@@ -137,6 +128,7 @@ function supportExternalLinks(event) {
 
 function tooltip(id, text) {
     var anchor = $(id);
+
     anchor.attr('data-tooltip', text);
     anchor.attr('delay', 100);
     anchor.attr('position', "bottom");
@@ -177,23 +169,25 @@ function getGlobalData() {
                     global.terminal = replaceColors(global.terminal + txt);
                     this.refresh();
                 }
-                 catch(err) {
-                     // NOTHING
-                 }
+                catch(err) {
+                }
             },
             refresh: function() {
                  try{
-                    $('#console-output').html(global.terminal);
-                    var x = document.getElementById("console-output");
-                    x.scrollTop = x.scrollHeight;
+                     $('#console-output').html(global.terminal);
+                     var x = document.getElementById("console-output");
+                     x.scrollTop = x.scrollHeight;
                  }
                  catch(err) {
-                     // NOTHING
                  }
             },
             run: function(cmd, beforeCallback=null, afterCallback=null, id) {
                 if (running) {
-                    Materialize.toast('<i class="material-icons">warning</i>  '+ " please wait, other process is running!!!" , 10000, 'rounded red');
+                    Materialize.toast(
+                        '<i class="material-icons">warning</i>' + " please wait, other process is running!!!",
+                        10000,
+                        'rounded red'
+                    );
                 }
                 else{
                     running = true;
@@ -206,9 +200,9 @@ function getGlobalData() {
 
                     var spawn = require('child_process').spawn;
 
-                    if (getOS()=="Linux") {
+                    if (getOS() == "Linux") {
                         var process = spawn("bash", ["-c", cmd]);
-                    } else if (getOS()=="Windows") {
+                    } else if (getOS() == "Windows") {
                         var process = spawn("cmd", ["/C", cmd]);
                     }
 
@@ -218,7 +212,7 @@ function getGlobalData() {
                     var n = date.toDateString();
                     var time = date.toLocaleTimeString();
 
-                    global.TERMINAL.add('<h5>'+date+"</h5>");
+                    global.TERMINAL.add('<h5>' + date + "</h5>");
 
                     process.stdout.on('data', function(data) {global.TERMINAL.add(data.toString())});
 
@@ -231,7 +225,7 @@ function getGlobalData() {
                     process.on('exit', function(code) {
                         if (code != 0) { // Syntax error
                             Materialize.toast(
-                                '<i class="material-icons">error</i> error:' + code + ' ' + cmd ,
+                                '<i class="material-icons">error</i> error:' + code + ' ' + cmd,
                                 10000,
                                 'rounded red'
                             );
@@ -266,9 +260,11 @@ function getGlobalData() {
             }
         };
     })();
+
     if (typeof global.sync == 'undefined') {
         global.sync = (myArgs == "sync")
     }
+
     if (typeof global.token == 'undefined') {
         var tokenfile =  path.join(process.cwd(),"token");
         if (fs.existsSync(tokenfile)) {
@@ -280,40 +276,41 @@ function getGlobalData() {
                 html: "Token not found in file: <b>" + tokenfile + "</b>",
                 focusConfirm: true,
                 showCancelButton: false
-                }
-            );
+            });
         }
     }
+
     if (typeof global.conf == 'undefined') {
-        global.conf=execSync('python -c "from __future__ import print_function;from migasfree_client import settings;print(settings.CONF_FILE,end=\'\')"')
+        global.conf = execSync('python -c "from __future__ import print_function; from migasfree_client import settings; print(settings.CONF_FILE, end=\'\')"')
     }
     if (typeof global.server == 'undefined') {
-        global.server=execSync('python -c "from __future__ import print_function;from migasfree_client.utils import get_config;print(get_config(\''+global.conf+'\',\'client\').get(\'server\',\'localhost\'),end=\'\')"');
+        global.server = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_config; print(get_config(\'' + global.conf + '\', \'client\').get(\'server\', \'localhost\'), end=\'\')"');
     }
     if (typeof global.uuid == 'undefined') {
-        global.uuid=execSync('python -c "from __future__ import print_function;from migasfree_client.utils import get_hardware_uuid;print(get_hardware_uuid(),end=\'\')"');
+        global.uuid = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_hardware_uuid; print(get_hardware_uuid(), end=\'\')"');
     }
     if (typeof global.project == 'undefined') {
-        global.project=execSync('python -c "from __future__ import print_function;from migasfree_client.utils import get_mfc_project;print(get_mfc_project(),end=\'\')"');
+        global.project = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_project; print(get_mfc_project(), end=\'\')"');
     }
     if (typeof global.computername == 'undefined') {
-        global.computername=execSync('python -c "from __future__ import print_function;from migasfree_client.utils import get_mfc_computer_name;print(get_mfc_computer_name(),end=\'\')"');
+        global.computername = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_computer_name; print(get_mfc_computer_name(), end=\'\')"');
     }
     if (typeof global.network == 'undefined') {
-        global.network=execSync('python -c "from __future__ import print_function;from migasfree_client.network import get_iface_net, get_iface_cidr, get_ifname;_ifname = get_ifname();print(\'%s/%s\' % (get_iface_net(_ifname), get_iface_cidr(_ifname)),end=\'\')"');
+        global.network = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_net, get_iface_cidr, get_ifname; _ifname = get_ifname(); print(\'%s/%s\' % (get_iface_net(_ifname), get_iface_cidr(_ifname)), end=\'\')"');
     }
     if (typeof global.mask == 'undefined') {
-        global.mask=execSync('python -c "from __future__ import print_function;from migasfree_client.network import get_iface_mask, get_ifname;_ifname = get_ifname();print(get_iface_mask(_ifname),end=\'\')"');
+        global.mask = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_mask, get_ifname; _ifname = get_ifname(); print(get_iface_mask(_ifname), end=\'\')"');
     }
     if (typeof global.ip== 'undefined') {
-        global.ip=execSync('python -c "from __future__ import print_function;from migasfree_client.network import get_iface_address, get_ifname;_ifname = get_ifname();print(get_iface_address(_ifname),end=\'\')"');
+        global.ip = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_address, get_ifname; _ifname = get_ifname(); print(get_iface_address(_ifname), end=\'\')"');
     }
     if (typeof global.user == 'undefined') {
-        global.user=execSync('python -c "from __future__ import print_function;from migasfree_client import utils;_graphic_pid, _graphic_process = utils.get_graphic_pid();print(utils.get_graphic_user(_graphic_pid),end=\'\')"')
+        global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"')
     }
-    if (typeof global.label== 'undefined') {
+    if (typeof global.label == 'undefined') {
         // LABEL
-        var url = "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid
+        var url = "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid;
+
         $.getJSON( url, {}).done(function( data ) {
             global.label = data;
             global.cid = global.label["id"];
@@ -325,30 +322,33 @@ function getGlobalData() {
         labelDone();
     }
 
-
-    if (typeof global.category== 'undefined') {
+    if (typeof global.category == 'undefined') {
         global.category = 0;
     }
-    if (typeof global.level== 'undefined') {
+
+    if (typeof global.level == 'undefined') {
         global.level = "";
     }
 
-
-    if (typeof global.pks_availables== 'undefined') {
+    if (typeof global.pks_availables == 'undefined') {
         global.pks_availables = getPkgNames();
     }
-
 }
 
 function labelDone() {
     if (typeof global.label != 'undefined') {
-        $('#machine').html("<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>"+global.label["name"])+"</a>";
+        $('#machine').html(
+            "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label["name"] + "</a>"
+        );
         tooltip("#machine", global.server);
 
         var typeNumber = 4;
         var errorCorrectionLevel = 'L';
         var qr = qrcode(typeNumber, errorCorrectionLevel);
-        qr.addData('{"model":"Computer","id":' + global.label["id"] + ',"server":"' + global.label["server"] + '"}');
+
+        qr.addData(
+            '{"model":"Computer","id":' + global.label["id"] + ',"server":"' + global.label["server"] + '"}'
+        );
         qr.make();
 
         global.qr = qr;
@@ -357,12 +357,12 @@ function labelDone() {
 
 function showSync() {
     var fs = require('fs');
+
     $('#container').html(fs.readFileSync('templates/sync.html', 'utf8'));
     resizeTerminal();
     global.TERMINAL.refresh();
     $('#sync').click(sync);
 }
-
 
 function resizeTerminal() {
     scroll(0, 0);
@@ -371,7 +371,6 @@ function resizeTerminal() {
     );
 }
 
-
 function replaceColors(txt) {
     txt = replaceAll(txt, '\u001b[92m','<span style="color:green;font-weight:bold;">');
     txt = replaceAll(txt, '\u001b[93m','<span style="color:yellow";>');
@@ -379,19 +378,19 @@ function replaceColors(txt) {
     txt = replaceAll(txt, '\u001b[32m','<span style="color:green;">');
     txt = replaceAll(txt, '\u001b[0m','</span>');
     txt = txt.replace(/(?:\r\n|\r|\n)/g, '<br>');
+
     return txt;
 }
 
-
 function exit() {
     var fs = require('fs');
+
     fs.writeFile(consoleLog, global.terminal, function(err) {
         if (err) throw err;
     });
 
     win.close();
 }
-
 
 function beforeSync() {
     Materialize.toast("synchronizing...", 10000, 'rounded grey');
@@ -402,17 +401,15 @@ function afterSync() {
     postsync();
     global.pks_availables = getPkgNames();
     Materialize.toast(
-        '<i class="material-icons">sync</i> '+ " synchronized",
+        '<i class="material-icons">sync</i> ' + " synchronized",
         10000,
         'rounded green'
     );
 }
 
-
-function sync(){
+function sync() {
     global.TERMINAL.run("migasfree -u", beforeSync, afterSync, "sync");
 }
-
 
 // PRINTERS
 function showPrinters() {
@@ -431,12 +428,10 @@ function queryPrinters() {
     $('#printers').html('');
     $('#preload-next').show();
     var url = "http://" + global.server + "/api/v1/token/devices/logical/availables/" +
-		"?cid=" +  global.label["id"] +
-        "&q=" + global.searchPrint ;
+        "?cid=" +  global.label["id"] + "&q=" + global.searchPrint;
     spinner('preload-next');
     queryPrintersPage(url);
 }
-
 
 function queryPrintersPage(url) {
     $.ajax({
@@ -461,13 +456,15 @@ function queryPrintersPage(url) {
                 $('#preload-next').hide();
             }
         },
-        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
+        error: function (jqXHR, textStatus, errorThrown) {
+            swal('Error:' + jqXHR.responseText);
+        },
     });
 }
 
-
 function getDevice(logicaldev) {
-    var url = 'http://' + global.server + '/api/v1/token/devices/devices/' + logicaldev.device.id + '/'
+    var url = 'http://' + global.server + '/api/v1/token/devices/devices/' + logicaldev.device.id + '/';
+
     $.ajax({
         url: url,
         type: 'GET',
@@ -479,20 +476,16 @@ function getDevice(logicaldev) {
                 logicaldev.device.name+logicaldev.feature.name,
                 logicaldev.id
             );
-
         },
-        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
+        error: function (jqXHR, textStatus, errorThrown) {
+            swal('Error:' + jqXHR.responseText);
+        },
     });
-
 }
-
-
 
 function showPrinterItem(data) {
     $.each(data.results, function(i, item) {
-        //if (item.device.name.search( RegExp(global.searchPrint, "i")) >=0 ) {
-            getDevice(item);
-        //}
+        getDevice(item);
     });
     $('.collapsible').collapsible();  // FIXME
 }
@@ -501,27 +494,30 @@ function addTokenHeader(xhr) {
      xhr.setRequestHeader('authorization', global.token);
 }
 
-
 function getAttributeCID() {
-    var url = 'http://' + global.server + '/api/v1/token/attributes/'
+    var url = 'http://' + global.server + '/api/v1/token/attributes/';
+
     if (typeof global.label != 'undefined') {
-    $.ajax({
-        url: url,
-        type: 'GET',
-        beforeSend: addTokenHeader,
-        data: {"property_att__prefix": "CID", "value": global.cid},
-        success: function (data) {
-        	if (data.count==1) {
-        	    global.att_cid = data.results[0].id;
-        	}
-        },
-        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
-    });
+        $.ajax({
+            url: url,
+            type: 'GET',
+            beforeSend: addTokenHeader,
+            data: {"property_att__prefix": "CID", "value": global.cid},
+            success: function (data) {
+                if (data.count == 1) {
+                    global.att_cid = data.results[0].id;
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                swal('Error:' + jqXHR.responseText);
+            },
+        });
     }
 }
 
 function changeAttributesPrinter(element, id, atts) {
     var url = 'http://' + global.server + '/api/v1/token/devices/logical/' + id + '/';
+
     $.ajax({
         url : url,
         type : 'PATCH',
@@ -538,13 +534,15 @@ function changeAttributesPrinter(element, id, atts) {
                 element
            );
         },
-        error: function (jqXHR, textStatus, errorThrown) { swal('changeAttributesPrinter Error:' + jqXHR.responseText);},
+        error: function (jqXHR, textStatus, errorThrown) {
+            swal('changeAttributesPrinter Error:' + jqXHR.responseText);
+        },
     });
 }
 
-
 function installPrinter(element, id) {
     var url = 'http://' + global.server + '/api/v1/token/devices/logical/' + id +'/';
+
     $.ajax({
         url: url,
         type: 'GET',
@@ -555,20 +553,21 @@ function installPrinter(element, id) {
             atts.push(global.att_cid);
             changeAttributesPrinter(element, id, atts);
         },
-        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
+        error: function (jqXHR, textStatus, errorThrown) {
+            swal('Error:' + jqXHR.responseText);
+        },
     });
-
 }
 
 function uninstallPrinter(element, id) {
     var url = 'http://' + global.server + '/api/v1/token/devices/logical/' + id +'/';
+
     $.ajax({
         url: url,
         type: 'GET',
         beforeSend: addTokenHeader,
         data: {},
         success: function (data) {
-
             var atts =  data.attributes;
             //delete attribute from array
             var index = atts.indexOf(global.att_cid);
@@ -578,47 +577,42 @@ function uninstallPrinter(element, id) {
 
             changeAttributesPrinter(element, id, atts);
         },
-        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
+        error: function (jqXHR, textStatus, errorThrown) {
+            swal('Error:' + jqXHR.responseText);
+        },
     });
 }
-
 
 function updateStatusPrinter(name, id) {
     var slug = replaceAll(name, " ", "");
     var el = '#action-' + slug;
     var status = "#status-action-" + slug;
     var descr = "#description-action-" + slug;
-
-    var installed = ($.inArray(id,global.devs)>=0);
+    var installed = ($.inArray(id,global.devs) >= 0);
 
     try {
         if (installed) { // INSTALLED
             $(el).text('delete');
             $(el).off("click");
             $(el).click(function() {uninstallPrinter('action-' + slug, id);});
-//            tooltip(el, "delete device");
             $(status).text("check_circle");
             tooltip(status, "installed");
         } else { // UNINSTALLED
             $(el).text('get_app');
             $(el).off("click");
             $(el).click(function() {installPrinter('action-' + slug, id);});
-//            tooltip(el, "install device");
             $(status).text("");
         }
-
     }
     catch (err){
-        //alert("ERROR AQUI: "+err);
     }
 }
 
-
-
 function renderDict(data) {
-    var ret=""
+    var ret= "";
+
     for(var element in data) {
-        ret+= element + ": " + data[element]+"<br>";
+        ret+= element + ": " + data[element] + "<br>";
     }
     return ret;
 }
@@ -627,7 +621,6 @@ function renderDict(data) {
 function renderInfoPrinter(data) {
     return renderDict(JSON.parse(data));
 }
-
 
 function renderPrinter(logicaldev, dev) {
     var fs = require('fs');
@@ -643,22 +636,22 @@ function renderPrinter(logicaldev, dev) {
         idaction: "action-" + replaceAll(logicaldev.device.name + logicaldev.feature.name, " ", ""),
         icon: icon,
         description: dev.model.name + " (" + dev.connection.name + ")" + "<hr>" + renderInfoPrinter(dev.data),
-        truncated:  dev.model.name + " (" + dev.connection.name + ")"
+        truncated: dev.model.name + " (" + dev.connection.name + ")"
     };
 
     return Mustache.to_html(fs.readFileSync('templates/printer.html', 'utf8'), data);
 }
 
-
-
 // APPS
 function showApps() {
     var fs = require('fs');
+
     queryCategories();
     $('#container').html(fs.readFileSync('templates/apps.html', 'utf8'));
     spinner('apps');
     queryApps();
     showLevels();
+
     $('#levels').change(changedLevel);
     $('#categories').change(changedCategory);
     $('#search').val(global.search);
@@ -666,36 +659,37 @@ function showApps() {
     $('#search').focus();
 }
 
-
 function queryCategories() {
-    var url="http://" + global.server + "/api/v1/token/catalog/apps/categories/";      
+    var url = "http://" + global.server + "/api/v1/token/catalog/apps/categories/";
+
     $.ajax({
         url: url,
         type: 'GET',
         beforeSend: addTokenHeader,
         data: {},
         success: function (data) {
-		   global.categories = data;
+           global.categories = data;
            global.categories[0] = "All";
-           showCategories(global.categories);        
+           showCategories(global.categories);
         },
-        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
-    });      
+        error: function (jqXHR, textStatus, errorThrown) {
+            swal('Error:' + jqXHR.responseText);
+        },
+    });
 }
-
 
 function queryApps() {
     $('#apps').html('');
     $('#preload-next').show();
     global.packages = "";
 
-    var categoryFilter=""
+    var categoryFilter = "";
     if (global.category != 0) {
-        categoryFilter="&category=" + global.category
+        categoryFilter = "&category=" + global.category;
     }
 
     var url = "http://" + global.server + "/api/v1/token/catalog/apps/availables/" +
-        "?cid=" +  global.label["id"]+
+        "?cid=" +  global.label["id"] +
         "&level=" + global.level +
         "&q=" + global.search +
         categoryFilter;
@@ -705,9 +699,6 @@ function queryApps() {
 }
 
 function queryAppsPage(url) {
-
-    //if (jqxhr) jqxhr.abort();       
-        
     $.ajax({
         url: url,
         type: 'GET',
@@ -741,27 +732,26 @@ function queryAppsPage(url) {
                 $('#preload-next').hide();
             }
         },
-        error: function (jqXHR, textStatus, errorThrown) { swal('Error:' + jqXHR.responseText);},
-    });      
-
+        error: function (jqXHR, textStatus, errorThrown) {
+            swal('Error:' + jqXHR.responseText);
+        },
+    });
 }
 
 function showAppItem(data) {
     $.each(data.results, function(i, item) {
         if (item.category.id == global.category || global.category == 0) {
             if (item.level.id == global.level || global.level == "")  {
-     //           if (item.name.search( RegExp(global.search, "i")) >=0 || item.description.search( RegExp(global.search, "i")) >=0 ) {
-                    $.each(item.packages_by_project, function(i, pkgs) {
-                        if (pkgs.project.name == global.project) {
-                            $("#apps").append(renderApp(item));
-                            updateStatus(
-                                item.name,
-                                pkgs.packages_to_install.join(" "),
-                                item.level.id
-                            );
-                        }
-                    });
-       //         }
+                $.each(item.packages_by_project, function(i, pkgs) {
+                    if (pkgs.project.name == global.project) {
+                        $("#apps").append(renderApp(item));
+                        updateStatus(
+                            item.name,
+                            pkgs.packages_to_install.join(" "),
+                            item.level.id
+                        );
+                    }
+                });
             }
         }
     });
@@ -769,21 +759,21 @@ function showAppItem(data) {
 }
 
 function showDescription(id) {
-    $("#trunc-"+id).hide();
-    $("#descr-"+id).show();
+    $("#trunc-" + id).hide();
+    $("#descr-" + id).show();
 }
 
 function showTruncated(id) {
-    $("#descr-"+id).hide();
-    $("#trunc-"+id).show();
+    $("#descr-" + id).hide();
+    $("#trunc-" + id).show();
 }
 
 function showLevels() {
     var levels = {'': 'All', 'U': 'User', 'A': 'Administrator'}
     $.each(levels, function(key, value) {
         $('#levels')
-          .append($('<option>', { value : key })
-          .text(value)
+            .append($('<option>', { value : key })
+            .text(value)
         );
     });
     $('#levels').val(global.level);
@@ -798,56 +788,52 @@ function showCategories(categories) {
     });
     $('#categories').val(global.category);
     $('#categories').material_select();
-
 }
 
 function changedCategory() {
     global.category = $('#categories').val();
-    //showAppItem();
     queryApps();
 }
 
 function changedLevel() {
     global.level = $('#levels').val();
-    //showAppItem();
     queryApps();
 }
 
-
-function getChar(event){
+function getChar(event) {
     var keyCode = ('which' in event) ? event.which : event.keyCode;
+
     if (keyCode == 13) {  // Enter
         global.search = $('#search').val();
-        //showApps();
         queryApps();
     }
 }
 
 function getCharPrint(event){
     var keyCode = ('which' in event) ? event.which : event.keyCode;
+
     if (keyCode == 13) {  // Enter
         global.searchPrint = $('#searchPrint').val();
         queryPrinters();
     }
 }
 
-
-
-
 function updateStatus(name, packages_to_install, level) {
     var slug = replaceAll(name, " ", "");
     var el = '#action-' + slug;
     var status = "#status-action-" + slug;
     var descr = "#description-action-" + slug;
+
     if (packages_to_install == "") {
-        installed = false;
+        var installed = false;
     } else {
         var installed = (packages_to_install.split(" ").diff(global.packagesInstalled).length == 0)
     }
+
     try {
         if (packages_to_install.split(" ").diff(global.pks_availables) == "") { // AVAILABLE
             var person = "";
-            if ($('#auth').text() == "" && level=="A") { // NO LOGIN
+            if ($('#auth').text() == "" && level == "A") { // NO LOGIN
                 if (installed) {
                     $(el).text('person');
                     $(el).off("click");
@@ -858,7 +844,6 @@ function updateStatus(name, packages_to_install, level) {
 
                     $(descr).off("click");
                     $(descr).click(function() {modalLogin(name, packages_to_install, level);});
-
                 } else {
                     $(el).text('person');
                     $(el).off("click");
@@ -892,10 +877,8 @@ function updateStatus(name, packages_to_install, level) {
         }
     }
     catch (err){
-        //alert("ERROR AQUI: "+err);
     }
 }
-
 
 function renderApp(item) {
     var fs = require('fs');
@@ -928,7 +911,6 @@ function renderApp(item) {
             _app: replaceAll(item.name, " ", "")
         };
         item.description = Mustache.render(item.description, data);
-
     }
 
     var data = {
@@ -959,7 +941,7 @@ function renderRating(score) {
 }
 
 // LABEL
-function showLabel(){
+function showLabel() {
     var fs = require('fs');
     var data = {
         "server": global.server,
@@ -971,9 +953,14 @@ function showLabel(){
         "ip": global.ip,
         "mask": global.mask,
         "network": global.network,
-        "qrcode": Mustache.to_html(fs.readFileSync('templates/qrcode.html', 'utf8'), {"qrcode": global.qr.createImgTag(2,2)}),
-        "qrcode2": Mustache.to_html(fs.readFileSync('templates/qrcode2.html', 'utf8'), {"qrcode": global.qr.createImgTag(3,3)})
-
+        "qrcode": Mustache.to_html(
+            fs.readFileSync('templates/qrcode.html', 'utf8'),
+            {"qrcode": global.qr.createImgTag(2, 2)}
+        ),
+        "qrcode2": Mustache.to_html(
+            fs.readFileSync('templates/qrcode2.html', 'utf8'),
+            {"qrcode": global.qr.createImgTag(3, 3)}
+        )
     }
 
     $('#container').html(Mustache.to_html(fs.readFileSync('templates/label.html', 'utf8'), data));
@@ -984,12 +971,11 @@ function showLabel(){
     labelDone();
 }
 
-function printLabel(){
+function printLabel() {
     window.print();
 }
 
-
-function checkUser(user,password) {
+function checkUser(user, password) {
     var path = require('path');
     var script = '"' + path.join(gui.__dirname, 'py', 'check_user.py') + '"';
     var execSync = require('child_process').execSync;
@@ -1008,8 +994,9 @@ function checkUser(user,password) {
             type: "error",
             showCancelButton: false,
             confirmButtonText: "OK"
-            }).then(function() {
-            }, function(dismiss){
+        }).then(
+            function() {},
+            function(dismiss){
                 // dismiss can be 'overlay', 'cancel', 'close', 'esc', 'timer'
                 if (dismiss === 'cancel') {
                 }
@@ -1021,7 +1008,8 @@ function checkUser(user,password) {
 // SETTINGS
 function showSettings() {
     var fs = require('fs');
-    $('#container').html(fs.readFileSync('templates/settings.html','utf8'));
+
+    $('#container').html(fs.readFileSync('templates/settings.html', 'utf8'));
 
     setSettings();
 
@@ -1031,12 +1019,10 @@ function showSettings() {
     });
 }
 
-
 // PMS
 
 function postAction(name, pkgs, level) {
      global.packagesInstalled = installedPkgs(global.packages);
- //    if (global.packagesInstalled.includes(pkgs)) {
      if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
         Materialize.toast(
             '<i class="material-icons">get_app</i> ' + name + " installed.",
@@ -1058,19 +1044,19 @@ function installedPkgs(pks) {
     var path = require('path');
     var script = '"' + path.join(gui.__dirname, 'py', 'installed.py') + '"';
     var execSync = require('child_process').execSync;
-    var cmd = "python "+ script  + ' "' + pks + '"';
+    var cmd = "python " + script + ' "' + pks + '"';
+
     return execSync(cmd);
 }
-
 
 function installedDevs() {
     var path = require('path');
     var script = '"' + path.join(gui.__dirname, 'py', 'printers_installed.py') + '"';
     var execSync = require('child_process').execSync;
-    var cmd = "python "+ script ;
+    var cmd = "python " + script;
+
     return JSON.parse(execSync(cmd));
 }
-
 
 function escapeRegExp(text) {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
@@ -1078,78 +1064,78 @@ function escapeRegExp(text) {
 
 function replaceAll(str, find, replace) {
     var find=escapeRegExp(find);
-
     var re = new RegExp(find, 'g');
+
     str = str.replace(re, replace);
     return str;
 }
 
 function getPkgNames() {
     var execSync = require('child_process').execSync;
-    var packages = execSync('python -c "from __future__ import print_function;from migasfree_client.client import MigasFreeClient;print(MigasFreeClient().pms.available_packages(),end=\'\')"').toString();
+    var packages = execSync('python -c "from __future__ import print_function; from migasfree_client.client import MigasFreeClient; print(MigasFreeClient().pms.available_packages(), end=\'\')"').toString();
     packages = replaceAll(packages, "'", '"');
     return JSON.parse(packages);
 }
 
 function spinner(id) {
     var fs = require('fs');
-    $('#' + id).html(fs.readFileSync('templates/spinner.html','utf8'));
+    $('#' + id).html(fs.readFileSync('templates/spinner.html', 'utf8'));
 }
 
 
-function install(name,pkgs,level) {
+function install(name, pkgs, level) {
     $("#action-" + replaceAll(name," ", "")).tooltip("remove");
     Materialize.toast('installing '+ name + " ...", 10000, 'rounded grey')
 
-    if (getOS()=="Linux") {
-        var _cmd = 'LANG_ALL=C echo "y"|migasfree -ip "'+pkgs+'"';
-    } else if (getOS()=="Windows") {
-        var _cmd = 'migasfree -ip "'+pkgs+'"';
+    if (getOS() == "Linux") {
+        var _cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
+    } else if (getOS() == "Windows") {
+        var _cmd = 'migasfree -ip "' + pkgs + '"';
     }
     global.TERMINAL.run(
         _cmd,
         null,
-        function() {postAction( name, pkgs, level );},
+        function() {postAction(name, pkgs, level);},
         "action-" + name
     );
 }
 
-function uninstall(name,pkgs,level) {
+function uninstall(name, pkgs, level) {
     $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
     Materialize.toast('deleting '+ name +" ...", 10000, 'rounded grey')
 
-    if (getOS()=="Linux") {
-        var _cmd = 'LANG_ALL=C echo "y"|migasfree -rp "'+pkgs+'"';
-    } else if (getOS()=="Windows") {
-        var _cmd = 'migasfree -rp "'+pkgs+'"';
+    if (getOS() == "Linux") {
+        var _cmd = 'LANG_ALL=C echo "y"|migasfree -rp "' + pkgs + '"';
+    } else if (getOS() == "Windows") {
+        var _cmd = 'migasfree -rp "' + pkgs + '"';
     }
     global.TERMINAL.run(
         _cmd,
         null,
-        function() {postAction( name, pkgs, level );},
+        function() {postAction(name, pkgs, level);},
         "action-" + name
     );
 }
 
-
 function onDemand(application) {
     var path = require('path');
-    swal({
-      title: application + " no disponible",
-      html:  global.label['helpdesk'] + "<br>" + global.label['name'] ,
-      type: "warning",
-      showCancelButton: false
-    }, function() {
 
+    swal({
+        title: application + " no available",
+        html: global.label['helpdesk'] + "<br>" + global.label['name'] ,
+        type: "warning",
+        showCancelButton: false
+    }, function() {
     });
 }
 
 
 function modalLogin(name, packages_to_install, level) {
     var fs = require('fs');
+
     swal({
         title: 'login',
-        html: fs.readFileSync('templates/login.html','utf8'),
+        html: fs.readFileSync('templates/login.html', 'utf8'),
         focusConfirm: false,
         showCancelButton: true,
         preConfirm: function () {
@@ -1166,7 +1152,6 @@ function modalLogin(name, packages_to_install, level) {
         }
     }).catch(swal.noop);
 }
-
 
 function getSettings() {
     global.settings["language"] = "en";
@@ -1185,7 +1170,7 @@ function readSettings() {
 
     if (fs.existsSync(filePath)) {
         var data = fs.readFileSync(filePath, 'utf8')
-        global.settings=JSON.parse(data);
+        global.settings = JSON.parse(data);
     } else {
         global.settings = {};
         global.settings["language"] = "en";
@@ -1202,17 +1187,15 @@ function saveSettings(settings) {
     fs.writeFileSync(filePath, JSON.stringify(settings))
 }
 
-
 function presync() {
     var path = require('path');
-    execDir(path.join(gui.__dirname, 'presync.d'));}
-
+    execDir(path.join(gui.__dirname, 'presync.d'));
+}
 
 function postsync() {
     var path = require('path');
     execDir(path.join(gui.__dirname, 'postsync.d'));
 }
-
 
 function execDir(directory) {
     const execSync = require('child_process').execSync;
@@ -1231,16 +1214,13 @@ function execDir(directory) {
     }
 }
 
-
-
-
 function getOS() {
-    var OSName="Unknown";
-    if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
-    if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
-    if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
-    if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
+    var OSName = "Unknown";
+
+    if (navigator.appVersion.indexOf("Win") != -1) OSName = "Windows";
+    if (navigator.appVersion.indexOf("Mac") != -1) OSName = "MacOS";
+    if (navigator.appVersion.indexOf("X11") != -1) OSName = "UNIX";
+    if (navigator.appVersion.indexOf("Linux") != -1) OSName = "Linux";
+
     return OSName;
 }
-
-
