@@ -931,10 +931,10 @@ function renderRating(score) {
     var rating = "";
 
     for (var step = 0; step < score; step++) {
-        rating += '<i class="material-icons tiny">star</i>';
+        rating += '<i class="material-icons tiny md-12">star</i>';
     }
     for (var step = score; step < 5; step++) {
-        rating += '<i class="material-icons tiny blue-grey-text text-lighten-4">star</i>';
+        rating += '<i class="material-icons tiny md-12 blue-grey-text text-lighten-4">star</i>';
     }
 
     return rating;

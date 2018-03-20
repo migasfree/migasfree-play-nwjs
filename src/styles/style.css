@@ -149,6 +149,14 @@ hr {
     margin-right: 0;
 }
 
+.md-36 {
+    font-size: 36px !important;
+}
+
+.md-12 {
+    font-size: 12px !important;
+}
+
 @media print {
     .noPrint {
         display:none;
