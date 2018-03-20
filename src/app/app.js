@@ -285,7 +285,7 @@ function getGlobalData() {
     }
 
     if (typeof global.conf === "undefined") {
-        global.conf = execSync('python -c "from __future__ import print_function; from migasfree_client import settings; print(settings.CONF_FILE, end=\'\')"')
+        global.conf = execSync('python -c "from __future__ import print_function; from migasfree_client import settings; print(settings.CONF_FILE, end=\'\')"');
     }
     if (typeof global.server === "undefined") {
         global.server = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_config; print(get_config(\'' + global.conf + '\', \'client\').get(\'server\', \'localhost\'), end=\'\')"');
@@ -610,6 +610,7 @@ function updateStatusPrinter(name, id) {
         }
     }
     catch (err){
+        // nothing
     }
 }
 
@@ -881,7 +882,8 @@ function updateStatus(name, packages_to_install, level) {
             tooltip(el, name + " is not available");
         }
     }
-    catch (err){
+    catch(err) {
+        // nothing
     }
 }
 
@@ -966,7 +968,7 @@ function showLabel() {
             fs.readFileSync("templates/qrcode2.html", "utf8"),
             {"qrcode": global.qr.createImgTag(3, 3)}
         )
-    }
+    };
 
     $("#container").html(Mustache.to_html(fs.readFileSync("templates/label.html", "utf8"), data));
     $(".tooltipped").tooltip({delay: 100});
