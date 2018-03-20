@@ -10,10 +10,10 @@ var jqxhr;
 function getOS() {
     var OSName = "Unknown";
 
-    if (navigator.appVersion.indexOf("Win") !== -1) OSName = "Windows";
-    if (navigator.appVersion.indexOf("Mac") !== -1) OSName = "MacOS";
-    if (navigator.appVersion.indexOf("X11") !== -1) OSName = "UNIX";
-    if (navigator.appVersion.indexOf("Linux") !== -1) OSName = "Linux";
+    if (navigator.appVersion.indexOf("Win") !== -1) {OSName = "Windows";}
+    if (navigator.appVersion.indexOf("Mac") !== -1) {OSName = "MacOS";}
+    if (navigator.appVersion.indexOf("X11") !== -1) {OSName = "UNIX";}
+    if (navigator.appVersion.indexOf("Linux") !== -1) {OSName = "Linux";}
 
     return OSName;
 }
@@ -320,7 +320,7 @@ function getGlobalData() {
         global.ip = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_address, get_ifname; _ifname = get_ifname(); print(get_iface_address(_ifname), end=\'\')"');
     }
     if (typeof global.user === "undefined") {
-        global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"')
+        global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"');
     }
     if (typeof global.label === "undefined") {
         // LABEL
