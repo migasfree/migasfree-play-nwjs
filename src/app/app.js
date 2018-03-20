@@ -19,14 +19,16 @@ var jqxhr;
             gui.Window.get().showDevTools();
             return false;
         }
-    }
+    };
 })();
 
 $(window).bind("resize", function () {
     try {
         resizeTerminal();
     }
-    catch(err) {}
+    catch(err) {
+        // nothing
+    }
 });
 
 gui.Window.get().on("close", function(){
@@ -75,10 +77,10 @@ function ready() {
 function runAsUserSync(cmd) {
     var execSync = require("child_process").execSync;
 
-    if (getOS() == "Linux") {
+    if (getOS() === "Linux") {
         cmd = replaceAll(cmd, '"' , '\\\"');
         execSync('sudo su -c "' + cmd + '" ' + global.user);
-    } else if (getOS() == "Windows") {
+    } else if (getOS() === "Windows") {
         execSync(cmd);
     }
 }
@@ -86,10 +88,10 @@ function runAsUserSync(cmd) {
 function runAsUser(cmd) {
     var exec = require("child_process").exec;
 
-    if (getOS() == "Linux") {
+    if (getOS() === "Linux") {
         cmd = replaceAll(cmd, '"' , '\\\"');
         exec('sudo su -c "' + cmd + '" ' + global.user);
-    } else if (getOS() == "Windows") {
+    } else if (getOS() === "Windows") {
         exec(cmd);
     }
 }
@@ -164,16 +166,17 @@ function getGlobalData() {
         }
 
         return {
-            add: function(txt) {
-                try{
+            add(txt) {
+                try {
                     global.terminal = replaceColors(global.terminal + txt);
                     this.refresh();
                 }
                 catch(err) {
+                    // nothing
                 }
             },
-            refresh: function() {
-                 try{
+            refresh() {
+                 try {
                      $("#console-output").html(global.terminal);
                      var x = document.getElementById("console-output");
                      x.scrollTop = x.scrollHeight;
@@ -181,7 +184,7 @@ function getGlobalData() {
                  catch(err) {
                  }
             },
-            run: function(cmd, beforeCallback=null, afterCallback=null, id) {
+            run(cmd, beforeCallback=null, afterCallback=null, id) {
                 if (running) {
                     Materialize.toast(
                         '<i class="material-icons">warning</i>' + " please wait, other process is running!!!",
@@ -200,9 +203,9 @@ function getGlobalData() {
 
                     var spawn = require("child_process").spawn;
 
-                    if (getOS() == "Linux") {
+                    if (getOS() === "Linux") {
                         var process = spawn("bash", ["-c", cmd]);
-                    } else if (getOS() == "Windows") {
+                    } else if (getOS() === "Windows") {
                         var process = spawn("cmd", ["/C", cmd]);
                     }
 
@@ -214,30 +217,30 @@ function getGlobalData() {
 
                     global.TERMINAL.add("<h5>" + date + "</h5>");
 
-                    process.stdout.on("data", function(data) {global.TERMINAL.add(data.toString())});
+                    process.stdout.on("data", function(data) {global.TERMINAL.add(data.toString());});
 
                     process.stderr.on("data", function(data) {
                         addToStdErr(data.toString());
-                        global.TERMINAL.add('<span class="red">' + data.toString() + '</span>');
+                        global.TERMINAL.add('<span class="red">' + data.toString() + "</span>");
                     });
 
                     // when the spawn child process exits, check if there were any errors
-                    process.on('exit', function(code) {
-                        if (code != 0) { // Syntax error
+                    process.on("exit", function(code) {
+                        if (code !== 0) {  // Syntax error
                             Materialize.toast(
-                                '<i class="material-icons">error</i> error:' + code + ' ' + cmd,
+                                '<i class="material-icons">error</i> error:' + code + " " + cmd,
                                 10000,
                                 "rounded red"
                             );
                             win.show();
                         }
                         else {
-                            if (stderr == "") {
+                            if (stderr === "") {
                                 if (afterCallback) {
                                     afterCallback();
                                 }
 
-                                if (id == "sync" &&  document.hidden) {  // sync ok & minimized -> exit
+                                if (id === "sync" &&  document.hidden) {  // sync ok & minimized -> exit
                                     exit();
                                 }
                             }
@@ -261,11 +264,11 @@ function getGlobalData() {
         };
     })();
 
-    if (typeof global.sync == "undefined") {
+    if (typeof global.sync === "undefined") {
         global.sync = (myArgs == "sync")
     }
 
-    if (typeof global.token == "undefined") {
+    if (typeof global.token === "undefined") {
         var tokenfile =  path.join(process.cwd(), "token");
         if (fs.existsSync(tokenfile)) {
             global.token = "token " + fs.readFileSync(tokenfile, "utf8");
@@ -280,34 +283,34 @@ function getGlobalData() {
         }
     }
 
-    if (typeof global.conf == "undefined") {
+    if (typeof global.conf === "undefined") {
         global.conf = execSync('python -c "from __future__ import print_function; from migasfree_client import settings; print(settings.CONF_FILE, end=\'\')"')
     }
-    if (typeof global.server == "undefined") {
+    if (typeof global.server === "undefined") {
         global.server = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_config; print(get_config(\'' + global.conf + '\', \'client\').get(\'server\', \'localhost\'), end=\'\')"');
     }
-    if (typeof global.uuid == "undefined") {
+    if (typeof global.uuid === "undefined") {
         global.uuid = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_hardware_uuid; print(get_hardware_uuid(), end=\'\')"');
     }
-    if (typeof global.project == "undefined") {
+    if (typeof global.project === "undefined") {
         global.project = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_project; print(get_mfc_project(), end=\'\')"');
     }
-    if (typeof global.computername == "undefined") {
+    if (typeof global.computername === "undefined") {
         global.computername = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_computer_name; print(get_mfc_computer_name(), end=\'\')"');
     }
-    if (typeof global.network == "undefined") {
+    if (typeof global.network === "undefined") {
         global.network = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_net, get_iface_cidr, get_ifname; _ifname = get_ifname(); print(\'%s/%s\' % (get_iface_net(_ifname), get_iface_cidr(_ifname)), end=\'\')"');
     }
-    if (typeof global.mask == "undefined") {
+    if (typeof global.mask === "undefined") {
         global.mask = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_mask, get_ifname; _ifname = get_ifname(); print(get_iface_mask(_ifname), end=\'\')"');
     }
-    if (typeof global.ip== "undefined") {
+    if (typeof global.ip === "undefined") {
         global.ip = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_address, get_ifname; _ifname = get_ifname(); print(get_iface_address(_ifname), end=\'\')"');
     }
-    if (typeof global.user == "undefined") {
+    if (typeof global.user === "undefined") {
         global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"')
     }
-    if (typeof global.label == "undefined") {
+    if (typeof global.label === "undefined") {
         // LABEL
         var url = "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid;
 
@@ -322,21 +325,21 @@ function getGlobalData() {
         labelDone();
     }
 
-    if (typeof global.category == "undefined") {
+    if (typeof global.category === "undefined") {
         global.category = 0;
     }
 
-    if (typeof global.level == "undefined") {
+    if (typeof global.level === "undefined") {
         global.level = "";
     }
 
-    if (typeof global.pks_availables == "undefined") {
+    if (typeof global.pks_availables === "undefined") {
         global.pks_availables = getPkgNames();
     }
 }
 
 function labelDone() {
-    if (typeof global.label != "undefined") {
+    if (typeof global.label !== "undefined") {
         $("#machine").html(
             "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label["name"] + "</a>"
         );
