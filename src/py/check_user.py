@@ -7,7 +7,6 @@ if __name__ == '__main__':
 
     if platform.system() == "Windows":
         import os
-        import getpass
         import win32security
         import ctypes
 
