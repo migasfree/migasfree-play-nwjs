@@ -7,6 +7,17 @@ var confFile = "settings.json";
 var consoleLog = path.join(gui.__dirname, "console.log");
 var jqxhr;
 
+function getOS() {
+    var OSName = "Unknown";
+
+    if (navigator.appVersion.indexOf("Win") !== -1) OSName = "Windows";
+    if (navigator.appVersion.indexOf("Mac") !== -1) OSName = "MacOS";
+    if (navigator.appVersion.indexOf("X11") !== -1) OSName = "UNIX";
+    if (navigator.appVersion.indexOf("Linux") !== -1) OSName = "Linux";
+
+    return OSName;
+}
+
 (function() {
     document.onkeydown = function (e) {
         if (e.keyCode === 116) {  // F5
@@ -20,7 +31,7 @@ var jqxhr;
             return false;
         }
     };
-})();
+}());
 
 $(window).bind("resize", function () {
     try {
@@ -31,13 +42,13 @@ $(window).bind("resize", function () {
     }
 });
 
-gui.Window.get().on("close", function(){
+gui.Window.get().on("close", function () {
     exit();
     gui.App.quit();
 });
 
-Array.prototype.diff = function(a) {
-    return this.filter(function(i) {return a.indexOf(i) < 0;});
+Array.prototype.diff = function (a) {
+    return this.filter(function (i) {return a.indexOf(i) < 0;});
 };
 
 function ready() {
@@ -589,7 +600,7 @@ function uninstallPrinter(element, id) {
 
 function updateStatusPrinter(name, id) {
     var slug = replaceAll(name, " ", "");
-    var el = '#action-' + slug;
+    var el = "#action-" + slug;
     var status = "#status-action-" + slug;
     var descr = "#description-action-" + slug;
     var installed = ($.inArray(id, global.devs) >= 0);
@@ -837,13 +848,13 @@ function updateStatus(name, packages_to_install, level) {
     }
 
     try {
-        if (packages_to_install.split(" ").diff(global.pks_availables) == "") { // AVAILABLE
+        if (packages_to_install.split(" ").diff(global.pks_availables) == "") {  // AVAILABLE
             var person = "";
-            if ($("#auth").text() == "" && level == "A") { // NO LOGIN
+            if ($("#auth").text() == "" && level == "A") {  // NO LOGIN
+                $(el).text("person");
+                $(el).off("click");
+                $(el).click(function() {modalLogin(name, packages_to_install, level);});
                 if (installed) {
-                    $(el).text("person");
-                    $(el).off("click");
-                    $(el).click(function() {modalLogin(name, packages_to_install, level);});
                     tooltip(el, "login to delete " + name);
                     $(status).text("check_circle");
                     tooltip(status, "installed");
@@ -851,9 +862,6 @@ function updateStatus(name, packages_to_install, level) {
                     $(descr).off("click");
                     $(descr).click(function() {modalLogin(name, packages_to_install, level);});
                 } else {
-                    $(el).text("person");
-                    $(el).off("click");
-                    $(el).click(function() {modalLogin(name, packages_to_install, level);});
                     tooltip(el, "login to install " + name);
                     $(status).text("");
                 }
@@ -866,7 +874,7 @@ function updateStatus(name, packages_to_install, level) {
                     $(status).text("check_circle");
                     tooltip(status, "installed");
                 } else {
-                    if  (packages_to_install != "") {
+                    if (packages_to_install !== "") {
                         $(el).text("get_app");
                         $(el).off("click");
                         $(el).click(function() {install(name, packages_to_install, level);});
@@ -875,7 +883,7 @@ function updateStatus(name, packages_to_install, level) {
                     }
                 }
             }
-        } else { // IS NOT AVAILABLE
+        } else {  // IS NOT AVAILABLE
             $(el).text("lock_open");
             $(el).off("click");
             $(el).click(function() {onDemand(name);});
@@ -1220,15 +1228,4 @@ function execDir(directory) {
     for (var i in files) {
         global.TERMINAL.add(execSync(path.join(directory, files[i])));
     }
-}
-
-function getOS() {
-    var OSName = "Unknown";
-
-    if (navigator.appVersion.indexOf("Win") !== -1) OSName = "Windows";
-    if (navigator.appVersion.indexOf("Mac") !== -1) OSName = "MacOS";
-    if (navigator.appVersion.indexOf("X11") !== -1) OSName = "UNIX";
-    if (navigator.appVersion.indexOf("Linux") !== -1) OSName = "Linux";
-
-    return OSName;
 }
