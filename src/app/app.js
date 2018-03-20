@@ -588,20 +588,21 @@ function updateStatusPrinter(name, id) {
     var el = '#action-' + slug;
     var status = "#status-action-" + slug;
     var descr = "#description-action-" + slug;
-    var installed = ($.inArray(id,global.devs) >= 0);
+    var installed = ($.inArray(id, global.devs) >= 0);
 
     try {
-        if (installed) { // INSTALLED
+        if (installed) {
             $(el).text('delete');
             $(el).off("click");
             $(el).click(function() {uninstallPrinter('action-' + slug, id);});
             $(status).text("check_circle");
-            tooltip(status, "installed");
-        } else { // UNINSTALLED
+            tooltip(el, "installed");
+        } else {
             $(el).text('get_app');
             $(el).off("click");
             $(el).click(function() {installPrinter('action-' + slug, id);});
             $(status).text("");
+            tooltip(el, "install");
         }
     }
     catch (err){
@@ -612,7 +613,7 @@ function renderDict(data) {
     var ret= "";
 
     for(var element in data) {
-        ret+= element + ": " + data[element] + "<br>";
+        ret+= element + ": " + data[element] + "<br />";
     }
     return ret;
 }
@@ -635,7 +636,7 @@ function renderPrinter(logicaldev, dev) {
         name: logicaldev.device.name + " " + logicaldev.feature.name,
         idaction: "action-" + replaceAll(logicaldev.device.name + logicaldev.feature.name, " ", ""),
         icon: icon,
-        description: dev.model.name + " (" + dev.connection.name + ")" + "<hr>" + renderInfoPrinter(dev.data),
+        description: dev.model.name + " (" + dev.connection.name + ")" + "<hr />" + renderInfoPrinter(dev.data),
         truncated: dev.model.name + " (" + dev.connection.name + ")"
     };
 
