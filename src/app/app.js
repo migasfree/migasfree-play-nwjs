@@ -115,7 +115,7 @@ function supportExternalLinks(event) {
                 "computer": global.label["name"],
                 "project": global.project,
                 "uuid": global.uuid
-            }
+            };
             href = Mustache.render(href, data);
             var script= 'python -c "import webbrowser; webbrowser.open(\'' + href + '\')"';
             runAsUser(script);
@@ -182,6 +182,7 @@ function getGlobalData() {
                      x.scrollTop = x.scrollHeight;
                  }
                  catch(err) {
+                    // nothing
                  }
             },
             run(cmd, beforeCallback=null, afterCallback=null, id) {
@@ -265,7 +266,7 @@ function getGlobalData() {
     })();
 
     if (typeof global.sync === "undefined") {
-        global.sync = (myArgs == "sync")
+        global.sync = (myArgs === "sync");
     }
 
     if (typeof global.token === "undefined") {
@@ -1089,12 +1090,12 @@ function spinner(id) {
 
 
 function install(name, pkgs, level) {
-    $("#action-" + replaceAll(name," ", "")).tooltip("remove");
+    $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
     Materialize.toast("installing " + name + " ...", 10000, "rounded grey")
 
-    if (getOS() == "Linux") {
+    if (getOS() === "Linux") {
         var _cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
-    } else if (getOS() == "Windows") {
+    } else if (getOS() === "Windows") {
         var _cmd = 'migasfree -ip "' + pkgs + '"';
     }
     global.TERMINAL.run(
@@ -1109,9 +1110,9 @@ function uninstall(name, pkgs, level) {
     $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
     Materialize.toast("deleting " + name  + " ...", 10000, "rounded grey")
 
-    if (getOS() == "Linux") {
+    if (getOS() === "Linux") {
         var _cmd = 'LANG_ALL=C echo "y"|migasfree -rp "' + pkgs + '"';
-    } else if (getOS() == "Windows") {
+    } else if (getOS() === "Windows") {
         var _cmd = 'migasfree -rp "' + pkgs + '"';
     }
     global.TERMINAL.run(
@@ -1222,10 +1223,10 @@ function execDir(directory) {
 function getOS() {
     var OSName = "Unknown";
 
-    if (navigator.appVersion.indexOf("Win") != -1) OSName = "Windows";
-    if (navigator.appVersion.indexOf("Mac") != -1) OSName = "MacOS";
-    if (navigator.appVersion.indexOf("X11") != -1) OSName = "UNIX";
-    if (navigator.appVersion.indexOf("Linux") != -1) OSName = "Linux";
+    if (navigator.appVersion.indexOf("Win") !== -1) OSName = "Windows";
+    if (navigator.appVersion.indexOf("Mac") !== -1) OSName = "MacOS";
+    if (navigator.appVersion.indexOf("X11") !== -1) OSName = "UNIX";
+    if (navigator.appVersion.indexOf("Linux") !== -1) OSName = "Linux";
 
     return OSName;
 }
