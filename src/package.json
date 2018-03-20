@@ -1,6 +1,6 @@
 {
   "name": "migasfree-play",
-  "description": "Migasfree Play",
+  "description": "Migasfree Client front-end. Allow install/uninstall available applications and printers.",
   "version": "0.2.0",
   "main": "index.html",
   "repository": "tofill",
