@@ -7,29 +7,47 @@
                     <i id="status-{{idaction}}" class="right material-icons tiny teal-text"></i>
                 </div>
             </div>
-            <div class="col s9 m9">
+            <div class="col s8 m8">
                 <span class="title">{{name}}</span>
-                <span class="left teal-text">{{{rating}}}</span> <span class="category teal-text">{{category}}</span>
+                <span class="left teal-text">{{{rating}}}</span>
+                <span class="category teal-text">{{category}}</span>
                 {{#description}}
                     <div id="trunc-{{idaction}}" >
                         <span class="black-text">
-                            <a class="tooltipped waves-effect waves-light left"><i onclick="showDescription('{{idaction}}')" class="material-icons">expand_more</i></a>
+                            <a class="tooltipped waves-effect waves-light left">
+                                <i class="material-icons">expand_more</i>
+                            </a>
                             {{{truncated}}}
                         </span>
                     </div>
                     <div hidden id="descr-{{idaction}}">
                         <span class="black-text">
-                            <a class="tooltipped waves-effect waves-light left"><i onclick="showTruncated('{{idaction}}')" class="material-icons">expand_less</i></a>
+                            <a class="tooltipped waves-effect waves-light left">
+                                <i class="material-icons">expand_less</i>
+                            </a>
                             {{{description}}}
                         </span>
                     </div>
                 {{/description}}
             </div>
-            <div class="col s1 m1">
+            <div class="col s2 m2">
                 <span>
-                    <a class="tooltipped  waves-effect waves-light right"><i id="{{idaction}}" class="material-icons"></i></a>
+                    <a class="tooltipped waves-effect waves-light right">
+                        <i id="{{idaction}}" class="material-icons md-36"></i>
+                    </a>
                 </span>
             </div>
         </div>
     </div>
 </div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#trunc-{{idaction}} i").on("click", function () {
+        showDescription("{{idaction}}");
+    });
+    $("#descr-{{idaction}} i").on("click", function () {
+        showTruncated("{{idaction}}");
+    });
+});
+</script>
