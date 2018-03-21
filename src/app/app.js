@@ -50,7 +50,7 @@ Array.prototype.diff = function (a) {
 };
 
 function ready() {
-    var fs = require("fs");
+    const fs = require("fs");
 
     getGlobalData();
     win.show();
@@ -149,9 +149,9 @@ function tooltip(id, text) {
 
 function getGlobalData() {
     var myArgs = gui.App.argv;
-    var execSync = require("child_process").execSync;
-    var fs = require("fs");
-    var path = require("path");
+    const execSync = require("child_process").execSync;
+    const fs = require("fs");
+    const path = require("path");
 
     if (typeof global.search== "undefined") {
         global.search = "";
@@ -369,7 +369,7 @@ function labelDone() {
 }
 
 function showSync() {
-    var fs = require("fs");
+    const fs = require("fs");
 
     $("#container").html(fs.readFileSync("templates/sync.html", "utf8"));
     resizeTerminal();
@@ -385,18 +385,18 @@ function resizeTerminal() {
 }
 
 function replaceColors(txt) {
-    txt = replaceAll(txt, '\u001b[92m','<span style="color:green;font-weight:bold;">');
-    txt = replaceAll(txt, '\u001b[93m','<span style="color:yellow";>');
-    txt = replaceAll(txt, '\u001b[91m','<span style="color:red;font-weight:bold;">');
-    txt = replaceAll(txt, '\u001b[32m','<span style="color:green;">');
-    txt = replaceAll(txt, '\u001b[0m','</span>');
-    txt = txt.replace(/(?:\r\n|\r|\n)/g, '<br>');
+    txt = replaceAll(txt, "\u001b[92m", '<span class="console-section">');
+    txt = replaceAll(txt, "\u001b[93m", '<span class="console-warning">');
+    txt = replaceAll(txt, "\u001b[91m", '<span style="console-error">');
+    txt = replaceAll(txt, "\u001b[32m", '<span style="console-info">');
+    txt = replaceAll(txt, "\u001b[0m", "</span>");
+    txt = txt.replace(/(?:\r\n|\r|\n)/g, "<br />");
 
     return txt;
 }
 
 function exit() {
-    var fs = require("fs");
+    const fs = require("fs");
 
     fs.writeFile(consoleLog, global.terminal, function(err) {
         if (err) throw err;
@@ -426,7 +426,7 @@ function sync() {
 
 // PRINTERS
 function showPrinters() {
-    var fs = require("fs");
+    const fs = require("fs");
     global.devs = installedDevs();
 
     $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
@@ -638,7 +638,7 @@ function renderInfoPrinter(data) {
 }
 
 function renderPrinter(logicaldev, dev) {
-    var fs = require("fs");
+    const fs = require("fs");
 
     if (dev.connection.name=="TCP") {
         var icon = "assets/printer-net.png";
@@ -659,7 +659,7 @@ function renderPrinter(logicaldev, dev) {
 
 // APPS
 function showApps() {
-    var fs = require("fs");
+    const fs = require("fs");
 
     queryCategories();
     $("#container").html(fs.readFileSync("templates/apps.html", "utf8"));
@@ -894,8 +894,8 @@ function updateStatus(name, packages_to_install, level) {
 }
 
 function renderApp(item) {
-    var fs = require("fs");
-    var marked = require("marked");
+    const fs = require("fs");
+    const marked = require("marked");
 
     //Change font-size header in markdown
 
@@ -907,7 +907,7 @@ function renderApp(item) {
              '" class="anchor" href="#' +
              escapedText +
              '"><span class="header-link" </span></a><span>' + text +
-             '</span></h' + (level + 3) + ">";
+             "</span></h" + (level + 3) + ">";
     };
 
     var truncatedDesc = "";
@@ -955,7 +955,7 @@ function renderRating(score) {
 
 // LABEL
 function showLabel() {
-    var fs = require("fs");
+    const fs = require("fs");
     var data = {
         "server": global.server,
         "cid":  global.label["id"],
@@ -1021,7 +1021,7 @@ function checkUser(user, password) {
 
 // SETTINGS
 function showSettings() {
-    var fs = require("fs");
+    const fs = require("fs");
 
     $("#container").html(fs.readFileSync("templates/settings.html", "utf8"));
 
@@ -1036,37 +1036,37 @@ function showSettings() {
 // PMS
 
 function postAction(name, pkgs, level) {
-     global.packagesInstalled = installedPkgs(global.packages);
-     if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
+    global.packagesInstalled = installedPkgs(global.packages);
+    if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
         Materialize.toast(
             '<i class="material-icons">get_app</i> ' + name + " installed.",
             10000,
             "rounded green"
         );
-     }
-     else {
+    }
+    else {
         Materialize.toast(
             '<i class="material-icons">delete</i> ' + name + " deleted.",
             10000,
             "rounded green"
         );
-     }
-     updateStatus(name, pkgs, level);
+    }
+    updateStatus(name, pkgs, level);
 }
 
 function installedPkgs(pks) {
-    var path = require("path");
+    const path = require("path");
+    const execSync = require("child_process").execSync;
     var script = '"' + path.join(gui.__dirname, "py", "installed.py") + '"';
-    var execSync = require("child_process").execSync;
     var cmd = "python " + script + ' "' + pks + '"';
 
     return execSync(cmd);
 }
 
 function installedDevs() {
-    var path = require("path");
+    const path = require("path");
+    const execSync = require("child_process").execSync;
     var script = '"' + path.join(gui.__dirname, "py", "printers_installed.py") + '"';
-    var execSync = require("child_process").execSync;
     var cmd = "python " + script;
 
     return JSON.parse(execSync(cmd));
@@ -1077,11 +1077,10 @@ function escapeRegExp(text) {
 }
 
 function replaceAll(str, find, replace) {
-    var find=escapeRegExp(find);
+    var find = escapeRegExp(find);
     var re = new RegExp(find, "g");
 
-    str = str.replace(re, replace);
-    return str;
+    return str.replace(re, replace);
 }
 
 function getPkgNames() {
@@ -1092,7 +1091,7 @@ function getPkgNames() {
 }
 
 function spinner(id) {
-    var fs = require("fs");
+    const fs = require("fs");
     $("#" + id).html(fs.readFileSync("templates/spinner.html", "utf8"));
 }
 
@@ -1132,7 +1131,7 @@ function uninstall(name, pkgs, level) {
 }
 
 function onDemand(application) {
-    var path = require("path");
+    const path = require("path");
 
     swal({
         title: application + " no available",
@@ -1145,7 +1144,7 @@ function onDemand(application) {
 
 
 function modalLogin(name, packages_to_install, level) {
-    var fs = require("fs");
+    const fs = require("fs");
 
     swal({
         title: "login",
@@ -1178,14 +1177,15 @@ function setSettings() {
 }
 
 function readSettings() {
-    var fs = require("fs");
-    var path = require("path");
+    const fs = require("fs");
+    const path = require("path");
     var filePath = path.join(gui.App.dataPath, confFile);
 
     if (fs.existsSync(filePath)) {
         var data = fs.readFileSync(filePath, "utf8")
         global.settings = JSON.parse(data);
-    } else {
+    }
+    else {
         global.settings = {};
         global.settings["language"] = "en";
         global.settings["theme"] = "dark";
@@ -1195,26 +1195,26 @@ function readSettings() {
 }
 
 function saveSettings(settings) {
-    var fs = require("fs");
-    var path = require("path");
+    const fs = require("fs");
+    const path = require("path");
     var filePath = path.join(gui.App.dataPath, confFile);
     fs.writeFileSync(filePath, JSON.stringify(settings))
 }
 
 function presync() {
-    var path = require("path");
+    const path = require("path");
     execDir(path.join(gui.__dirname, "presync.d"));
 }
 
 function postsync() {
-    var path = require("path");
+    const path = require("path");
     execDir(path.join(gui.__dirname, "postsync.d"));
 }
 
 function execDir(directory) {
     const execSync = require("child_process").execSync;
-    var fs = require("fs");
-    var path = require("path");
+    const fs = require("fs");
+    const path = require("path");
 
     try {
         fs.accessSync(directory);

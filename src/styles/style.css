@@ -157,6 +157,24 @@ hr {
     font-size: 12px !important;
 }
 
+.console-section {
+    color: green;
+    font-weight: bold;
+}
+
+.console-warning {
+    color: yellow;
+}
+
+.console-error {
+    color: red;
+    font-weight: bold;
+}
+
+.console-info {
+    color: green;
+}
+
 @media print {
     .noPrint {
         display:none;
