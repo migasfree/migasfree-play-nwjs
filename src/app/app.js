@@ -8,14 +8,12 @@ var consoleLog = path.join(gui.__dirname, "console.log");
 var jqxhr;
 
 function getOS() {
-    var OSName = "Unknown";
+    if (navigator.appVersion.indexOf("Win") !== -1) {return "Windows";}
+    if (navigator.appVersion.indexOf("Mac") !== -1) {return "MacOS";}
+    if (navigator.appVersion.indexOf("X11") !== -1) {return "UNIX";}
+    if (navigator.appVersion.indexOf("Linux") !== -1) {return "Linux";}
 
-    if (navigator.appVersion.indexOf("Win") !== -1) {OSName = "Windows";}
-    if (navigator.appVersion.indexOf("Mac") !== -1) {OSName = "MacOS";}
-    if (navigator.appVersion.indexOf("X11") !== -1) {OSName = "UNIX";}
-    if (navigator.appVersion.indexOf("Linux") !== -1) {OSName = "Linux";}
-
-    return OSName;
+    return "Unknown";
 }
 
 (function() {
