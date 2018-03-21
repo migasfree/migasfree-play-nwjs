@@ -153,18 +153,18 @@ function getGlobalData() {
     const fs = require("fs");
     const path = require("path");
 
-    if (typeof global.search== "undefined") {
+    if (typeof global.search === "undefined") {
         global.search = "";
     }
 
-    if (typeof global.searchPrint== "undefined") {
+    if (typeof global.searchPrint === "undefined") {
         global.searchPrint = "";
     }
 
     readSettings();
 
     global.TERMINAL = (function() {
-        if (typeof global.terminal == "undefined") {
+        if (typeof global.terminal === "undefined") {
             global.terminal = "";
         }
         var running = false;
@@ -626,7 +626,7 @@ function updateStatusPrinter(name, id) {
 function renderDict(data) {
     var ret= "";
 
-    for(var element in data) {
+    for (var element in data) {
         ret+= element + ": " + data[element] + "<br />";
     }
     return ret;
@@ -640,7 +640,7 @@ function renderInfoPrinter(data) {
 function renderPrinter(logicaldev, dev) {
     const fs = require("fs");
 
-    if (dev.connection.name=="TCP") {
+    if (dev.connection.name === "TCP") {
         var icon = "assets/printer-net.png";
     } else {
         var icon = "assets/printer-local.png";
@@ -1008,8 +1008,8 @@ function checkUser(user, password) {
             showCancelButton: false,
             confirmButtonText: "OK"
         }).then(
-            function() {},
-            function(dismiss){
+            function () {},
+            function (dismiss){
                 // dismiss can be 'overlay', 'cancel', 'close', 'esc', 'timer'
                 if (dismiss === "cancel") {
                     // nothing
@@ -1198,16 +1198,19 @@ function saveSettings(settings) {
     const fs = require("fs");
     const path = require("path");
     var filePath = path.join(gui.App.dataPath, confFile);
+
     fs.writeFileSync(filePath, JSON.stringify(settings))
 }
 
 function presync() {
     const path = require("path");
+
     execDir(path.join(gui.__dirname, "presync.d"));
 }
 
 function postsync() {
     const path = require("path");
+
     execDir(path.join(gui.__dirname, "postsync.d"));
 }
 
