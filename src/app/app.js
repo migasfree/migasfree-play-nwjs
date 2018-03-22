@@ -523,6 +523,114 @@ function supportExternalLinks(event) {
 }
 
 // PRINTERS
+function changeAttributesPrinter(element, id, atts) {
+    $.ajax({
+        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
+        type: "PATCH",
+        beforeSend: addTokenHeader,
+        contentType: "application/json",
+        data: JSON.stringify({"attributes": atts}),
+        success(data) {
+           global.TERMINAL.run(
+                "migasfree -u",
+                null,
+                function() {
+                    showPrinters();
+                },
+                element
+           );
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            swal("changeAttributesPrinter Error:" + jqXHR.responseText);
+        },
+    });
+}
+
+function installPrinter(element, id) {
+    $.ajax({
+        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        success(data) {
+            var atts =  data.attributes;
+            atts.push(global.att_cid);
+            changeAttributesPrinter(element, id, atts);
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            swal("Error:" + jqXHR.responseText);
+        },
+    });
+}
+
+function uninstallPrinter(element, id) {
+    $.ajax({
+        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        success(data) {
+            var atts =  data.attributes;
+            //delete attribute from array
+            var index = atts.indexOf(global.att_cid);
+            if (index > -1) {
+                atts.splice(index, 1);
+            }
+
+            changeAttributesPrinter(element, id, atts);
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            swal("Error:" + jqXHR.responseText);
+        },
+    });
+}
+
+function updateStatusPrinter(name, id) {
+    var slug = replaceAll(name, " ", "");
+    var el = "#action-" + slug;
+    var status = "#status-action-" + slug;
+    var descr = "#description-action-" + slug;
+    var installed = ($.inArray(id, global.devs) >= 0);
+
+    try {
+        if (installed) {
+            $(el).text("delete");
+            $(el).off("click");
+            $(el).click(function() {uninstallPrinter("action-" + slug, id);});
+            $(status).text("check_circle");
+            tooltip(el, "installed");
+        } else {
+            $(el).text("get_app");
+            $(el).off("click");
+            $(el).click(function() {installPrinter("action-" + slug, id);});
+            $(status).text("");
+            tooltip(el, "install");
+        }
+    }
+    catch (err){
+        // nothing
+    }
+}
+
+function getDevice(logicalDev) {
+    $.ajax({
+        url: "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/",
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        success(dev) {
+            $("#printers").append(renderPrinter(logicalDev, dev));
+            updateStatusPrinter(
+                logicalDev.device.name + logicalDev.feature.name,
+                logicalDev.id
+            );
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            swal("Error:" + jqXHR.responseText);
+        },
+    });
+}
+
 function showPrinterItem(data) {
     $.each(data.results, function(i, item) {
         getDevice(item);
@@ -536,7 +644,7 @@ function queryPrintersPage(url) {
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
-        success: function (data) {
+        success(data) {
             showPrinterItem(data);
             if (data.next) {
                 var options = [{
@@ -616,7 +724,7 @@ function renderPrinter(logicalDev, dev) {
     var data = {
         name: logicalDev.device.name + " " + logicalDev.feature.name,
         idaction: "action-" + replaceAll(logicalDev.device.name + logicalDev.feature.name, " ", ""),
-        icon: icon,
+        icon,
         description: dev.model.name + " (" + dev.connection.name + ")" + "<hr />" + renderInfoPrinter(dev.data),
         truncated: dev.model.name + " (" + dev.connection.name + ")"
     };
@@ -624,122 +732,24 @@ function renderPrinter(logicalDev, dev) {
     return Mustache.to_html(fs.readFileSync("templates/printer.html", "utf8"), data);
 }
 
-function changeAttributesPrinter(element, id, atts) {
-    $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
-        type: "PATCH",
-        beforeSend: addTokenHeader,
-        contentType: "application/json",
-        data: JSON.stringify({"attributes": atts}),
-        success: function (data) {
-           global.TERMINAL.run(
-                "migasfree -u",
-                null,
-                function() {
-                    showPrinters();
-                },
-                element
-           );
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            swal("changeAttributesPrinter Error:" + jqXHR.responseText);
-        },
-    });
-}
-
-function installPrinter(element, id) {
-    $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        success: function (data) {
-            var atts =  data.attributes;
-            atts.push(global.att_cid);
-            changeAttributesPrinter(element, id, atts);
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
-        },
-    });
-}
-
-function uninstallPrinter(element, id) {
-    $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        success: function (data) {
-            var atts =  data.attributes;
-            //delete attribute from array
-            var index = atts.indexOf(global.att_cid);
-            if (index > -1) {
-                atts.splice(index, 1);
-            }
-
-            changeAttributesPrinter(element, id, atts);
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
-        },
-    });
-}
-
-function updateStatusPrinter(name, id) {
-    var slug = replaceAll(name, " ", "");
-    var el = "#action-" + slug;
-    var status = "#status-action-" + slug;
-    var descr = "#description-action-" + slug;
-    var installed = ($.inArray(id, global.devs) >= 0);
-
-    try {
-        if (installed) {
-            $(el).text("delete");
-            $(el).off("click");
-            $(el).click(function() {uninstallPrinter("action-" + slug, id);});
-            $(status).text("check_circle");
-            tooltip(el, "installed");
-        } else {
-            $(el).text("get_app");
-            $(el).off("click");
-            $(el).click(function() {installPrinter("action-" + slug, id);});
-            $(status).text("");
-            tooltip(el, "install");
-        }
-    }
-    catch (err){
-        // nothing
-    }
-}
-
-function getDevice(logicalDev) {
-    $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/",
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        success: function (dev) {
-            $("#printers").append(renderPrinter(logicalDev, dev));
-            updateStatusPrinter(
-                logicalDev.device.name + logicalDev.feature.name,
-                logicalDev.id
-            );
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
-        },
-    });
-}
-
 // APPS
+function showCategories(categories) {
+    $.each(categories, function(key, value) {
+        $("#categories").append(
+            $("<option>", {value: key}).text(value)
+        );
+    });
+    $("#categories").val(global.category);
+    $("#categories").material_select();
+}
+
 function queryCategories() {
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/catalog/apps/categories/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
-        success: function (data) {
+        success(data) {
            global.categories = data;
            global.categories[0] = "All";
            showCategories(global.categories);
@@ -756,7 +766,7 @@ function queryAppsPage(url) {
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
-        success: function (data) {
+        success(data) {
             $.each(data.results, function(i, item) {
                 $.each(item.packages_by_project, function(i, pkgs) {
                     if (pkgs.project.name == global.project) {
@@ -773,7 +783,7 @@ function queryAppsPage(url) {
                 var options = [{
                     selector: "footer",
                     offset: 0,
-                    callback: function() {
+                    callback() {
                         if (data.next) {
                             queryAppsPage(data.next);
                         }
@@ -913,16 +923,6 @@ function showDescription(id) {
 function showTruncated(id) {
     $("#descr-" + id).hide();
     $("#trunc-" + id).show();
-}
-
-function showCategories(categories) {
-    $.each(categories, function(key, value) {
-        $("#categories").append(
-            $("<option>", {value: key}).text(value)
-        );
-    });
-    $("#categories").val(global.category);
-    $("#categories").material_select();
 }
 
 function changedCategory() {
