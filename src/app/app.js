@@ -15,11 +15,27 @@ function getOS() {
     return "Unknown";
 }
 
+function spinner(id) {
+    const fs = require("fs");
+    $("#" + id).html(fs.readFileSync("templates/spinner.html", "utf8"));
+}
+
+function escapeRegExp(text) {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
+function replaceAll(str, find, replace) {
+    var find = escapeRegExp(find);
+    var re = new RegExp(find, "g");
+
+    return str.replace(re, replace);
+}
+
 function replaceColors(txt) {
-    txt = replaceAll(txt, "\u001b[92m", '<span class="console-section">');
-    txt = replaceAll(txt, "\u001b[93m", '<span class="console-warning">');
-    txt = replaceAll(txt, "\u001b[91m", '<span style="console-error">');
-    txt = replaceAll(txt, "\u001b[32m", '<span style="console-info">');
+    txt = replaceAll(txt, "\u001b[92m", "<span class='console-section'>");
+    txt = replaceAll(txt, "\u001b[93m", "<span class='console-warning'>");
+    txt = replaceAll(txt, "\u001b[91m", "<span style='console-error'>");
+    txt = replaceAll(txt, "\u001b[32m", "<span style='console-info'>");
     txt = replaceAll(txt, "\u001b[0m", "</span>");
     txt = txt.replace(/(?:\r\n|\r|\n)/g, "<br />");
 
@@ -126,6 +142,32 @@ function getAttributeCID() {
     }
 }
 
+function readSettings() {
+    const fs = require("fs");
+    const path = require("path");
+    var filePath = path.join(gui.App.dataPath, confFile);
+
+    if (fs.existsSync(filePath)) {
+        var data = fs.readFileSync(filePath, "utf8")
+        global.settings = JSON.parse(data);
+    }
+    else {
+        global.settings = {};
+        global.settings["language"] = "en";
+        global.settings["theme"] = "dark";
+        global.settings["showalways"] = false;
+        saveSettings(global.settings);
+    }
+}
+
+function saveSettings(settings) {
+    const fs = require("fs");
+    const path = require("path");
+    var filePath = path.join(gui.App.dataPath, confFile);
+
+    fs.writeFileSync(filePath, JSON.stringify(settings))
+}
+
 function getGlobalData() {
     const execSync = require("child_process").execSync;
     const fs = require("fs");
@@ -176,7 +218,7 @@ function getGlobalData() {
             run(cmd, beforeCallback=null, afterCallback=null, id) {
                 if (running) {
                     Materialize.toast(
-                        '<i class="material-icons">warning</i>' + " please wait, other process is running!!!",
+                        "<i class='material-icons'>warning</i>" + " please wait, other process is running!!!",
                         10000,
                         "rounded red"
                     );
@@ -191,11 +233,12 @@ function getGlobalData() {
                     }
 
                     var spawn = require("child_process").spawn;
+                    var process;
 
                     if (getOS() === "Linux") {
-                        var process = spawn("bash", ["-c", cmd]);
+                        process = spawn("bash", ["-c", cmd]);
                     } else if (getOS() === "Windows") {
-                        var process = spawn("cmd", ["/C", cmd]);
+                        process = spawn("cmd", ["/C", cmd]);
                     }
 
                     this.add("<h3># " + cmd + "</h3>");
@@ -210,14 +253,14 @@ function getGlobalData() {
 
                     process.stderr.on("data", function(data) {
                         addToStdErr(data.toString());
-                        global.TERMINAL.add('<span class="red">' + data.toString() + "</span>");
+                        global.TERMINAL.add("<span class='red'>" + data.toString() + "</span>");
                     });
 
                     // when the spawn child process exits, check if there were any errors
                     process.on("exit", function(code) {
                         if (code !== 0) {  // Syntax error
                             Materialize.toast(
-                                '<i class="material-icons">error</i> error:' + code + " " + cmd,
+                                "<i class='material-icons'>error</i> error:" + code + " " + cmd,
                                 10000,
                                 "rounded red"
                             );
@@ -470,27 +513,6 @@ function supportExternalLinks(event) {
 }
 
 // PRINTERS
-function showPrinters() {
-    const fs = require("fs");
-    global.devs = installedDevs();
-
-    $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
-    spinner("printers");
-    queryPrinters();
-    $("#searchPrint").val(global.searchPrint);
-    $("#searchPrint").bind("keydown", getCharPrint);
-    $("#searchPrint").focus();
-}
-
-function queryPrinters() {
-    $("#printers").html("");
-    $("#preload-next").show();
-    var url = "http://" + global.server + "/api/v1/token/devices/logical/availables/" +
-        "?cid=" +  global.label["id"] + "&q=" + global.searchPrint;
-    spinner("preload-next");
-    queryPrintersPage(url);
-}
-
 function queryPrintersPage(url) {
     $.ajax({
         url: url,
@@ -520,36 +542,59 @@ function queryPrintersPage(url) {
     });
 }
 
-function getDevice(logicaldev) {
-    var url = "http://" + global.server + "/api/v1/token/devices/devices/" + logicaldev.device.id + "/";
-
-    $.ajax({
-        url: url,
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        success: function (dev) {
-            $("#printers").append(renderPrinter(logicaldev, dev));
-            updateStatusPrinter(
-                logicaldev.device.name + logicaldev.feature.name,
-                logicaldev.id
-            );
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
-        },
-    });
+function queryPrinters() {
+    $("#printers").html("");
+    $("#preload-next").show();
+    var url = "http://" + global.server + "/api/v1/token/devices/logical/availables/" +
+        "?cid=" +  global.label["id"] + "&q=" + global.searchPrint;
+    spinner("preload-next");
+    queryPrintersPage(url);
 }
 
-function showPrinterItem(data) {
-    $.each(data.results, function(i, item) {
-        getDevice(item);
-    });
-    $(".collapsible").collapsible();  // FIXME
+function showPrinters() {
+    const fs = require("fs");
+    global.devs = installedDevs();
+
+    $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
+    spinner("printers");
+    queryPrinters();
+    $("#searchPrint").val(global.searchPrint);
+    $("#searchPrint").bind("keydown", getCharPrint);
+    $("#searchPrint").focus();
 }
 
-function addTokenHeader(xhr) {
-     xhr.setRequestHeader("authorization", global.token);
+function renderDict(data) {
+    var ret= "";
+
+    for (var element in data) {
+        ret+= element + ": " + data[element] + "<br />";
+    }
+    return ret;
+}
+
+function renderInfoPrinter(data) {
+    return renderDict(JSON.parse(data));
+}
+
+function renderPrinter(logicalDev, dev) {
+    const fs = require("fs");
+    var icon;
+
+    if (dev.connection.name === "TCP") {
+        icon = "assets/printer-net.png";
+    } else {
+        icon = "assets/printer-local.png";
+    }
+
+    var data = {
+        name: logicalDev.device.name + " " + logicalDev.feature.name,
+        idaction: "action-" + replaceAll(logicalDev.device.name + logicalDev.feature.name, " ", ""),
+        icon: icon,
+        description: dev.model.name + " (" + dev.connection.name + ")" + "<hr />" + renderInfoPrinter(dev.data),
+        truncated: dev.model.name + " (" + dev.connection.name + ")"
+    };
+
+    return Mustache.to_html(fs.readFileSync("templates/printer.html", "utf8"), data);
 }
 
 function changeAttributesPrinter(element, id, atts) {
@@ -647,57 +692,39 @@ function updateStatusPrinter(name, id) {
     }
 }
 
-function renderDict(data) {
-    var ret= "";
+function getDevice(logicalDev) {
+    var url = "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/";
 
-    for (var element in data) {
-        ret+= element + ": " + data[element] + "<br />";
-    }
-    return ret;
+    $.ajax({
+        url: url,
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        success: function (dev) {
+            $("#printers").append(renderPrinter(logicalDev, dev));
+            updateStatusPrinter(
+                logicalDev.device.name + logicalDev.feature.name,
+                logicalDev.id
+            );
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            swal("Error:" + jqXHR.responseText);
+        },
+    });
 }
 
-
-function renderInfoPrinter(data) {
-    return renderDict(JSON.parse(data));
+function showPrinterItem(data) {
+    $.each(data.results, function(i, item) {
+        getDevice(item);
+    });
+    $(".collapsible").collapsible();  // FIXME
 }
 
-function renderPrinter(logicaldev, dev) {
-    const fs = require("fs");
-
-    if (dev.connection.name === "TCP") {
-        var icon = "assets/printer-net.png";
-    } else {
-        var icon = "assets/printer-local.png";
-    }
-
-    var data = {
-        name: logicaldev.device.name + " " + logicaldev.feature.name,
-        idaction: "action-" + replaceAll(logicaldev.device.name + logicaldev.feature.name, " ", ""),
-        icon: icon,
-        description: dev.model.name + " (" + dev.connection.name + ")" + "<hr />" + renderInfoPrinter(dev.data),
-        truncated: dev.model.name + " (" + dev.connection.name + ")"
-    };
-
-    return Mustache.to_html(fs.readFileSync("templates/printer.html", "utf8"), data);
+function addTokenHeader(xhr) {
+     xhr.setRequestHeader("authorization", global.token);
 }
 
 // APPS
-function showApps() {
-    const fs = require("fs");
-
-    queryCategories();
-    $("#container").html(fs.readFileSync("templates/apps.html", "utf8"));
-    spinner("apps");
-    queryApps();
-    showLevels();
-
-    $("#levels").change(changedLevel);
-    $("#categories").change(changedCategory);
-    $("#search").val(global.search);
-    $("#search").bind("keydown", getChar);
-    $("#search").focus();
-}
-
 function queryCategories() {
     var url = "http://" + global.server + "/api/v1/token/catalog/apps/categories/";
 
@@ -715,26 +742,6 @@ function queryCategories() {
             swal("Error:" + jqXHR.responseText);
         },
     });
-}
-
-function queryApps() {
-    $("#apps").html("");
-    $("#preload-next").show();
-    global.packages = "";
-
-    var categoryFilter = "";
-    if (global.category != 0) {
-        categoryFilter = "&category=" + global.category;
-    }
-
-    var url = "http://" + global.server + "/api/v1/token/catalog/apps/availables/" +
-        "?cid=" +  global.label["id"] +
-        "&level=" + global.level +
-        "&q=" + global.search +
-        categoryFilter;
-
-    spinner("preload-next");
-    queryAppsPage(url);
 }
 
 function queryAppsPage(url) {
@@ -777,6 +784,101 @@ function queryAppsPage(url) {
     });
 }
 
+function queryApps() {
+    $("#apps").html("");
+    $("#preload-next").show();
+    global.packages = "";
+
+    var categoryFilter = "";
+    if (global.category != 0) {
+        categoryFilter = "&category=" + global.category;
+    }
+
+    var url = "http://" + global.server + "/api/v1/token/catalog/apps/availables/" +
+        "?cid=" +  global.label["id"] +
+        "&level=" + global.level +
+        "&q=" + global.search +
+        categoryFilter;
+
+    spinner("preload-next");
+    queryAppsPage(url);
+}
+
+function showLevels() {
+    var levels = {"": "All", "U": "User", "A": "Administrator"}
+
+    $.each(levels, function(key, value) {
+        $("#levels")
+            .append($("<option>", {value: key})
+            .text(value)
+        );
+    });
+    $("#levels").val(global.level);
+    $("#levels").material_select();
+}
+
+function showApps() {
+    const fs = require("fs");
+
+    queryCategories();
+    $("#container").html(fs.readFileSync("templates/apps.html", "utf8"));
+    spinner("apps");
+    queryApps();
+    showLevels();
+
+    $("#levels").change(changedLevel);
+    $("#categories").change(changedCategory);
+    $("#search").val(global.search);
+    $("#search").bind("keydown", getChar);
+    $("#search").focus();
+}
+
+function renderApp(item) {
+    const fs = require("fs");
+    const marked = require("marked");
+
+    //Change font-size header in markdown
+
+    var renderer = new marked.Renderer();
+    renderer.heading = function (text, level) {
+        var escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
+        return "<h" + (level + 3) + '><a name="' +
+             escapedText +
+             '" class="anchor" href="#' +
+             escapedText +
+             '"><span class="header-link" </span></a><span>' + text +
+             "</span></h" + (level + 3) + ">";
+    };
+
+    var truncatedDesc = "";
+    if (item.description) {
+        truncatedDesc = item.description.split('\n')[0] + "...";
+
+        var data = {
+            server: global.server,
+            cid:  global.label["id"],
+            computer: global.label["name"],
+            project: global.project,
+            uuid: global.uuid,
+            app: item.name,
+            _app: replaceAll(item.name, " ", "")
+        };
+        item.description = Mustache.render(item.description, data);
+    }
+
+    var data = {
+        name: item.name,
+        idaction: "action-" + replaceAll(item.name, " ", ""),
+        icon: item.icon,
+        description: marked(item.description, {renderer: renderer}),
+        truncated: truncatedDesc,
+        category: item.category.name,
+        rating: renderRating(item.score)
+    };
+
+    return Mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
+}
+
 function showAppItem(data) {
     $.each(data.results, function(i, item) {
         if (item.category.id == global.category || global.category == 0) {
@@ -805,18 +907,6 @@ function showDescription(id) {
 function showTruncated(id) {
     $("#descr-" + id).hide();
     $("#trunc-" + id).show();
-}
-
-function showLevels() {
-    var levels = {"": "All", "U": "User", "A": "Administrator"}
-    $.each(levels, function(key, value) {
-        $("#levels")
-            .append($("<option>", { value : key })
-            .text(value)
-        );
-    });
-    $("#levels").val(global.level);
-    $("#levels").material_select();
 }
 
 function showCategories(categories) {
@@ -862,11 +952,12 @@ function updateStatus(name, packages_to_install, level) {
     var el = "#action-" + slug;
     var status = "#status-action-" + slug;
     var descr = "#description-action-" + slug;
+    var installed;
 
     if (packages_to_install == "") {
-        var installed = false;
+        installed = false;
     } else {
-        var installed = (packages_to_install.split(" ").diff(global.packagesInstalled).length == 0)
+        installed = (packages_to_install.split(" ").diff(global.packagesInstalled).length == 0)
     }
 
     try {
@@ -916,53 +1007,6 @@ function updateStatus(name, packages_to_install, level) {
         // nothing
     }
 }
-
-function renderApp(item) {
-    const fs = require("fs");
-    const marked = require("marked");
-
-    //Change font-size header in markdown
-
-    var renderer = new marked.Renderer();
-    renderer.heading = function (text, level) {
-        var escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
-        return "<h" + (level + 3) + '><a name="' +
-             escapedText +
-             '" class="anchor" href="#' +
-             escapedText +
-             '"><span class="header-link" </span></a><span>' + text +
-             "</span></h" + (level + 3) + ">";
-    };
-
-    var truncatedDesc = "";
-    if (item.description) {
-        truncatedDesc = item.description.split('\n')[0] + "...";
-
-        var data = {
-            server: global.server,
-            cid:  global.label["id"],
-            computer: global.label["name"],
-            project: global.project,
-            uuid: global.uuid,
-            app: item.name,
-            _app: replaceAll(item.name, " ", "")
-        };
-        item.description = Mustache.render(item.description, data);
-    }
-
-    var data = {
-        name: item.name,
-        idaction: "action-" + replaceAll(item.name, " ", ""),
-        icon: item.icon,
-        description: marked(item.description, {renderer: renderer}),
-        truncated: truncatedDesc,
-        category: item.category.name,
-        rating: renderRating(item.score)
-    };
-
-    return Mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
-}
-
 
 function renderRating(score) {
     var rating = "";
@@ -1096,29 +1140,12 @@ function installedDevs() {
     return JSON.parse(execSync(cmd));
 }
 
-function escapeRegExp(text) {
-    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-}
-
-function replaceAll(str, find, replace) {
-    var find = escapeRegExp(find);
-    var re = new RegExp(find, "g");
-
-    return str.replace(re, replace);
-}
-
 function getPkgNames() {
     var execSync = require("child_process").execSync;
     var packages = execSync('python -c "from __future__ import print_function; from migasfree_client.client import MigasFreeClient; print(MigasFreeClient().pms.available_packages(), end=\'\')"').toString();
     packages = replaceAll(packages, "'", '"');
     return JSON.parse(packages);
 }
-
-function spinner(id) {
-    const fs = require("fs");
-    $("#" + id).html(fs.readFileSync("templates/spinner.html", "utf8"));
-}
-
 
 function install(name, pkgs, level) {
     $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
@@ -1198,30 +1225,4 @@ function getSettings() {
 
 function setSettings() {
     $("#showalways").prop("checked", global.settings["showalways"]);
-}
-
-function readSettings() {
-    const fs = require("fs");
-    const path = require("path");
-    var filePath = path.join(gui.App.dataPath, confFile);
-
-    if (fs.existsSync(filePath)) {
-        var data = fs.readFileSync(filePath, "utf8")
-        global.settings = JSON.parse(data);
-    }
-    else {
-        global.settings = {};
-        global.settings["language"] = "en";
-        global.settings["theme"] = "dark";
-        global.settings["showalways"] = false;
-        saveSettings(global.settings);
-    }
-}
-
-function saveSettings(settings) {
-    const fs = require("fs");
-    const path = require("path");
-    var filePath = path.join(gui.App.dataPath, confFile);
-
-    fs.writeFileSync(filePath, JSON.stringify(settings))
 }
