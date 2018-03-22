@@ -5,7 +5,6 @@ var path = require("path");
 var win = gui.Window.get();
 var confFile = "settings.json";
 var consoleLog = path.join(gui.__dirname, "console.log");
-var jqxhr;
 
 function getOS() {
     if (navigator.appVersion.indexOf("Win") !== -1) {return "Windows";}
@@ -14,6 +13,43 @@ function getOS() {
     if (navigator.appVersion.indexOf("Linux") !== -1) {return "Linux";}
 
     return "Unknown";
+}
+
+function replaceColors(txt) {
+    txt = replaceAll(txt, "\u001b[92m", '<span class="console-section">');
+    txt = replaceAll(txt, "\u001b[93m", '<span class="console-warning">');
+    txt = replaceAll(txt, "\u001b[91m", '<span style="console-error">');
+    txt = replaceAll(txt, "\u001b[32m", '<span style="console-info">');
+    txt = replaceAll(txt, "\u001b[0m", "</span>");
+    txt = txt.replace(/(?:\r\n|\r|\n)/g, "<br />");
+
+    return txt;
+}
+
+function tooltip(id, text) {
+    var anchor = $(id);
+
+    anchor.attr("data-tooltip", text);
+    anchor.attr("delay", 100);
+    anchor.attr("position", "bottom");
+    anchor.tooltip();
+}
+
+function exit() {
+    const fs = require("fs");
+
+    fs.writeFile(consoleLog, global.terminal, function (err) {
+        if (err) throw err;
+    });
+
+    win.close();
+}
+
+function resizeTerminal() {
+    scroll(0, 0);
+    $("#console-output").height(
+        $(window).height() - $("#footer-bar").height() - $("#menu-bar").height() - 80
+    );
 }
 
 (function() {
@@ -49,109 +85,52 @@ Array.prototype.diff = function (a) {
     return this.filter(function (i) {return a.indexOf(i) < 0;});
 };
 
-function ready() {
-    const fs = require("fs");
+function labelDone() {
+    if (typeof global.label !== "undefined") {
+        $("#machine").html(
+            "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label["name"] + "</a>"
+        );
+        tooltip("#machine", global.server);
 
-    getGlobalData();
-    win.show();
-    win.minimize();
+        var typeNumber = 4;
+        var errorCorrectionLevel = "L";
+        var qr = qrcode(typeNumber, errorCorrectionLevel);
 
-    if (global.sync) {
-        // delete file console.out
-        fs.unlinkSync(consoleLog);
+        qr.addData(
+            '{"model":"Computer","id":' + global.label["id"] + ',"server":"' + global.label["server"] + '"}'
+        );
+        qr.make();
 
-        if (global.settings["showalways"]) {
-            win.show();
-        }
-        showSync();
-        sync();
-    } else {
-        fs.stat(consoleLog, function(err, stat) {
-            if (err == null) {
-                // consoleLog exists
-                global.TERMINAL.add(fs.readFileSync(consoleLog, "utf8"));
-            }
+        global.qr = qr;
+    }
+}
+
+function getAttributeCID() {
+    var url = "http://" + global.server + "/api/v1/token/attributes/";
+
+    if (typeof global.label != "undefined") {
+        $.ajax({
+            url: url,
+            type: "GET",
+            beforeSend: addTokenHeader,
+            data: {"property_att__prefix": "CID", "value": global.cid},
+            success: function (data) {
+                if (data.count == 1) {
+                    global.att_cid = data.results[0].id;
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                swal("Error:" + jqXHR.responseText);
+            },
         });
-
-        win.show();
-    }
-
-    $("#menu-console").click(showSync);
-    $("#menu-apps").click(showApps);
-    $("#menu-printers").click(showPrinters);
-    $("#menu-label").click(showLabel);
-    $("#menu-settings").click(showSettings);
-}
-
-function runAsUserSync(cmd) {
-    var execSync = require("child_process").execSync;
-
-    if (getOS() === "Linux") {
-        cmd = replaceAll(cmd, '"' , '\\\"');
-        execSync('sudo su -c "' + cmd + '" ' + global.user);
-    } else if (getOS() === "Windows") {
-        execSync(cmd);
     }
 }
-
-function runAsUser(cmd) {
-    var exec = require("child_process").exec;
-
-    if (getOS() === "Linux") {
-        cmd = replaceAll(cmd, '"' , '\\\"');
-        exec('sudo su -c "' + cmd + '" ' + global.user);
-    } else if (getOS() === "Windows") {
-        exec(cmd);
-    }
-}
-
-function supportExternalLinks(event) {
-    var href;
-    var isExternal = false;
-
-    function crawlDom(element) {
-        if (element.nodeName.toLowerCase() === "a") {
-            href = element.getAttribute("href");
-        }
-        if (element.classList.contains("js-external-link")) {
-            isExternal = true;
-        }
-        if (href && isExternal) {
-            event.preventDefault();
-            var data = {
-                "server": global.server,
-                "cid":  global.label["id"],
-                "computer": global.label["name"],
-                "project": global.project,
-                "uuid": global.uuid
-            };
-            href = Mustache.render(href, data);
-            var script= 'python -c "import webbrowser; webbrowser.open(\'' + href + '\')"';
-            runAsUser(script);
-        } else if (element.parentElement) {
-            crawlDom(element.parentElement);
-        }
-    }
-
-    crawlDom(event.target);
-}
-
-
-function tooltip(id, text) {
-    var anchor = $(id);
-
-    anchor.attr("data-tooltip", text);
-    anchor.attr("delay", 100);
-    anchor.attr("position", "bottom");
-    anchor.tooltip();
-}
-
 
 function getGlobalData() {
-    var myArgs = gui.App.argv;
     const execSync = require("child_process").execSync;
     const fs = require("fs");
     const path = require("path");
+    var myArgs = gui.App.argv;
 
     if (typeof global.search === "undefined") {
         global.search = "";
@@ -202,7 +181,7 @@ function getGlobalData() {
                         "rounded red"
                     );
                 }
-                else{
+                else {
                     running = true;
 
                     $("#" + id).addClass("blink");
@@ -348,24 +327,33 @@ function getGlobalData() {
     }
 }
 
-function labelDone() {
-    if (typeof global.label !== "undefined") {
-        $("#machine").html(
-            "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label["name"] + "</a>"
-        );
-        tooltip("#machine", global.server);
+function execDir(directory) {
+    const execSync = require("child_process").execSync;
+    const fs = require("fs");
+    const path = require("path");
 
-        var typeNumber = 4;
-        var errorCorrectionLevel = "L";
-        var qr = qrcode(typeNumber, errorCorrectionLevel);
-
-        qr.addData(
-            '{"model":"Computer","id":' + global.label["id"] + ',"server":"' + global.label["server"] + '"}'
-        );
-        qr.make();
-
-        global.qr = qr;
+    try {
+        fs.accessSync(directory);
+    } catch (e) {
+        return;
     }
+
+    var files = fs.readdirSync(directory);
+    for (var i in files) {
+        global.TERMINAL.add(execSync(path.join(directory, files[i])));
+    }
+}
+
+function presync() {
+    const path = require("path");
+
+    execDir(path.join(gui.__dirname, "presync.d"));
+}
+
+function postsync() {
+    const path = require("path");
+
+    execDir(path.join(gui.__dirname, "postsync.d"));
 }
 
 function showSync() {
@@ -375,34 +363,6 @@ function showSync() {
     resizeTerminal();
     global.TERMINAL.refresh();
     $("#sync").click(sync);
-}
-
-function resizeTerminal() {
-    scroll(0, 0);
-    $("#console-output").height(
-        $(window).height() - $("#footer-bar").height() - $("#menu-bar").height() - 80
-    );
-}
-
-function replaceColors(txt) {
-    txt = replaceAll(txt, "\u001b[92m", '<span class="console-section">');
-    txt = replaceAll(txt, "\u001b[93m", '<span class="console-warning">');
-    txt = replaceAll(txt, "\u001b[91m", '<span style="console-error">');
-    txt = replaceAll(txt, "\u001b[32m", '<span style="console-info">');
-    txt = replaceAll(txt, "\u001b[0m", "</span>");
-    txt = txt.replace(/(?:\r\n|\r|\n)/g, "<br />");
-
-    return txt;
-}
-
-function exit() {
-    const fs = require("fs");
-
-    fs.writeFile(consoleLog, global.terminal, function(err) {
-        if (err) throw err;
-    });
-
-    win.close();
 }
 
 function beforeSync() {
@@ -422,6 +382,91 @@ function afterSync() {
 
 function sync() {
     global.TERMINAL.run("migasfree -u", beforeSync, afterSync, "sync");
+}
+
+function ready() {
+    const fs = require("fs");
+
+    getGlobalData();
+    win.show();
+    win.minimize();
+
+    if (global.sync) {
+        fs.unlinkSync(consoleLog);
+
+        if (global.settings["showalways"]) {
+            win.show();
+        }
+        showSync();
+        sync();
+    } else {
+        fs.stat(consoleLog, function(err, stat) {
+            if (err === null) {
+                // consoleLog exists
+                global.TERMINAL.add(fs.readFileSync(consoleLog, "utf8"));
+            }
+        });
+
+        win.show();
+    }
+
+    $("#menu-console").click(showSync);
+    $("#menu-apps").click(showApps);
+    $("#menu-printers").click(showPrinters);
+    $("#menu-label").click(showLabel);
+    $("#menu-settings").click(showSettings);
+}
+
+function runAsUserSync(cmd) {
+    const execSync = require("child_process").execSync;
+
+    if (getOS() === "Linux") {
+        cmd = replaceAll(cmd, '"' , '\\\"');
+        execSync('sudo su -c "' + cmd + '" ' + global.user);
+    } else if (getOS() === "Windows") {
+        execSync(cmd);
+    }
+}
+
+function runAsUser(cmd) {
+    const exec = require("child_process").exec;
+
+    if (getOS() === "Linux") {
+        cmd = replaceAll(cmd, '"' , '\\\"');
+        exec('sudo su -c "' + cmd + '" ' + global.user);
+    } else if (getOS() === "Windows") {
+        exec(cmd);
+    }
+}
+
+function supportExternalLinks(event) {
+    function crawlDom(element) {
+        var href;
+        var isExternal = false;
+
+        if (element.nodeName.toLowerCase() === "a") {
+            href = element.getAttribute("href");
+        }
+        if (element.classList.contains("js-external-link")) {
+            isExternal = true;
+        }
+        if (href && isExternal) {
+            event.preventDefault();
+            var data = {
+                "server": global.server,
+                "cid":  global.label["id"],
+                "computer": global.label["name"],
+                "project": global.project,
+                "uuid": global.uuid
+            };
+            href = Mustache.render(href, data);
+            runAsUser('python -c "import webbrowser; webbrowser.open(\'' + href + '\')"');
+        } else if (element.parentElement) {
+            crawlDom(element.parentElement);
+        }
+    }
+
+    crawlDom(event.target);
 }
 
 // PRINTERS
@@ -505,27 +550,6 @@ function showPrinterItem(data) {
 
 function addTokenHeader(xhr) {
      xhr.setRequestHeader("authorization", global.token);
-}
-
-function getAttributeCID() {
-    var url = "http://" + global.server + "/api/v1/token/attributes/";
-
-    if (typeof global.label != "undefined") {
-        $.ajax({
-            url: url,
-            type: "GET",
-            beforeSend: addTokenHeader,
-            data: {"property_att__prefix": "CID", "value": global.cid},
-            success: function (data) {
-                if (data.count == 1) {
-                    global.att_cid = data.results[0].id;
-                }
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                swal("Error:" + jqXHR.responseText);
-            },
-        });
-    }
 }
 
 function changeAttributesPrinter(element, id, atts) {
@@ -1200,33 +1224,4 @@ function saveSettings(settings) {
     var filePath = path.join(gui.App.dataPath, confFile);
 
     fs.writeFileSync(filePath, JSON.stringify(settings))
-}
-
-function presync() {
-    const path = require("path");
-
-    execDir(path.join(gui.__dirname, "presync.d"));
-}
-
-function postsync() {
-    const path = require("path");
-
-    execDir(path.join(gui.__dirname, "postsync.d"));
-}
-
-function execDir(directory) {
-    const execSync = require("child_process").execSync;
-    const fs = require("fs");
-    const path = require("path");
-
-    try {
-        fs.accessSync(directory);
-    } catch (e) {
-        return;
-    }
-
-    var files = fs.readdirSync(directory);
-    for (var i in files) {
-        global.TERMINAL.add(execSync(path.join(directory, files[i])));
-    }
 }
