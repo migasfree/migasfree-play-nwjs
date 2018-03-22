@@ -55,7 +55,7 @@ function exit() {
     const fs = require("fs");
 
     fs.writeFile(consoleLog, global.terminal, function (err) {
-        if (err) throw err;
+        if (err) {throw err;}
     });
 
     win.close();
@@ -101,6 +101,10 @@ Array.prototype.diff = function (a) {
     return this.filter(function (i) {return a.indexOf(i) < 0;});
 };
 
+function addTokenHeader(xhr) {
+     xhr.setRequestHeader("authorization", global.token);
+}
+
 function labelDone() {
     if (typeof global.label !== "undefined") {
         $("#machine").html(
@@ -122,20 +126,18 @@ function labelDone() {
 }
 
 function getAttributeCID() {
-    var url = "http://" + global.server + "/api/v1/token/attributes/";
-
-    if (typeof global.label != "undefined") {
+    if (typeof global.label !== "undefined") {
         $.ajax({
-            url: url,
+            url: "http://" + global.server + "/api/v1/token/attributes/",
             type: "GET",
             beforeSend: addTokenHeader,
             data: {"property_att__prefix": "CID", "value": global.cid},
-            success: function (data) {
-                if (data.count == 1) {
+            success(data) {
+                if (data.count === 1) {
                     global.att_cid = data.results[0].id;
                 }
             },
-            error: function (jqXHR, textStatus, errorThrown) {
+            error(jqXHR, textStatus, errorThrown) {
                 swal("Error:" + jqXHR.responseText);
             },
         });
@@ -166,6 +168,13 @@ function readSettings() {
         global.settings["showalways"] = false;
         saveSettings(global.settings);
     }
+}
+
+function getPkgNames() {
+    var execSync = require("child_process").execSync;
+    var packages = execSync('python -c "from __future__ import print_function; from migasfree_client.client import MigasFreeClient; print(MigasFreeClient().pms.available_packages(), end=\'\')"').toString();
+    packages = replaceAll(packages, "'", '"');
+    return JSON.parse(packages);
 }
 
 function getGlobalData() {
@@ -278,7 +287,7 @@ function getGlobalData() {
                             }
                             else {
                                 Materialize.toast(
-                                    '<i class="material-icons">error</i>' + replaceColors(stderr),
+                                    "<i class='material-icons'>error</i>" + replaceColors(stderr),
                                     10000,
                                     "rounded red"
                                 );
@@ -344,9 +353,10 @@ function getGlobalData() {
     }
     if (typeof global.label === "undefined") {
         // LABEL
-        var url = "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid;
-
-        $.getJSON( url, {}).done(function( data ) {
+        $.getJSON(
+            "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid,
+            {}
+        ).done(function( data ) {
             global.label = data;
             global.cid = global.label["id"];
             getAttributeCID();
@@ -417,7 +427,7 @@ function afterSync() {
     postsync();
     global.pks_availables = getPkgNames();
     Materialize.toast(
-        '<i class="material-icons">sync</i> ' + " synchronized",
+        "<i class='material-icons'>sync</i>" + " synchronized",
         10000,
         "rounded green"
     );
@@ -513,6 +523,13 @@ function supportExternalLinks(event) {
 }
 
 // PRINTERS
+function showPrinterItem(data) {
+    $.each(data.results, function(i, item) {
+        getDevice(item);
+    });
+    $(".collapsible").collapsible();  // FIXME
+}
+
 function queryPrintersPage(url) {
     $.ajax({
         url: url,
@@ -525,7 +542,7 @@ function queryPrintersPage(url) {
                 var options = [{
                     selector: "footer",
                     offset: 0,
-                    callback: function() {
+                    callback() {
                         if (data.next) {
                             queryPrintersPage(data.next);
                         }
@@ -536,7 +553,7 @@ function queryPrintersPage(url) {
                 $("#preload-next").hide();
             }
         },
-        error: function (jqXHR, textStatus, errorThrown) {
+        error(jqXHR, textStatus, errorThrown) {
             swal("Error:" + jqXHR.responseText);
         },
     });
@@ -545,10 +562,20 @@ function queryPrintersPage(url) {
 function queryPrinters() {
     $("#printers").html("");
     $("#preload-next").show();
-    var url = "http://" + global.server + "/api/v1/token/devices/logical/availables/" +
-        "?cid=" +  global.label["id"] + "&q=" + global.searchPrint;
     spinner("preload-next");
-    queryPrintersPage(url);
+    queryPrintersPage(
+        "http://" + global.server + "/api/v1/token/devices/logical/availables/" +
+        "?cid=" +  global.label["id"] + "&q=" + global.searchPrint
+    );
+}
+
+function installedDevs() {
+    const path = require("path");
+    const execSync = require("child_process").execSync;
+    var script = '"' + path.join(gui.__dirname, "py", "printers_installed.py") + '"';
+    var cmd = "python " + script;
+
+    return JSON.parse(execSync(cmd));
 }
 
 function showPrinters() {
@@ -598,10 +625,8 @@ function renderPrinter(logicalDev, dev) {
 }
 
 function changeAttributesPrinter(element, id, atts) {
-    var url = "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/";
-
     $.ajax({
-        url: url,
+        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "PATCH",
         beforeSend: addTokenHeader,
         contentType: "application/json",
@@ -616,17 +641,15 @@ function changeAttributesPrinter(element, id, atts) {
                 element
            );
         },
-        error: function (jqXHR, textStatus, errorThrown) {
+        error(jqXHR, textStatus, errorThrown) {
             swal("changeAttributesPrinter Error:" + jqXHR.responseText);
         },
     });
 }
 
 function installPrinter(element, id) {
-    var url = "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/";
-
     $.ajax({
-        url: url,
+        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -635,17 +658,15 @@ function installPrinter(element, id) {
             atts.push(global.att_cid);
             changeAttributesPrinter(element, id, atts);
         },
-        error: function (jqXHR, textStatus, errorThrown) {
+        error(jqXHR, textStatus, errorThrown) {
             swal("Error:" + jqXHR.responseText);
         },
     });
 }
 
 function uninstallPrinter(element, id) {
-    var url = "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/";
-
     $.ajax({
-        url: url,
+        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -659,7 +680,7 @@ function uninstallPrinter(element, id) {
 
             changeAttributesPrinter(element, id, atts);
         },
-        error: function (jqXHR, textStatus, errorThrown) {
+        error(jqXHR, textStatus, errorThrown) {
             swal("Error:" + jqXHR.responseText);
         },
     });
@@ -693,10 +714,8 @@ function updateStatusPrinter(name, id) {
 }
 
 function getDevice(logicalDev) {
-    var url = "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/";
-
     $.ajax({
-        url: url,
+        url: "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -707,29 +726,16 @@ function getDevice(logicalDev) {
                 logicalDev.id
             );
         },
-        error: function (jqXHR, textStatus, errorThrown) {
+        error(jqXHR, textStatus, errorThrown) {
             swal("Error:" + jqXHR.responseText);
         },
     });
 }
 
-function showPrinterItem(data) {
-    $.each(data.results, function(i, item) {
-        getDevice(item);
-    });
-    $(".collapsible").collapsible();  // FIXME
-}
-
-function addTokenHeader(xhr) {
-     xhr.setRequestHeader("authorization", global.token);
-}
-
 // APPS
 function queryCategories() {
-    var url = "http://" + global.server + "/api/v1/token/catalog/apps/categories/";
-
     $.ajax({
-        url: url,
+        url: "http://" + global.server + "/api/v1/token/catalog/apps/categories/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -738,7 +744,7 @@ function queryCategories() {
            global.categories[0] = "All";
            showCategories(global.categories);
         },
-        error: function (jqXHR, textStatus, errorThrown) {
+        error(jqXHR, textStatus, errorThrown) {
             swal("Error:" + jqXHR.responseText);
         },
     });
@@ -746,7 +752,7 @@ function queryCategories() {
 
 function queryAppsPage(url) {
     $.ajax({
-        url: url,
+        url,
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -757,7 +763,7 @@ function queryAppsPage(url) {
                         global.packages += " " + pkgs.packages_to_install.join(" ");
                     }
                 });
-           });
+            });
 
             global.packagesInstalled = installedPkgs(global.packages);
 
@@ -778,7 +784,7 @@ function queryAppsPage(url) {
                 $("#preload-next").hide();
             }
         },
-        error: function (jqXHR, textStatus, errorThrown) {
+        error(jqXHR, textStatus, errorThrown) {
             swal("Error:" + jqXHR.responseText);
         },
     });
@@ -794,14 +800,14 @@ function queryApps() {
         categoryFilter = "&category=" + global.category;
     }
 
-    var url = "http://" + global.server + "/api/v1/token/catalog/apps/availables/" +
+    spinner("preload-next");
+    queryAppsPage(
+        "http://" + global.server + "/api/v1/token/catalog/apps/availables/" +
         "?cid=" +  global.label["id"] +
         "&level=" + global.level +
         "&q=" + global.search +
-        categoryFilter;
-
-    spinner("preload-next");
-    queryAppsPage(url);
+        categoryFilter
+    );
 }
 
 function showLevels() {
@@ -1129,22 +1135,6 @@ function installedPkgs(pks) {
     var cmd = "python " + script + ' "' + pks + '"';
 
     return execSync(cmd);
-}
-
-function installedDevs() {
-    const path = require("path");
-    const execSync = require("child_process").execSync;
-    var script = '"' + path.join(gui.__dirname, "py", "printers_installed.py") + '"';
-    var cmd = "python " + script;
-
-    return JSON.parse(execSync(cmd));
-}
-
-function getPkgNames() {
-    var execSync = require("child_process").execSync;
-    var packages = execSync('python -c "from __future__ import print_function; from migasfree_client.client import MigasFreeClient; print(MigasFreeClient().pms.available_packages(), end=\'\')"').toString();
-    packages = replaceAll(packages, "'", '"');
-    return JSON.parse(packages);
 }
 
 function install(name, pkgs, level) {
