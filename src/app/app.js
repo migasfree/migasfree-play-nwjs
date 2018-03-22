@@ -21,12 +21,12 @@ function spinner(id) {
 }
 
 function escapeRegExp(text) {
-    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
 function replaceAll(str, find, replace) {
-    var find = escapeRegExp(find);
-    var re = new RegExp(find, "g");
+    var exp = escapeRegExp(find);
+    var re = new RegExp(exp, "g");
 
     return str.replace(re, replace);
 }
@@ -142,13 +142,21 @@ function getAttributeCID() {
     }
 }
 
+function saveSettings(settings) {
+    const fs = require("fs");
+    const path = require("path");
+    var filePath = path.join(gui.App.dataPath, confFile);
+
+    fs.writeFileSync(filePath, JSON.stringify(settings));
+}
+
 function readSettings() {
     const fs = require("fs");
     const path = require("path");
     var filePath = path.join(gui.App.dataPath, confFile);
 
     if (fs.existsSync(filePath)) {
-        var data = fs.readFileSync(filePath, "utf8")
+        var data = fs.readFileSync(filePath, "utf8");
         global.settings = JSON.parse(data);
     }
     else {
@@ -158,14 +166,6 @@ function readSettings() {
         global.settings["showalways"] = false;
         saveSettings(global.settings);
     }
-}
-
-function saveSettings(settings) {
-    const fs = require("fs");
-    const path = require("path");
-    var filePath = path.join(gui.App.dataPath, confFile);
-
-    fs.writeFileSync(filePath, JSON.stringify(settings))
 }
 
 function getGlobalData() {
