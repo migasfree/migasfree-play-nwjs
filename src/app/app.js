@@ -523,6 +523,46 @@ function installedPkgs(pks) {
     return execSync(cmd);
 }
 
+function queryAppsPage(url) {
+    $.ajax({
+        url,
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        success(data) {
+            $.each(data.results, function(i, item) {
+                $.each(item.packages_by_project, function(i, pkgs) {
+                    if (pkgs.project.name === global.project) {
+                        global.packages += " " + pkgs.packages_to_install.join(" ");
+                    }
+                });
+            });
+
+            global.packagesInstalled = installedPkgs(global.packages);
+
+            showAppItem(data);
+
+            if (data.next) {
+                var options = [{
+                    selector: "footer",
+                    offset: 0,
+                    callback() {
+                        if (data.next) {
+                            queryAppsPage(data.next);
+                        }
+                    }
+                }];
+                Materialize.scrollFire(options);
+            } else {
+                $("#preload-next").hide();
+            }
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            swal("Error:" + jqXHR.responseText);
+        },
+    });
+}
+
 function queryApps() {
     $("#apps").html("");
     $("#preload-next").show();
@@ -633,46 +673,6 @@ function showAppItem(data) {
     $(".collapsible").collapsible();  // FIXME
 }
 
-function queryAppsPage(url) {
-    $.ajax({
-        url,
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        success(data) {
-            $.each(data.results, function(i, item) {
-                $.each(item.packages_by_project, function(i, pkgs) {
-                    if (pkgs.project.name === global.project) {
-                        global.packages += " " + pkgs.packages_to_install.join(" ");
-                    }
-                });
-            });
-
-            global.packagesInstalled = installedPkgs(global.packages);
-
-            showAppItem(data);
-
-            if (data.next) {
-                var options = [{
-                    selector: "footer",
-                    offset: 0,
-                    callback() {
-                        if (data.next) {
-                            queryAppsPage(data.next);
-                        }
-                    }
-                }];
-                Materialize.scrollFire(options);
-            } else {
-                $("#preload-next").hide();
-            }
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
-        },
-    });
-}
-
 function showDescription(id) {
     $("#trunc-" + id).hide();
     $("#descr-" + id).show();
@@ -751,6 +751,62 @@ function onDemand(application) {
     });
 }
 
+// PMS
+function postAction(name, pkgs, level) {
+    global.packagesInstalled = installedPkgs(global.packages);
+    if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
+        Materialize.toast(
+            "<i class='material-icons'>get_app</i> " + name + " installed.",
+            10000,
+            "rounded green"
+        );
+    }
+    else {
+        Materialize.toast(
+            "<i class='material-icons'>delete</i> " + name + " deleted.",
+            10000,
+            "rounded green"
+        );
+    }
+    updateStatus(name, pkgs, level);
+}
+
+function install(name, pkgs, level) {
+    $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
+    Materialize.toast("installing " + name + " ...", 10000, "rounded grey");
+
+    var cmd;
+    if (getOS() === "Linux") {
+        cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
+    } else if (getOS() === "Windows") {
+        cmd = 'migasfree -ip "' + pkgs + '"';
+    }
+    global.TERMINAL.run(
+        cmd,
+        null,
+        function() {postAction(name, pkgs, level);},
+        "action-" + name
+    );
+}
+
+function uninstall(name, pkgs, level) {
+    $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
+    Materialize.toast("deleting " + name  + " ...", 10000, "rounded grey");
+
+    var cmd;
+    if (getOS() === "Linux") {
+        cmd = 'LANG_ALL=C echo "y"|migasfree -rp "' + pkgs + '"';
+    } else if (getOS() === "Windows") {
+        cmd = 'migasfree -rp "' + pkgs + '"';
+    }
+    global.TERMINAL.run(
+        cmd,
+        null,
+        function() {postAction(name, pkgs, level);},
+        "action-" + name
+    );
+}
+
 function updateStatus(name, packagesToInstall, level) {
     var slug = replaceAll(name, " ", "");
     var el = "#action-" + slug;
@@ -813,6 +869,10 @@ function updateStatus(name, packagesToInstall, level) {
 }
 
 // LABEL
+function printLabel() {
+    window.print();
+}
+
 function showLabel() {
     const fs = require("fs");
     var data = {
@@ -841,10 +901,6 @@ function showLabel() {
     $("#print-label").click(printLabel);
 
     labelDone();
-}
-
-function printLabel() {
-    window.print();
 }
 
 function checkUser(user, password) {
@@ -900,62 +956,6 @@ function showSettings() {
         getSettings();
         saveSettings(global.settings);
     });
-}
-
-// PMS
-function postAction(name, pkgs, level) {
-    global.packagesInstalled = installedPkgs(global.packages);
-    if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
-        Materialize.toast(
-            "<i class='material-icons'>get_app</i> " + name + " installed.",
-            10000,
-            "rounded green"
-        );
-    }
-    else {
-        Materialize.toast(
-            "<i class='material-icons'>delete</i> " + name + " deleted.",
-            10000,
-            "rounded green"
-        );
-    }
-    updateStatus(name, pkgs, level);
-}
-
-function install(name, pkgs, level) {
-    $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
-    Materialize.toast("installing " + name + " ...", 10000, "rounded grey");
-
-    var cmd;
-    if (getOS() === "Linux") {
-        cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
-    } else if (getOS() === "Windows") {
-        cmd = 'migasfree -ip "' + pkgs + '"';
-    }
-    global.TERMINAL.run(
-        cmd,
-        null,
-        function() {postAction(name, pkgs, level);},
-        "action-" + name
-    );
-}
-
-function uninstall(name, pkgs, level) {
-    $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
-    Materialize.toast("deleting " + name  + " ...", 10000, "rounded grey");
-
-    var cmd;
-    if (getOS() === "Linux") {
-        cmd = 'LANG_ALL=C echo "y"|migasfree -rp "' + pkgs + '"';
-    } else if (getOS() === "Windows") {
-        cmd = 'migasfree -rp "' + pkgs + '"';
-    }
-    global.TERMINAL.run(
-        cmd,
-        null,
-        function() {postAction(name, pkgs, level);},
-        "action-" + name
-    );
 }
 
 function modalLogin(name, packagesToInstall, level) {
