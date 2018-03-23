@@ -289,32 +289,6 @@ function supportExternalLinks(event) {
 }
 
 // PRINTERS
-function getDevice(logicalDev) {
-    $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/",
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        success(dev) {
-            $("#printers").append(renderPrinter(logicalDev, dev));
-            updateStatusPrinter(
-                logicalDev.device.name + logicalDev.feature.name,
-                logicalDev.id
-            );
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
-        },
-    });
-}
-
-function showPrinterItem(data) {
-    $.each(data.results, function(i, item) {
-        getDevice(item);
-    });
-    $(".collapsible").collapsible();  // FIXME
-}
-
 function queryPrintersPage(url) {
     $.ajax({
         url,
@@ -453,6 +427,32 @@ function updateStatusPrinter(name, id) {
     catch (err){
         // nothing
     }
+}
+
+function getDevice(logicalDev) {
+    $.ajax({
+        url: "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/",
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        success(dev) {
+            $("#printers").append(renderPrinter(logicalDev, dev));
+            updateStatusPrinter(
+                logicalDev.device.name + logicalDev.feature.name,
+                logicalDev.id
+            );
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            swal("Error:" + jqXHR.responseText);
+        },
+    });
+}
+
+function showPrinterItem(data) {
+    $.each(data.results, function(i, item) {
+        getDevice(item);
+    });
+    $(".collapsible").collapsible();  // FIXME
 }
 
 function installedDevs() {
@@ -624,6 +624,19 @@ function showApps() {
     $("#search").focus();
 }
 
+function renderRating(score) {
+    var rating = "";
+
+    for (var step = 0; step < score; step++) {
+        rating += "<i class='material-icons tiny md-12'>star</i>";
+    }
+    for (var step = score; step < 5; step++) {
+        rating += "<i class='material-icons tiny md-12 blue-grey-text text-lighten-4'>star</i>";
+    }
+
+    return rating;
+}
+
 function renderApp(item) {
     const fs = require("fs");
     const marked = require("marked");
@@ -672,10 +685,10 @@ function renderApp(item) {
 
 function showAppItem(data) {
     $.each(data.results, function(i, item) {
-        if (item.category.id == global.category || global.category == 0) {
-            if (item.level.id == global.level || global.level == "")  {
+        if (item.category.id === global.category || global.category === 0) {
+            if (item.level.id === global.level || global.level === "")  {
                 $.each(item.packages_by_project, function(i, pkgs) {
-                    if (pkgs.project.name == global.project) {
+                    if (pkgs.project.name === global.project) {
                         $("#apps").append(renderApp(item));
                         updateStatus(
                             item.name,
@@ -787,19 +800,6 @@ function updateStatus(name, packages_to_install, level) {
     catch(err) {
         // nothing
     }
-}
-
-function renderRating(score) {
-    var rating = "";
-
-    for (var step = 0; step < score; step++) {
-        rating += '<i class="material-icons tiny md-12">star</i>';
-    }
-    for (var step = score; step < 5; step++) {
-        rating += '<i class="material-icons tiny md-12 blue-grey-text text-lighten-4">star</i>';
-    }
-
-    return rating;
 }
 
 // LABEL
