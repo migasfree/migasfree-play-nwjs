@@ -761,7 +761,7 @@ function updateStatus(name, packagesToInstall, level) {
     if (packagesToInstall == "") {
         installed = false;
     } else {
-        installed = (packagesToInstall.split(" ").diff(global.packagesInstalled).length === 0)
+        installed = (packagesToInstall.split(" ").diff(global.packagesInstalled).length === 0);
     }
 
     try {
@@ -879,6 +879,16 @@ function checkUser(user, password) {
 }
 
 // SETTINGS
+function getSettings() {
+    global.settings["language"] = "en";
+    global.settings["theme"] = "dark";
+    global.settings["showalways"] = $("#showalways").is(":checked");
+}
+
+function setSettings() {
+    $("#showalways").prop("checked", global.settings["showalways"]);
+}
+
 function showSettings() {
     const fs = require("fs");
 
@@ -914,15 +924,16 @@ function postAction(name, pkgs, level) {
 
 function install(name, pkgs, level) {
     $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
-    Materialize.toast("installing " + name + " ...", 10000, "rounded grey")
+    Materialize.toast("installing " + name + " ...", 10000, "rounded grey");
 
+    var cmd;
     if (getOS() === "Linux") {
-        var _cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
+        cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
     } else if (getOS() === "Windows") {
-        var _cmd = 'migasfree -ip "' + pkgs + '"';
+        cmd = 'migasfree -ip "' + pkgs + '"';
     }
     global.TERMINAL.run(
-        _cmd,
+        cmd,
         null,
         function() {postAction(name, pkgs, level);},
         "action-" + name
@@ -931,15 +942,16 @@ function install(name, pkgs, level) {
 
 function uninstall(name, pkgs, level) {
     $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
-    Materialize.toast("deleting " + name  + " ...", 10000, "rounded grey")
+    Materialize.toast("deleting " + name  + " ...", 10000, "rounded grey");
 
+    var cmd;
     if (getOS() === "Linux") {
-        var _cmd = 'LANG_ALL=C echo "y"|migasfree -rp "' + pkgs + '"';
+        cmd = 'LANG_ALL=C echo "y"|migasfree -rp "' + pkgs + '"';
     } else if (getOS() === "Windows") {
-        var _cmd = 'migasfree -rp "' + pkgs + '"';
+        cmd = 'migasfree -rp "' + pkgs + '"';
     }
     global.TERMINAL.run(
-        _cmd,
+        cmd,
         null,
         function() {postAction(name, pkgs, level);},
         "action-" + name
@@ -967,16 +979,6 @@ function modalLogin(name, packagesToInstall, level) {
             updateStatus(name, packagesToInstall, level);
         }
     }).catch(swal.noop);
-}
-
-function getSettings() {
-    global.settings["language"] = "en";
-    global.settings["theme"] = "dark";
-    global.settings["showalways"] = $("#showalways").is(":checked");
-}
-
-function setSettings() {
-    $("#showalways").prop("checked", global.settings["showalways"]);
 }
 
 function getGlobalData() {
