@@ -251,7 +251,7 @@ function runAsUser(cmd) {
     const exec = require("child_process").exec;
 
     if (getOS() === "Linux") {
-        cmd = replaceAll(cmd, '"' , '\\\"');
+        cmd = replaceAll(cmd, '"', '\\\"');
         exec('sudo su -c "' + cmd + '" ' + global.user);
     } else if (getOS() === "Windows") {
         exec(cmd);
@@ -326,18 +326,6 @@ function queryPrinters() {
         "http://" + global.server + "/api/v1/token/devices/logical/availables/" +
         "?cid=" +  global.label["id"] + "&q=" + global.searchPrint
     );
-}
-
-function showPrinters() {
-    const fs = require("fs");
-    global.devs = installedDevs();
-
-    $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
-    spinner("printers");
-    queryPrinters();
-    $("#searchPrint").val(global.searchPrint);
-    $("#searchPrint").bind("keydown", getCharPrint);
-    $("#searchPrint").focus();
 }
 
 function changeAttributesPrinter(element, id, atts) {
@@ -429,6 +417,27 @@ function updateStatusPrinter(name, id) {
     }
 }
 
+function renderPrinter(logicalDev, dev) {
+    const fs = require("fs");
+    var icon;
+
+    if (dev.connection.name === "TCP") {
+        icon = "assets/printer-net.png";
+    } else {
+        icon = "assets/printer-local.png";
+    }
+
+    var data = {
+        name: logicalDev.device.name + " " + logicalDev.feature.name,
+        idaction: "action-" + replaceAll(logicalDev.device.name + logicalDev.feature.name, " ", ""),
+        icon,
+        description: dev.model.name + " (" + dev.connection.name + ")" + "<hr />" + renderInfoPrinter(dev.data),
+        truncated: dev.model.name + " (" + dev.connection.name + ")"
+    };
+
+    return Mustache.to_html(fs.readFileSync("templates/printer.html", "utf8"), data);
+}
+
 function getDevice(logicalDev) {
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/",
@@ -475,27 +484,6 @@ function renderDict(data) {
 
 function renderInfoPrinter(data) {
     return renderDict(JSON.parse(data));
-}
-
-function renderPrinter(logicalDev, dev) {
-    const fs = require("fs");
-    var icon;
-
-    if (dev.connection.name === "TCP") {
-        icon = "assets/printer-net.png";
-    } else {
-        icon = "assets/printer-local.png";
-    }
-
-    var data = {
-        name: logicalDev.device.name + " " + logicalDev.feature.name,
-        idaction: "action-" + replaceAll(logicalDev.device.name + logicalDev.feature.name, " ", ""),
-        icon,
-        description: dev.model.name + " (" + dev.connection.name + ")" + "<hr />" + renderInfoPrinter(dev.data),
-        truncated: dev.model.name + " (" + dev.connection.name + ")"
-    };
-
-    return Mustache.to_html(fs.readFileSync("templates/printer.html", "utf8"), data);
 }
 
 // APPS
@@ -721,6 +709,18 @@ function getCharPrint(event){
         global.searchPrint = $("#searchPrint").val();
         queryPrinters();
     }
+}
+
+function showPrinters() {
+    const fs = require("fs");
+    global.devs = installedDevs();
+
+    $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
+    spinner("printers");
+    queryPrinters();
+    $("#searchPrint").val(global.searchPrint);
+    $("#searchPrint").bind("keydown", getCharPrint);
+    $("#searchPrint").focus();
 }
 
 function showApps() {
