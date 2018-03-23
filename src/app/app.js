@@ -535,6 +535,116 @@ function installedPkgs(pks) {
     return execSync(cmd);
 }
 
+function queryApps() {
+    $("#apps").html("");
+    $("#preload-next").show();
+    global.packages = "";
+
+    var categoryFilter = "";
+    if (global.category !== 0) {
+        categoryFilter = "&category=" + global.category;
+    }
+
+    spinner("preload-next");
+    queryAppsPage(
+        "http://" + global.server + "/api/v1/token/catalog/apps/availables/" +
+        "?cid=" +  global.label["id"] +
+        "&level=" + global.level +
+        "&q=" + global.search +
+        categoryFilter
+    );
+}
+
+function showLevels() {
+    var levels = {"": "All", "U": "User", "A": "Administrator"};
+
+    $.each(levels, function(key, value) {
+        $("#levels")
+            .append($("<option>", {value: key})
+            .text(value)
+        );
+    });
+    $("#levels").val(global.level);
+    $("#levels").material_select();
+}
+
+function renderRating(score) {
+    var rating = "";
+
+    for (var i = 0; i < score; i++) {
+        rating += "<i class='material-icons tiny md-12'>star</i>";
+    }
+    for (var j = score; j < 5; j++) {
+        rating += "<i class='material-icons tiny md-12 blue-grey-text text-lighten-4'>star</i>";
+    }
+
+    return rating;
+}
+
+function renderApp(item) {
+    const fs = require("fs");
+    const marked = require("marked");
+
+    var renderer = new marked.Renderer();
+    renderer.heading = function (text, level) {
+        var escapedText = text.toLowerCase().replace(/[^\w]+/g, "-");
+        return "<h" + (level + 3) + "><a name='" +
+             escapedText +
+             "' class='anchor' href='#" +
+             escapedText + "'></a><span>" + text +
+             "</span></h" + (level + 3) + ">";
+    };
+
+    var data;
+    var truncatedDesc = "";
+    if (item.description) {
+        truncatedDesc = item.description.split("\n")[0] + "...";
+
+        data = {
+            server: global.server,
+            cid: global.label["id"],
+            computer: global.label["name"],
+            project: global.project,
+            uuid: global.uuid,
+            app: item.name,
+            _app: replaceAll(item.name, " ", "")
+        };
+        item.description = Mustache.render(item.description, data);
+    }
+
+    data = {
+        name: item.name,
+        idaction: "action-" + replaceAll(item.name, " ", ""),
+        icon: item.icon,
+        description: marked(item.description, {renderer: renderer}),
+        truncated: truncatedDesc,
+        category: item.category.name,
+        rating: renderRating(item.score)
+    };
+
+    return Mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
+}
+
+function showAppItem(data) {
+    $.each(data.results, function(i, item) {
+        if (item.category.id == global.category || global.category === 0) {
+            if (item.level.id == global.level || global.level === "")  {
+                $.each(item.packages_by_project, function(i, pkgs) {
+                    if (pkgs.project.name == global.project) {
+                        $("#apps").append(renderApp(item));
+                        updateStatus(
+                            item.name,
+                            pkgs.packages_to_install.join(" "),
+                            item.level.id
+                        );
+                    }
+                });
+            }
+        }
+    });
+    $(".collapsible").collapsible();  // FIXME
+}
+
 function queryAppsPage(url) {
     $.ajax({
         url,
@@ -575,134 +685,6 @@ function queryAppsPage(url) {
     });
 }
 
-function queryApps() {
-    $("#apps").html("");
-    $("#preload-next").show();
-    global.packages = "";
-
-    var categoryFilter = "";
-    if (global.category !== 0) {
-        categoryFilter = "&category=" + global.category;
-    }
-
-    spinner("preload-next");
-    queryAppsPage(
-        "http://" + global.server + "/api/v1/token/catalog/apps/availables/" +
-        "?cid=" +  global.label["id"] +
-        "&level=" + global.level +
-        "&q=" + global.search +
-        categoryFilter
-    );
-}
-
-function showLevels() {
-    var levels = {"": "All", "U": "User", "A": "Administrator"};
-
-    $.each(levels, function(key, value) {
-        $("#levels")
-            .append($("<option>", {value: key})
-            .text(value)
-        );
-    });
-    $("#levels").val(global.level);
-    $("#levels").material_select();
-}
-
-function showApps() {
-    const fs = require("fs");
-
-    queryCategories();
-    $("#container").html(fs.readFileSync("templates/apps.html", "utf8"));
-    spinner("apps");
-    queryApps();
-    showLevels();
-
-    $("#levels").change(changedLevel);
-    $("#categories").change(changedCategory);
-    $("#search").val(global.search);
-    $("#search").bind("keydown", getChar);
-    $("#search").focus();
-}
-
-function renderRating(score) {
-    var rating = "";
-
-    for (var step = 0; step < score; step++) {
-        rating += "<i class='material-icons tiny md-12'>star</i>";
-    }
-    for (var step = score; step < 5; step++) {
-        rating += "<i class='material-icons tiny md-12 blue-grey-text text-lighten-4'>star</i>";
-    }
-
-    return rating;
-}
-
-function renderApp(item) {
-    const fs = require("fs");
-    const marked = require("marked");
-
-    //Change font-size header in markdown
-
-    var renderer = new marked.Renderer();
-    renderer.heading = function (text, level) {
-        var escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
-        return "<h" + (level + 3) + '><a name="' +
-             escapedText +
-             '" class="anchor" href="#' +
-             escapedText +
-             '"><span class="header-link" </span></a><span>' + text +
-             "</span></h" + (level + 3) + ">";
-    };
-
-    var truncatedDesc = "";
-    if (item.description) {
-        truncatedDesc = item.description.split('\n')[0] + "...";
-
-        var data = {
-            server: global.server,
-            cid:  global.label["id"],
-            computer: global.label["name"],
-            project: global.project,
-            uuid: global.uuid,
-            app: item.name,
-            _app: replaceAll(item.name, " ", "")
-        };
-        item.description = Mustache.render(item.description, data);
-    }
-
-    var data = {
-        name: item.name,
-        idaction: "action-" + replaceAll(item.name, " ", ""),
-        icon: item.icon,
-        description: marked(item.description, {renderer: renderer}),
-        truncated: truncatedDesc,
-        category: item.category.name,
-        rating: renderRating(item.score)
-    };
-
-    return Mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
-}
-
-function showAppItem(data) {
-    $.each(data.results, function(i, item) {
-        if (item.category.id === global.category || global.category === 0) {
-            if (item.level.id === global.level || global.level === "")  {
-                $.each(item.packages_by_project, function(i, pkgs) {
-                    if (pkgs.project.name === global.project) {
-                        $("#apps").append(renderApp(item));
-                        updateStatus(
-                            item.name,
-                            pkgs.packages_to_install.join(" "),
-                            item.level.id
-                        );
-                    }
-                });
-            }
-        }
-    });
-    $(".collapsible").collapsible();  // FIXME
-}
-
 function showDescription(id) {
     $("#trunc-" + id).hide();
     $("#descr-" + id).show();
@@ -741,33 +723,49 @@ function getCharPrint(event){
     }
 }
 
-function updateStatus(name, packages_to_install, level) {
+function showApps() {
+    const fs = require("fs");
+
+    queryCategories();
+    $("#container").html(fs.readFileSync("templates/apps.html", "utf8"));
+    spinner("apps");
+    queryApps();
+    showLevels();
+
+    $("#levels").change(changedLevel);
+    $("#categories").change(changedCategory);
+    $("#search").val(global.search);
+    $("#search").bind("keydown", getChar);
+    $("#search").focus();
+}
+
+function updateStatus(name, packagesToInstall, level) {
     var slug = replaceAll(name, " ", "");
     var el = "#action-" + slug;
     var status = "#status-action-" + slug;
     var descr = "#description-action-" + slug;
     var installed;
 
-    if (packages_to_install == "") {
+    if (packagesToInstall == "") {
         installed = false;
     } else {
-        installed = (packages_to_install.split(" ").diff(global.packagesInstalled).length == 0)
+        installed = (packagesToInstall.split(" ").diff(global.packagesInstalled).length == 0)
     }
 
     try {
-        if (packages_to_install.split(" ").diff(global.pks_availables) == "") {  // AVAILABLE
+        if (packagesToInstall.split(" ").diff(global.pks_availables) == "") {  // AVAILABLE
             var person = "";
-            if ($("#auth").text() == "" && level == "A") {  // NO LOGIN
+            if ($("#auth").text() === "" && level === "A") {  // NO LOGIN
                 $(el).text("person");
                 $(el).off("click");
-                $(el).click(function() {modalLogin(name, packages_to_install, level);});
+                $(el).click(function() {modalLogin(name, packagesToInstall, level);});
                 if (installed) {
                     tooltip(el, "login to delete " + name);
                     $(status).text("check_circle");
                     tooltip(status, "installed");
 
                     $(descr).off("click");
-                    $(descr).click(function() {modalLogin(name, packages_to_install, level);});
+                    $(descr).click(function() {modalLogin(name, packagesToInstall, level);});
                 } else {
                     tooltip(el, "login to install " + name);
                     $(status).text("");
@@ -776,15 +774,15 @@ function updateStatus(name, packages_to_install, level) {
                 if (installed) {
                     $(el).text("delete");
                     $(el).off("click");
-                    $(el).click(function() {uninstall(name, packages_to_install, level);});
+                    $(el).click(function() {uninstall(name, packagesToInstall, level);});
                     tooltip(el, "delete " + name);
                     $(status).text("check_circle");
                     tooltip(status, "installed");
                 } else {
-                    if (packages_to_install !== "") {
+                    if (packagesToInstall != "") {
                         $(el).text("get_app");
                         $(el).off("click");
-                        $(el).click(function() {install(name, packages_to_install, level);});
+                        $(el).click(function() {install(name, packagesToInstall, level);});
                         tooltip(el, "install " + name);
                         $(status).text("");
                     }
@@ -948,7 +946,7 @@ function onDemand(application) {
     });
 }
 
-function modalLogin(name, packages_to_install, level) {
+function modalLogin(name, packagesToInstall, level) {
     const fs = require("fs");
 
     swal({
@@ -956,7 +954,7 @@ function modalLogin(name, packages_to_install, level) {
         html: fs.readFileSync("templates/login.html", "utf8"),
         focusConfirm: false,
         showCancelButton: true,
-        preConfirm: function () {
+        preConfirm() {
             return new Promise(function (resolve) {
                 resolve([
                     $("#user").val(),
@@ -966,7 +964,7 @@ function modalLogin(name, packages_to_install, level) {
         }
     }).then(function (result) {
         if (checkUser(result[0], result[1])){
-            updateStatus(name, packages_to_install, level);
+            updateStatus(name, packagesToInstall, level);
         }
     }).catch(swal.noop);
 }
