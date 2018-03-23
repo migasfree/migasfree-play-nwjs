@@ -179,209 +179,6 @@ function getPkgNames() {
     return JSON.parse(packages);
 }
 
-function getGlobalData() {
-    const execSync = require("child_process").execSync;
-    const fs = require("fs");
-    const path = require("path");
-    var myArgs = gui.App.argv;
-
-    if (typeof global.search === "undefined") {
-        global.search = "";
-    }
-
-    if (typeof global.searchPrint === "undefined") {
-        global.searchPrint = "";
-    }
-
-    readSettings();
-
-    global.TERMINAL = (function() {
-        if (typeof global.terminal == "undefined") {
-            global.terminal = "";
-        }
-        var running = false;
-        var stderr = "";
-
-        function addToStdErr(txt) {
-            stderr += txt;
-        }
-
-        return {
-            add(txt) {
-                try {
-                    global.terminal = replaceColors(global.terminal + txt);
-                    this.refresh();
-                }
-                catch(err) {
-                    // nothing
-                }
-            },
-            refresh() {
-                 try {
-                     $("#console-output").html(global.terminal);
-                     var x = document.getElementById("console-output");
-                     x.scrollTop = x.scrollHeight;
-                 }
-                 catch(err) {
-                    // nothing
-                 }
-            },
-            run(cmd, beforeCallback=null, afterCallback=null, id) {
-                if (running) {
-                    Materialize.toast(
-                        "<i class='material-icons'>warning</i>" + " please wait, other process is running!!!",
-                        10000,
-                        "rounded red"
-                    );
-                }
-                else {
-                    running = true;
-
-                    $("#" + id).addClass("blink");
-
-                    if (beforeCallback) {
-                        beforeCallback();
-                    }
-
-                    var spawn = require("child_process").spawn;
-                    var process;
-
-                    if (getOS() === "Linux") {
-                        process = spawn("bash", ["-c", cmd]);
-                    } else if (getOS() === "Windows") {
-                        process = spawn("cmd", ["/C", cmd]);
-                    }
-
-                    this.add("<h3># " + cmd + "</h3>");
-
-                    var date = new Date();
-                    var n = date.toDateString();
-                    var time = date.toLocaleTimeString();
-
-                    global.TERMINAL.add("<h5>" + date + "</h5>");
-
-                    process.stdout.on("data", function(data) {global.TERMINAL.add(data.toString());});
-
-                    process.stderr.on("data", function(data) {
-                        addToStdErr(data.toString());
-                        global.TERMINAL.add("<span class='red'>" + data.toString() + "</span>");
-                    });
-
-                    // when the spawn child process exits, check if there were any errors
-                    process.on("exit", function(code) {
-                        if (code !== 0) {  // Syntax error
-                            Materialize.toast(
-                                "<i class='material-icons'>error</i> error:" + code + " " + cmd,
-                                10000,
-                                "rounded red"
-                            );
-                            win.show();
-                        }
-                        else {
-                            if (stderr === "") {
-                                if (afterCallback) {
-                                    afterCallback();
-                                }
-
-                                if (id === "sync" &&  document.hidden) {  // sync ok & minimized -> exit
-                                    exit();
-                                }
-                            }
-                            else {
-                                Materialize.toast(
-                                    "<i class='material-icons'>error</i>" + replaceColors(stderr),
-                                    10000,
-                                    "rounded red"
-                                );
-                                stderr = "";
-                            }
-                        }
-
-                        global.TERMINAL.add("<hr />");
-
-                        $("#" + id).removeClass("blink");
-                        running = false;
-                    });
-                }
-            }
-        };
-    }());
-
-    if (typeof global.sync === "undefined") {
-        global.sync = (myArgs === "sync");
-    }
-
-    if (typeof global.token === "undefined") {
-        var tokenfile =  path.join(process.cwd(), "token");
-        if (fs.existsSync(tokenfile)) {
-            global.token = "token " + fs.readFileSync(tokenfile, "utf8");
-        } else {
-            swal({
-                title: "Error",
-                type: "error",
-                html: "Token not found in file: <b>" + tokenfile + "</b>",
-                focusConfirm: true,
-                showCancelButton: false
-            });
-        }
-    }
-
-    if (typeof global.conf === "undefined") {
-        global.conf = execSync('python -c "from __future__ import print_function; from migasfree_client import settings; print(settings.CONF_FILE, end=\'\')"');
-    }
-    if (typeof global.server === "undefined") {
-        global.server = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_config; print(get_config(\'' + global.conf + '\', \'client\').get(\'server\', \'localhost\'), end=\'\')"');
-    }
-    if (typeof global.uuid === "undefined") {
-        global.uuid = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_hardware_uuid; print(get_hardware_uuid(), end=\'\')"');
-    }
-    if (typeof global.project === "undefined") {
-        global.project = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_project; print(get_mfc_project(), end=\'\')"');
-    }
-    if (typeof global.computername === "undefined") {
-        global.computername = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_computer_name; print(get_mfc_computer_name(), end=\'\')"');
-    }
-    if (typeof global.network === "undefined") {
-        global.network = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_net, get_iface_cidr, get_ifname; _ifname = get_ifname(); print(\'%s/%s\' % (get_iface_net(_ifname), get_iface_cidr(_ifname)), end=\'\')"');
-    }
-    if (typeof global.mask === "undefined") {
-        global.mask = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_mask, get_ifname; _ifname = get_ifname(); print(get_iface_mask(_ifname), end=\'\')"');
-    }
-    if (typeof global.ip === "undefined") {
-        global.ip = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_address, get_ifname; _ifname = get_ifname(); print(get_iface_address(_ifname), end=\'\')"');
-    }
-    if (typeof global.user === "undefined") {
-        global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"');
-    }
-    if (typeof global.label === "undefined") {
-        // LABEL
-        $.getJSON(
-            "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid,
-            {}
-        ).done(function( data ) {
-            global.label = data;
-            global.cid = global.label["id"];
-            getAttributeCID();
-            labelDone();
-            showApps();
-        });
-    } else {
-        labelDone();
-    }
-
-    if (typeof global.category === "undefined") {
-        global.category = 0;
-    }
-
-    if (typeof global.level === "undefined") {
-        global.level = "";
-    }
-
-    if (typeof global.pks_availables === "undefined") {
-        global.pks_availables = getPkgNames();
-    }
-}
-
 function execDir(directory) {
     const execSync = require("child_process").execSync;
     const fs = require("fs");
@@ -439,39 +236,6 @@ function sync() {
     global.TERMINAL.run("migasfree -u", beforeSync, afterSync, "sync");
 }
 
-function ready() {
-    const fs = require("fs");
-
-    getGlobalData();
-    win.show();
-    win.minimize();
-
-    if (global.sync) {
-        fs.unlinkSync(consoleLog);
-
-        if (global.settings["showalways"]) {
-            win.show();
-        }
-        showSync();
-        sync();
-    } else {
-        fs.stat(consoleLog, function(err, stat) {
-            if (err === null) {
-                // consoleLog exists
-                global.TERMINAL.add(fs.readFileSync(consoleLog, "utf8"));
-            }
-        });
-
-        win.show();
-    }
-
-    $("#menu-console").click(showSync);
-    $("#menu-apps").click(showApps);
-    $("#menu-printers").click(showPrinters);
-    $("#menu-label").click(showLabel);
-    $("#menu-settings").click(showSettings);
-}
-
 function runAsUserSync(cmd) {
     const execSync = require("child_process").execSync;
 
@@ -525,6 +289,83 @@ function supportExternalLinks(event) {
 }
 
 // PRINTERS
+function getDevice(logicalDev) {
+    $.ajax({
+        url: "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/",
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        success(dev) {
+            $("#printers").append(renderPrinter(logicalDev, dev));
+            updateStatusPrinter(
+                logicalDev.device.name + logicalDev.feature.name,
+                logicalDev.id
+            );
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            swal("Error:" + jqXHR.responseText);
+        },
+    });
+}
+
+function showPrinterItem(data) {
+    $.each(data.results, function(i, item) {
+        getDevice(item);
+    });
+    $(".collapsible").collapsible();  // FIXME
+}
+
+function queryPrintersPage(url) {
+    $.ajax({
+        url,
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        success(data) {
+            showPrinterItem(data);
+            if (data.next) {
+                var options = [{
+                    selector: "footer",
+                    offset: 0,
+                    callback() {
+                        if (data.next) {
+                            queryPrintersPage(data.next);
+                        }
+                    }
+                }];
+                Materialize.scrollFire(options);
+            } else {
+                $("#preload-next").hide();
+            }
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            swal("Error:" + jqXHR.responseText);
+        },
+    });
+}
+
+function queryPrinters() {
+    $("#printers").html("");
+    $("#preload-next").show();
+    spinner("preload-next");
+    queryPrintersPage(
+        "http://" + global.server + "/api/v1/token/devices/logical/availables/" +
+        "?cid=" +  global.label["id"] + "&q=" + global.searchPrint
+    );
+}
+
+function showPrinters() {
+    const fs = require("fs");
+    global.devs = installedDevs();
+
+    $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
+    spinner("printers");
+    queryPrinters();
+    $("#searchPrint").val(global.searchPrint);
+    $("#searchPrint").bind("keydown", getCharPrint);
+    $("#searchPrint").focus();
+}
+
 function changeAttributesPrinter(element, id, atts) {
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
@@ -614,71 +455,6 @@ function updateStatusPrinter(name, id) {
     }
 }
 
-function getDevice(logicalDev) {
-    $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/",
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        success(dev) {
-            $("#printers").append(renderPrinter(logicalDev, dev));
-            updateStatusPrinter(
-                logicalDev.device.name + logicalDev.feature.name,
-                logicalDev.id
-            );
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
-        },
-    });
-}
-
-function showPrinterItem(data) {
-    $.each(data.results, function(i, item) {
-        getDevice(item);
-    });
-    $(".collapsible").collapsible();  // FIXME
-}
-
-function queryPrintersPage(url) {
-    $.ajax({
-        url,
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        success(data) {
-            showPrinterItem(data);
-            if (data.next) {
-                var options = [{
-                    selector: "footer",
-                    offset: 0,
-                    callback() {
-                        if (data.next) {
-                            queryPrintersPage(data.next);
-                        }
-                    }
-                }];
-                Materialize.scrollFire(options);
-            } else {
-                $("#preload-next").hide();
-            }
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
-        },
-    });
-}
-
-function queryPrinters() {
-    $("#printers").html("");
-    $("#preload-next").show();
-    spinner("preload-next");
-    queryPrintersPage(
-        "http://" + global.server + "/api/v1/token/devices/logical/availables/" +
-        "?cid=" +  global.label["id"] + "&q=" + global.searchPrint
-    );
-}
-
 function installedDevs() {
     const path = require("path");
     const execSync = require("child_process").execSync;
@@ -686,18 +462,6 @@ function installedDevs() {
     var cmd = "python " + script;
 
     return JSON.parse(execSync(cmd));
-}
-
-function showPrinters() {
-    const fs = require("fs");
-    global.devs = installedDevs();
-
-    $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
-    spinner("printers");
-    queryPrinters();
-    $("#searchPrint").val(global.searchPrint);
-    $("#searchPrint").bind("keydown", getCharPrint);
-    $("#searchPrint").focus();
 }
 
 function renderDict(data) {
@@ -780,7 +544,7 @@ function queryAppsPage(url) {
         success(data) {
             $.each(data.results, function(i, item) {
                 $.each(item.packages_by_project, function(i, pkgs) {
-                    if (pkgs.project.name == global.project) {
+                    if (pkgs.project.name === global.project) {
                         global.packages += " " + pkgs.packages_to_install.join(" ");
                     }
                 });
@@ -817,7 +581,7 @@ function queryApps() {
     global.packages = "";
 
     var categoryFilter = "";
-    if (global.category != 0) {
+    if (global.category !== 0) {
         categoryFilter = "&category=" + global.category;
     }
 
@@ -832,7 +596,7 @@ function queryApps() {
 }
 
 function showLevels() {
-    var levels = {"": "All", "U": "User", "A": "Administrator"}
+    var levels = {"": "All", "U": "User", "A": "Administrator"};
 
     $.each(levels, function(key, value) {
         $("#levels")
@@ -1184,7 +948,6 @@ function onDemand(application) {
     });
 }
 
-
 function modalLogin(name, packages_to_install, level) {
     const fs = require("fs");
 
@@ -1216,4 +979,240 @@ function getSettings() {
 
 function setSettings() {
     $("#showalways").prop("checked", global.settings["showalways"]);
+}
+
+function getGlobalData() {
+    const execSync = require("child_process").execSync;
+    const fs = require("fs");
+    const path = require("path");
+    var myArgs = gui.App.argv;
+
+    if (typeof global.search === "undefined") {
+        global.search = "";
+    }
+
+    if (typeof global.searchPrint === "undefined") {
+        global.searchPrint = "";
+    }
+
+    readSettings();
+
+    global.TERMINAL = (function() {
+        if (typeof global.terminal == "undefined") {
+            global.terminal = "";
+        }
+        var running = false;
+        var stderr = "";
+
+        function addToStdErr(txt) {
+            stderr += txt;
+        }
+
+        return {
+            add(txt) {
+                try {
+                    global.terminal = replaceColors(global.terminal + txt);
+                    this.refresh();
+                }
+                catch(err) {
+                    // nothing
+                }
+            },
+            refresh() {
+                 try {
+                     $("#console-output").html(global.terminal);
+                     var x = document.getElementById("console-output");
+                     x.scrollTop = x.scrollHeight;
+                 }
+                 catch(err) {
+                    // nothing
+                 }
+            },
+            run(cmd, beforeCallback=null, afterCallback=null, id) {
+                if (running) {
+                    Materialize.toast(
+                        "<i class='material-icons'>warning</i>" + " please wait, other process is running!!!",
+                        10000,
+                        "rounded red"
+                    );
+                }
+                else {
+                    running = true;
+
+                    $("#" + id).addClass("blink");
+
+                    if (beforeCallback) {
+                        beforeCallback();
+                    }
+
+                    var spawn = require("child_process").spawn;
+                    var process;
+
+                    if (getOS() === "Linux") {
+                        process = spawn("bash", ["-c", cmd]);
+                    } else if (getOS() === "Windows") {
+                        process = spawn("cmd", ["/C", cmd]);
+                    }
+
+                    this.add("<h3># " + cmd + "</h3>");
+
+                    var date = new Date();
+                    var n = date.toDateString();
+                    var time = date.toLocaleTimeString();
+
+                    global.TERMINAL.add("<h5>" + date + "</h5>");
+
+                    process.stdout.on("data", function(data) {global.TERMINAL.add(data.toString());});
+
+                    process.stderr.on("data", function(data) {
+                        addToStdErr(data.toString());
+                        global.TERMINAL.add("<span class='red'>" + data.toString() + "</span>");
+                    });
+
+                    // when the spawn child process exits, check if there were any errors
+                    process.on("exit", function(code) {
+                        if (code !== 0) {  // Syntax error
+                            Materialize.toast(
+                                "<i class='material-icons'>error</i> error:" + code + " " + cmd,
+                                10000,
+                                "rounded red"
+                            );
+                            win.show();
+                        }
+                        else {
+                            if (stderr === "") {
+                                if (afterCallback) {
+                                    afterCallback();
+                                }
+
+                                if (id === "sync" &&  document.hidden) {  // sync ok & minimized -> exit
+                                    exit();
+                                }
+                            }
+                            else {
+                                Materialize.toast(
+                                    "<i class='material-icons'>error</i>" + replaceColors(stderr),
+                                    10000,
+                                    "rounded red"
+                                );
+                                stderr = "";
+                            }
+                        }
+
+                        global.TERMINAL.add("<hr />");
+
+                        $("#" + id).removeClass("blink");
+                        running = false;
+                    });
+                }
+            }
+        };
+    }());
+
+    if (typeof global.sync === "undefined") {
+        global.sync = (myArgs === "sync");
+    }
+
+    if (typeof global.token === "undefined") {
+        var tokenfile =  path.join(process.cwd(), "token");
+        if (fs.existsSync(tokenfile)) {
+            global.token = "token " + fs.readFileSync(tokenfile, "utf8");
+        } else {
+            swal({
+                title: "Error",
+                type: "error",
+                html: "Token not found in file: <b>" + tokenfile + "</b>",
+                focusConfirm: true,
+                showCancelButton: false
+            });
+        }
+    }
+
+    if (typeof global.conf === "undefined") {
+        global.conf = execSync('python -c "from __future__ import print_function; from migasfree_client import settings; print(settings.CONF_FILE, end=\'\')"');
+    }
+    if (typeof global.server === "undefined") {
+        global.server = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_config; print(get_config(\'' + global.conf + '\', \'client\').get(\'server\', \'localhost\'), end=\'\')"');
+    }
+    if (typeof global.uuid === "undefined") {
+        global.uuid = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_hardware_uuid; print(get_hardware_uuid(), end=\'\')"');
+    }
+    if (typeof global.project === "undefined") {
+        global.project = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_project; print(get_mfc_project(), end=\'\')"');
+    }
+    if (typeof global.computername === "undefined") {
+        global.computername = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_computer_name; print(get_mfc_computer_name(), end=\'\')"');
+    }
+    if (typeof global.network === "undefined") {
+        global.network = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_net, get_iface_cidr, get_ifname; _ifname = get_ifname(); print(\'%s/%s\' % (get_iface_net(_ifname), get_iface_cidr(_ifname)), end=\'\')"');
+    }
+    if (typeof global.mask === "undefined") {
+        global.mask = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_mask, get_ifname; _ifname = get_ifname(); print(get_iface_mask(_ifname), end=\'\')"');
+    }
+    if (typeof global.ip === "undefined") {
+        global.ip = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_address, get_ifname; _ifname = get_ifname(); print(get_iface_address(_ifname), end=\'\')"');
+    }
+    if (typeof global.user === "undefined") {
+        global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"');
+    }
+    if (typeof global.label === "undefined") {
+        // LABEL
+        $.getJSON(
+            "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid,
+            {}
+        ).done(function( data ) {
+            global.label = data;
+            global.cid = global.label["id"];
+            getAttributeCID();
+            labelDone();
+            showApps();
+        });
+    } else {
+        labelDone();
+    }
+
+    if (typeof global.category === "undefined") {
+        global.category = 0;
+    }
+
+    if (typeof global.level === "undefined") {
+        global.level = "";
+    }
+
+    if (typeof global.pks_availables === "undefined") {
+        global.pks_availables = getPkgNames();
+    }
+}
+
+function ready() {
+    const fs = require("fs");
+
+    getGlobalData();
+    win.show();
+    win.minimize();
+
+    if (global.sync) {
+        fs.unlinkSync(consoleLog);
+
+        if (global.settings["showalways"]) {
+            win.show();
+        }
+        showSync();
+        sync();
+    } else {
+        fs.stat(consoleLog, function(err, stat) {
+            if (err === null) {
+                // consoleLog exists
+                global.TERMINAL.add(fs.readFileSync(consoleLog, "utf8"));
+            }
+        });
+
+        win.show();
+    }
+
+    $("#menu-console").click(showSync);
+    $("#menu-apps").click(showApps);
+    $("#menu-printers").click(showPrinters);
+    $("#menu-label").click(showLabel);
+    $("#menu-settings").click(showSettings);
 }
