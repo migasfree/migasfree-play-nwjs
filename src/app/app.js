@@ -7,12 +7,14 @@ var confFile = "settings.json";
 var consoleLog = path.join(gui.__dirname, "console.log");
 
 function getOS() {
-    if (navigator.appVersion.indexOf("Win") !== -1) {return "Windows";}
-    if (navigator.appVersion.indexOf("Mac") !== -1) {return "MacOS";}
-    if (navigator.appVersion.indexOf("X11") !== -1) {return "UNIX";}
-    if (navigator.appVersion.indexOf("Linux") !== -1) {return "Linux";}
+    var osName = "Unknown";
 
-    return "Unknown";
+    if (navigator.appVersion.indexOf("Win") !== -1) {osName = "Windows";}
+    if (navigator.appVersion.indexOf("Mac") !== -1) {osName = "MacOS";}
+    if (navigator.appVersion.indexOf("X11") !== -1) {osName = "UNIX";}
+    if (navigator.appVersion.indexOf("Linux") !== -1) {osName = "Linux";}
+
+    return osName;
 }
 
 function spinner(id) {
@@ -194,7 +196,7 @@ function getGlobalData() {
     readSettings();
 
     global.TERMINAL = (function() {
-        if (typeof global.terminal === "undefined") {
+        if (typeof global.terminal == "undefined") {
             global.terminal = "";
         }
         var running = false;
@@ -303,7 +305,7 @@ function getGlobalData() {
                 }
             }
         };
-    })();
+    }());
 
     if (typeof global.sync === "undefined") {
         global.sync = (myArgs === "sync");
@@ -640,7 +642,7 @@ function showPrinterItem(data) {
 
 function queryPrintersPage(url) {
     $.ajax({
-        url: url,
+        url,
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -758,6 +760,15 @@ function queryCategories() {
             swal("Error:" + jqXHR.responseText);
         },
     });
+}
+
+function installedPkgs(pks) {
+    const path = require("path");
+    const execSync = require("child_process").execSync;
+    var script = '"' + path.join(gui.__dirname, "py", "installed.py") + '"';
+    var cmd = "python " + script + ' "' + pks + '"';
+
+    return execSync(cmd);
 }
 
 function queryAppsPage(url) {
@@ -1108,33 +1119,23 @@ function showSettings() {
 }
 
 // PMS
-
 function postAction(name, pkgs, level) {
     global.packagesInstalled = installedPkgs(global.packages);
     if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
         Materialize.toast(
-            '<i class="material-icons">get_app</i> ' + name + " installed.",
+            "<i class='material-icons'>get_app</i> " + name + " installed.",
             10000,
             "rounded green"
         );
     }
     else {
         Materialize.toast(
-            '<i class="material-icons">delete</i> ' + name + " deleted.",
+            "<i class='material-icons'>delete</i> " + name + " deleted.",
             10000,
             "rounded green"
         );
     }
     updateStatus(name, pkgs, level);
-}
-
-function installedPkgs(pks) {
-    const path = require("path");
-    const execSync = require("child_process").execSync;
-    var script = '"' + path.join(gui.__dirname, "py", "installed.py") + '"';
-    var cmd = "python " + script + ' "' + pks + '"';
-
-    return execSync(cmd);
 }
 
 function install(name, pkgs, level) {
