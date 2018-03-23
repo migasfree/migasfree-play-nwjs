@@ -208,15 +208,6 @@ function postsync() {
     execDir(path.join(gui.__dirname, "postsync.d"));
 }
 
-function showSync() {
-    const fs = require("fs");
-
-    $("#container").html(fs.readFileSync("templates/sync.html", "utf8"));
-    resizeTerminal();
-    global.TERMINAL.refresh();
-    $("#sync").click(sync);
-}
-
 function beforeSync() {
     Materialize.toast("synchronizing...", 10000, "rounded grey");
     presync();
@@ -234,6 +225,15 @@ function afterSync() {
 
 function sync() {
     global.TERMINAL.run("migasfree -u", beforeSync, afterSync, "sync");
+}
+
+function showSync() {
+    const fs = require("fs");
+
+    $("#container").html(fs.readFileSync("templates/sync.html", "utf8"));
+    resizeTerminal();
+    global.TERMINAL.refresh();
+    $("#sync").click(sync);
 }
 
 function runAsUserSync(cmd) {
@@ -708,7 +708,7 @@ function changedLevel() {
 function getChar(event) {
     var keyCode = ("which" in event) ? event.which : event.keyCode;
 
-    if (keyCode == 13) {  // Enter
+    if (keyCode === 13) {  // Enter
         global.search = $("#search").val();
         queryApps();
     }
@@ -717,7 +717,7 @@ function getChar(event) {
 function getCharPrint(event){
     var keyCode = ("which" in event) ? event.which : event.keyCode;
 
-    if (keyCode == 13) {  // Enter
+    if (keyCode === 13) {  // Enter
         global.searchPrint = $("#searchPrint").val();
         queryPrinters();
     }
@@ -739,6 +739,18 @@ function showApps() {
     $("#search").focus();
 }
 
+function onDemand(application) {
+    const path = require("path");
+
+    swal({
+        title: application + " no available",
+        html: global.label["helpdesk"] + "<br />" + global.label["name"] ,
+        type: "warning",
+        showCancelButton: false
+    }, function() {
+    });
+}
+
 function updateStatus(name, packagesToInstall, level) {
     var slug = replaceAll(name, " ", "");
     var el = "#action-" + slug;
@@ -749,7 +761,7 @@ function updateStatus(name, packagesToInstall, level) {
     if (packagesToInstall == "") {
         installed = false;
     } else {
-        installed = (packagesToInstall.split(" ").diff(global.packagesInstalled).length == 0)
+        installed = (packagesToInstall.split(" ").diff(global.packagesInstalled).length === 0)
     }
 
     try {
@@ -934,18 +946,6 @@ function uninstall(name, pkgs, level) {
     );
 }
 
-function onDemand(application) {
-    const path = require("path");
-
-    swal({
-        title: application + " no available",
-        html: global.label["helpdesk"] + "<br />" + global.label["name"] ,
-        type: "warning",
-        showCancelButton: false
-    }, function() {
-    });
-}
-
 function modalLogin(name, packagesToInstall, level) {
     const fs = require("fs");
 
@@ -963,7 +963,7 @@ function modalLogin(name, packagesToInstall, level) {
             })
         }
     }).then(function (result) {
-        if (checkUser(result[0], result[1])){
+        if (checkUser(result[0], result[1])) {
             updateStatus(name, packagesToInstall, level);
         }
     }).catch(swal.noop);
