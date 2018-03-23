@@ -417,6 +417,19 @@ function updateStatusPrinter(name, id) {
     }
 }
 
+function renderDict(data) {
+    var ret= "";
+
+    for (var element in data) {
+        ret+= element + ": " + data[element] + "<br />";
+    }
+    return ret;
+}
+
+function renderInfoPrinter(data) {
+    return renderDict(JSON.parse(data));
+}
+
 function renderPrinter(logicalDev, dev) {
     const fs = require("fs");
     var icon;
@@ -471,19 +484,6 @@ function installedDevs() {
     var cmd = "python " + script;
 
     return JSON.parse(execSync(cmd));
-}
-
-function renderDict(data) {
-    var ret= "";
-
-    for (var element in data) {
-        ret+= element + ": " + data[element] + "<br />";
-    }
-    return ret;
-}
-
-function renderInfoPrinter(data) {
-    return renderDict(JSON.parse(data));
 }
 
 // APPS
@@ -971,8 +971,8 @@ function modalLogin(name, packagesToInstall, level) {
                 resolve([
                     $("#user").val(),
                     $("#password").val()
-                ])
-            })
+                ]);
+            });
         }
     }).then(function (result) {
         if (checkUser(result[0], result[1])) {
