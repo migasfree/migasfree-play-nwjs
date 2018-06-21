@@ -9,9 +9,9 @@
     "icon": "assets/migasfree-play.png",
     "title": "Migasfree Play",
     "toolbar": true,
-    "width": 600,
-    "height": 600,
-    "min_width": 600,
+    "width": 800,
+    "height": 800,
+    "min_width": 800,
     "show": true
   },
   "author": "Alberto Gacías - José Antonio Chavarría",
