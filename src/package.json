@@ -1,7 +1,7 @@
 {
   "name": "migasfree-play",
   "description": "Migasfree Client front-end. Allow install/uninstall available applications and printers.",
-  "version": "0.2.0",
+  "version": "1.0",
   "main": "index.html",
   "repository": "tofill",
   "chromium-args": "--disable-gpu --disable-ios-password-suggestions --enable-logging --remote-debugging-port=9999",
@@ -12,7 +12,7 @@
     "width": 800,
     "height": 800,
     "min_width": 800,
-    "show": true
+    "show": false
   },
   "author": "Alberto Gacías - José Antonio Chavarría",
   "license": "GPL-3.0",

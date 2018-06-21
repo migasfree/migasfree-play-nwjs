@@ -1221,10 +1221,8 @@ function getGlobalData() {
 
 function ready() {
     const fs = require("fs");
-
     getGlobalData();
     win.show();
-    win.minimize();
 
     if (global.sync) {
         fs.unlinkSync(consoleLog);
@@ -1244,7 +1242,6 @@ function ready() {
 
         win.show();
     }
-
     $("#menu-console").click(showSync);
     $("#menu-apps").click(showApps);
     $("#menu-printers").click(showPrinters);
