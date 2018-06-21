@@ -139,7 +139,21 @@ function getToken(username="migasfree-play", password="migasfree-play") {
             fs.writeFileSync("token", data.token);
         },
         error(jqXHR, textStatus, errorThrown) {
-            swal("Error getToken:" + jqXHR.responseText);
+            swal({
+                title: "Server: " + global.server ,
+                text:  "Token:" + jqXHR.responseText ,
+                type: "error",
+                showCancelButton: false
+			}).then(
+            function () {
+                gui.App.quit();
+            },
+            function (dismiss){
+                // dismiss can be 'overlay', 'cancel', 'close', 'esc', 'timer'
+                if (dismiss === "cancel") {
+                    // nothing
+		        }
+            });    
         },
     });
 }
