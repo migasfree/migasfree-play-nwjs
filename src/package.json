@@ -4,7 +4,7 @@
   "version": "0.2.0",
   "main": "index.html",
   "repository": "tofill",
-  "chromium-args": "--disable-ios-password-suggestions --enable-logging --remote-debugging-port=9999",
+  "chromium-args": "--disable-gpu --disable-ios-password-suggestions --enable-logging --remote-debugging-port=9999",
   "window": {
     "icon": "assets/migasfree-play.png",
     "title": "Migasfree Play",
