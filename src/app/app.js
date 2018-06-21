@@ -77,11 +77,11 @@ function resizeTerminal() {
             location.reload();
             return false;
         }
-        if (e.keyCode === 123) {  // F12
-            e.preventDefault();
-            gui.Window.get().showDevTools();
-            return false;
-        }
+//        if (e.keyCode === 123) {  // F12
+//            e.preventDefault();
+//            gui.Window.get().showDevTools();
+//            return false;
+//        }
     };
 }());
 
@@ -126,6 +126,24 @@ function labelDone() {
         global.qr = qr;
     }
 }
+
+
+function getToken(username="migasfree-play", password="migasfree-play") {
+    $.ajax({
+        url: "http://" + global.server + "/token-auth/",
+        type: "POST",
+        data: {"username": username, "password": password},
+        success(data) {
+            const fs = require("fs");
+            const path = require("path");
+            fs.writeFileSync("token", data.token);
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            swal("Error getToken:" + jqXHR.responseText);
+        },
+    });
+}
+
 
 function getAttributeCID() {
     if (typeof global.label !== "undefined") {
@@ -403,7 +421,7 @@ function updateStatusPrinter(name, id) {
             $(el).off("click");
             $(el).click(function() {uninstallPrinter("action-" + slug, id);});
             $(status).text("check_circle");
-            tooltip(el, "installed");
+            tooltip(el, "delete");
         } else {
             $(el).text("get_app");
             $(el).off("click");
@@ -519,7 +537,6 @@ function installedPkgs(pks) {
     const execSync = require("child_process").execSync;
     var script = '"' + path.join(gui.__dirname, "py", "installed.py") + '"';
     var cmd = "python " + script + ' "' + pks + '"';
-
     return execSync(cmd);
 }
 
@@ -532,7 +549,7 @@ function queryAppsPage(url) {
         success(data) {
             $.each(data.results, function(i, item) {
                 $.each(item.packages_by_project, function(i, pkgs) {
-                    if (pkgs.project.name === global.project) {
+                    if (pkgs.project.name == global.project) {
                         global.packages += " " + pkgs.packages_to_install.join(" ");
                     }
                 });
@@ -1181,6 +1198,10 @@ function getGlobalData() {
 
     if (typeof global.pks_availables === "undefined") {
         global.pks_availables = getPkgNames();
+    }
+
+    if ( ! fs.existsSync("token")) {
+        getToken();
     }
 }
 
