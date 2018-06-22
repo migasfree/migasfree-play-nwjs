@@ -153,7 +153,7 @@ function getToken(username="migasfree-play", password="migasfree-play") {
                 if (dismiss === "cancel") {
                     // nothing
 		        }
-            });    
+            });
         },
     });
 }
@@ -291,10 +291,10 @@ function runAsUser(cmd) {
 }
 
 function supportExternalLinks(event) {
-    function crawlDom(element) {
-        var href;
-        var isExternal = false;
+    var href;
+    var isExternal = false;
 
+    function crawlDom(element) {
         if (element.nodeName.toLowerCase() === "a") {
             href = element.getAttribute("href");
         }
