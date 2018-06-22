@@ -51,16 +51,17 @@
 
     <main>
         <div id="container">
-            <img id="logo" src="assets/migasfree-play.svg" alt="migasfree-play" class="center">
+            <br><br><br>
+            <img id="logo" src="assets/migasfree-play.svg" alt="migasfree-play" class="logo">
             <center>
-                <h3>migasfree-play</h3>
+                <h4 id="version">migasfree play</h4>
             </center>
 
         </div>
     </main>
 
     <footer id="footer-bar" class="flow-text page-footer grey lighten-4">
-        <p class="center">&copy; 2017-2018 migasfree team</p>
+        <p class="center"><a class='js-external-link' href="http://migasfree.org">&copy; 2017-2018 migasfree team</a></p>
     </footer>
 
     <script type="text/javascript" src="app/jquery.min.js"></script>
@@ -70,14 +71,16 @@
     <script type="text/javascript" src="app/mustache.js"></script>
     <script type="text/javascript" src="app/app.js"></script>
 
-    <script type="text/javascript">	
-	var gui = require('nw.gui');
+    <script type="text/javascript">
+    var gui = require('nw.gui');
     onload = function() {
-		win = gui.Window.get()
+        win = gui.Window.get()
         win.show();
-        document.title="migasfree-play "+require('./package.json').version;
+        win.minimize();
+        document.title="migasfree play";
+        $("#version").text("migasfree play "+ require('./package.json').version);
     }
-		
+
     $(document).ready(function() {
         $('select').material_select();
         $('.tooltipped').tooltip({delay: 100});

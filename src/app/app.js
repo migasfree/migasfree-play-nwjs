@@ -144,7 +144,7 @@ function getToken(username="migasfree-play", password="migasfree-play") {
                 text:  "Token:" + jqXHR.responseText ,
                 type: "error",
                 showCancelButton: false
-			}).then(
+            }).then(
             function () {
                 gui.App.quit();
             },
@@ -152,7 +152,7 @@ function getToken(username="migasfree-play", password="migasfree-play") {
                 // dismiss can be 'overlay', 'cancel', 'close', 'esc', 'timer'
                 if (dismiss === "cancel") {
                     // nothing
-		        }
+                }
             });
         },
     });
@@ -261,7 +261,6 @@ function sync() {
 
 function showSync() {
     const fs = require("fs");
-
     $("#container").html(fs.readFileSync("templates/sync.html", "utf8"));
     resizeTerminal();
     global.TERMINAL.refresh();
@@ -645,6 +644,7 @@ function renderApp(item) {
     const marked = require("marked");
 
     var renderer = new marked.Renderer();
+    /*
     renderer.heading = function (text, level) {
         var escapedText = text.toLowerCase().replace(/[^\w]+/g, "-");
         return "<h" + (level + 3) + "><a name='" +
@@ -653,7 +653,7 @@ function renderApp(item) {
              escapedText + "'></a><span>" + text +
              "</span></h" + (level + 3) + ">";
     };
-
+    */
     var data;
     var truncatedDesc = "";
     if (item.description) {
@@ -1116,7 +1116,7 @@ function getGlobalData() {
                                     afterCallback();
                                 }
 
-                                if (id === "sync" &&  document.hidden) {  // sync ok & minimized -> exit
+                                if (id == "sync" &&  document.hidden) {  // sync ok & minimized -> exit
                                     exit();
                                 }
                             }
@@ -1141,7 +1141,7 @@ function getGlobalData() {
     }());
 
     if (typeof global.sync === "undefined") {
-        global.sync = (myArgs === "sync");
+        global.sync = (myArgs == "sync");
     }
 
     if (typeof global.token === "undefined") {
@@ -1196,7 +1196,6 @@ function getGlobalData() {
             global.cid = global.label["id"];
             getAttributeCID();
             labelDone();
-            showApps();
         });
     } else {
         labelDone();
@@ -1222,11 +1221,9 @@ function getGlobalData() {
 function ready() {
     const fs = require("fs");
     getGlobalData();
-    win.show();
 
     if (global.sync) {
         fs.unlinkSync(consoleLog);
-
         if (global.settings["showalways"]) {
             win.show();
         }
