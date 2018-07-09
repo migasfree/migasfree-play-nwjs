@@ -1,2 +1,0 @@
-ALL ALL=(root) NOPASSWD: /usr/bin/migasfree-play
-ALL ALL=(root) NOPASSWD: /usr/bin/migasfree-play sync

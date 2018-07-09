@@ -19,13 +19,10 @@ See AUTHORS file
 Requirements
 ============
 
-    * Node Webkit
     * migasfree-client
 
 
-Installation
-============
+build deb
+=========
+/usr/bin/debuild --no-tgz-check -us -uc
 
-$ cd deb
-$ ./make-deb.sh
-$ sudo ../dist/dpkg -i migasfree-play_X.X-X_all.deb

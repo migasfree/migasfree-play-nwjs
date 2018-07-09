@@ -1,0 +1,5 @@
+*.log
+/token
+/node_modules/
+/nwjs.tar.gz
+/nwjs/

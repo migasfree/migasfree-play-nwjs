@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ "$(id -u)" != "0" ]; then
+   echo "Sorry. This app must be run as root. Try: sudo migasfree-play $1" 1>&2
+   exit 1
+fi
+
+_USER=$(python -c "from migasfree_client import utils; print utils.get_graphic_user(utils.get_graphic_pid()[0])")
+
+if [ "$1" = "sync" ]; then #  Cron -> 24 hours
+    _FILE="/tmp/migasfree-sync.txt"
+    _TASK="sudo /usr/bin/migasfree-play sync"
+    su -c "crontab -l |grep -v '$_TASK' > $_FILE" -l $_USER
+    _TIME=`date "+%M %H"`
+    echo "$_TIME * * * export DISPLAY=$DISPLAY;$_TASK" >> $_FILE
+    su -c "crontab $_FILE" -l $_USER
+    rm $_FILE
+fi
+
+/usr/share/migasfree-play/nwjs/nw /usr/share/migasfree-play "$1" 2>/dev/null
+
