@@ -95,8 +95,16 @@ $(window).bind("resize", function () {
 });
 
 gui.Window.get().on("close", function () {
-    exit();
-    gui.App.quit();
+	if (global.running) {
+		 Materialize.toast(
+			"<i class='material-icons'>warning</i>" + " please wait, one process is running!!!",
+			10000,
+			"rounded red"
+		);
+    } else {
+        exit();
+        gui.App.quit();
+	}
 });
 
 Array.prototype.diff = function (a) {
@@ -1028,12 +1036,12 @@ function getGlobalData() {
     }
 
     readSettings();
+    global.running = false;
 
     global.TERMINAL = (function() {
         if (typeof global.terminal == "undefined") {
             global.terminal = "";
         }
-        var running = false;
         var stderr = "";
 
         function addToStdErr(txt) {
@@ -1061,7 +1069,7 @@ function getGlobalData() {
                  }
             },
             run(cmd, beforeCallback=null, afterCallback=null, id) {
-                if (running) {
+                if (global.running) {
                     Materialize.toast(
                         "<i class='material-icons'>warning</i>" + " please wait, other process is running!!!",
                         10000,
@@ -1069,7 +1077,7 @@ function getGlobalData() {
                     );
                 }
                 else {
-                    running = true;
+                    global.running = true;
 
                     $("#" + id).addClass("blink");
 
@@ -1134,7 +1142,7 @@ function getGlobalData() {
                         global.TERMINAL.add("<hr />");
 
                         $("#" + id).removeClass("blink");
-                        running = false;
+                        global.running = false;
                     });
                 }
             }
