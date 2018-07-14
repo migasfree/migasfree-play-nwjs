@@ -60,7 +60,7 @@ function exit() {
         if (err) {throw err;}
     });
 
-    win.close();
+    win.window.close();
 }
 
 function resizeTerminal() {
