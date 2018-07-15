@@ -17,5 +17,5 @@ if [ "$1" = "sync" ]; then #  Cron -> 24 hours
     rm $_FILE
 fi
 
-/usr/share/migasfree-play/nwjs/nw /usr/share/migasfree-play "$1" 2>/dev/null
+/usr/share/migasfree-play/nwjs/nw /usr/share/migasfree-play "$1"
 
