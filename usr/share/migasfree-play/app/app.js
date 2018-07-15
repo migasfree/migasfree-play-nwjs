@@ -1233,7 +1233,9 @@ function ready() {
     win = gui.Window.get()
     getGlobalData();
     if (global.sync) {
-        fs.unlinkSync(consoleLog);
+        if (fs.existsSync(consoleLog)) {
+            fs.unlinkSync(consoleLog);
+        }
         if (global.settings["showalways"]) {
             win.show();
         } else {
