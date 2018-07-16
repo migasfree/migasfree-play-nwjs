@@ -1,6 +1,7 @@
 variables:
   _USER: "builduser"
   _PATH: /home/$_USER/$CI_PROJECT_NAME
+  GIT_SSL_NO_VERIFY: "1"
 
 stages:
   - build
@@ -15,7 +16,7 @@ build-deb-32:
     - mv * $_PATH
     - pushd $_PATH
     - su -c "/usr/bin/debuild --no-tgz-check -us -uc" $_USER
-    - popd 
+    - popd
     - mv /home/$_USER/*.deb .
   artifacts:
     expire_in: 1 days
@@ -45,7 +46,7 @@ build-deb-64:
     - mv * $_PATH
     - pushd $_PATH
     - su -c "/usr/bin/debuild --no-tgz-check -us -uc" $_USER
-    - popd 
+    - popd
     - mv /home/$_USER/*.deb .
   artifacts:
     expire_in: 1 days
