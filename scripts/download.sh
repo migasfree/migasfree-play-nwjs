@@ -7,12 +7,12 @@ if [ "$DEB_BUILD_ARCH_BITS" = "32" ]; then
 else
 	_ARCH="x64"
 fi
-_FILENAME=nwjs-v0.31.2-linux-$_ARCH
+_NWJS_VERSION=0.31.2
 
 
 cd usr/share/migasfree-play
 npm set strict-ssl false
 npm install
 
-wget --no-check-certificate -O nwjs.tar.gz https://dl.nwjs.io/v0.31.2/$_FILENAME.tar.gz
-
+# dl.nwjs.io -> 34.206.150.92
+wget --no-check-certificate -O nwjs.tar.gz https://34.206.150.92/v${_NWJS_VERSION}/nwjs-v${_NWJS_VERSION}-linux-${_ARCH}.tar.gz
