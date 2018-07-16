@@ -14,5 +14,5 @@ cd usr/share/migasfree-play
 npm set strict-ssl false
 npm install
 
-wget -O nwjs.tar.gz https://dl.nwjs.io/v0.31.2/$_FILENAME.tar.gz
+wget -O --no-check-certificate nwjs.tar.gz https://dl.nwjs.io/v0.31.2/$_FILENAME.tar.gz
 
