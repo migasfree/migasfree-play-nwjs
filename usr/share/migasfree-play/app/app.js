@@ -190,7 +190,7 @@ function getAttributeCID() {
 function saveSettings(settings) {
     const fs = require("fs");
     const path = require("path");
-    var filePath = path.join(gui.App.dataPath, confFile);
+    var filePath = path.join(confFile);
 
     fs.writeFileSync(filePath, JSON.stringify(settings));
 }
@@ -198,7 +198,7 @@ function saveSettings(settings) {
 function readSettings() {
     const fs = require("fs");
     const path = require("path");
-    var filePath = path.join(gui.App.dataPath, confFile);
+    var filePath = path.join(confFile);
 
     if (fs.existsSync(filePath)) {
         var data = fs.readFileSync(filePath, "utf8");
