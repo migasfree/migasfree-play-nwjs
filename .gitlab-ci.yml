@@ -60,7 +60,7 @@ upload-deb-64:
   image: migasfree/deb-ci:64
   stage: upload
   script:
-    - MIGASFREE_PACKAGER_PROJECT=AZL-14 migasfree-upload -f *.deb
+    - MIGASFREE_PACKAGER_PROJECT=AZL-16 migasfree-upload -f *.deb
   dependencies:
     - build-deb-64
   only:
