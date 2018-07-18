@@ -923,6 +923,7 @@ function showLabel() {
         "cid":  global.label["id"],
         "name": global.label["name"],
         "project": global.project,
+        "user": global.user,
         "uuid": global.uuid,
         "helpdesk": global.label["helpdesk"],
         "ip": global.ip,
