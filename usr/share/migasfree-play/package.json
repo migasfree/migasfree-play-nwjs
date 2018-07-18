@@ -17,6 +17,7 @@
   "author": "Alberto Gacías - José Antonio Chavarría",
   "license": "GPL-3.0",
   "dependencies": {
-    "marked": "^0.3.6"
+    "marked": "^0.3.6",
+    "roboto-fontface": "^0.9.0"
   }
 }
