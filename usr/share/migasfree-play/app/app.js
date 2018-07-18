@@ -5,6 +5,7 @@ var path = require("path");
 var win = gui.Window.get();
 var confFile = "settings.json";
 var consoleLog = path.join(gui.__dirname, "console.log");
+var toastTime = 3000;
 
 function getOS() {
     var osName = "Unknown";
@@ -98,7 +99,7 @@ gui.Window.get().on("close", function () {
 	if (global.running) {
 		 Materialize.toast(
 			"<i class='material-icons'>warning</i>" + " please wait, one process is running!!!",
-			10000,
+			toastTime,
 			"rounded red"
 		);
     } else {
@@ -250,7 +251,7 @@ function postsync() {
 }
 
 function beforeSync() {
-    Materialize.toast("synchronizing...", 10000, "rounded grey");
+    Materialize.toast("synchronizing...", toastTime, "rounded grey");
     presync();
 }
 
@@ -259,7 +260,7 @@ function afterSync() {
     global.pks_availables = getPkgNames();
     Materialize.toast(
         "<i class='material-icons'>sync</i>" + " synchronized",
-        10000,
+        toastTime,
         "rounded green"
     );
 }
@@ -797,14 +798,14 @@ function postAction(name, pkgs, level) {
     if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
         Materialize.toast(
             "<i class='material-icons'>get_app</i> " + name + " installed.",
-            10000,
+            toastTime,
             "rounded green"
         );
     }
     else {
         Materialize.toast(
             "<i class='material-icons'>delete</i> " + name + " deleted.",
-            10000,
+            toastTime,
             "rounded green"
         );
     }
@@ -813,7 +814,7 @@ function postAction(name, pkgs, level) {
 
 function install(name, pkgs, level) {
     $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
-    Materialize.toast("installing " + name + " ...", 10000, "rounded grey");
+    Materialize.toast("installing " + name + " ...", toastTime, "rounded grey");
 
     var cmd;
     if (getOS() === "Linux") {
@@ -831,7 +832,7 @@ function install(name, pkgs, level) {
 
 function uninstall(name, pkgs, level) {
     $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
-    Materialize.toast("deleting " + name  + " ...", 10000, "rounded grey");
+    Materialize.toast("deleting " + name  + " ...", toastTime, "rounded grey");
 
     var cmd;
     if (getOS() === "Linux") {
@@ -1072,7 +1073,7 @@ function getGlobalData() {
                 if (global.running) {
                     Materialize.toast(
                         "<i class='material-icons'>warning</i>" + " please wait, other process is running!!!",
-                        10000,
+                        toastTime,
                         "rounded red"
                     );
                 }
@@ -1114,7 +1115,7 @@ function getGlobalData() {
                         if (code !== 0) {  // Syntax error
                             Materialize.toast(
                                 "<i class='material-icons'>error</i> error:" + code + " " + cmd,
-                                10000,
+                                toastTime,
                                 "rounded red"
                             );
                             win.show();
@@ -1132,7 +1133,7 @@ function getGlobalData() {
                             else {
                                 Materialize.toast(
                                     "<i class='material-icons'>error</i>" + replaceColors(stderr),
-                                    10000,
+                                    toastTime,
                                     "rounded red"
                                 );
                                 stderr = "";
