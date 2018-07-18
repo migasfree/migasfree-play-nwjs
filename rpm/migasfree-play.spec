@@ -45,7 +45,7 @@ rm -rf %{buildroot}
 if [ -f /usr/share/migasfree-play/nwjs.tar.gz ]; then
     cd /usr/share/migasfree-play/
     rm -rf nwjs
-    tar -xzvf nwjs.tar.gz
+    tar -xzvf nwjs.tar.gz > /dev/null
     rm nwjs.tar.gz
     mv nwjs* nwjs
     chown -R root:root nwjs
