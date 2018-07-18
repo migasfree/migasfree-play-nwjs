@@ -8,7 +8,7 @@ Packager:      Alberto Gacías
 Vendor:        migasfree team
 Source0:       %{name}-%{version}.tar.gz
 URL:           https://github.com/migasfree/migasfree-play
-Requires:      migasfree-client >= 4.14, sudo, bash, cron
+Requires:      migasfree-client >= 4.14, sudo, bash, cronie
 BuildRoot:     %{_tmppath}/%{name}-%{version}
 
 %description
