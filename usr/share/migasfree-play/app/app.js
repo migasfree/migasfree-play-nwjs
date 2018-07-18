@@ -263,7 +263,7 @@ function afterSync() {
     postsync();
     global.pks_availables = getPkgNames();
     Materialize.toast(
-        "<i class='material-icons'>sync</i>" + " synchronized",
+        "<i class='material-icons'>play_arrow</i>" + " synchronized",
         toastTime,
         "rounded green"
     );
@@ -447,7 +447,7 @@ function updateStatusPrinter(name, id) {
             $(el).text("delete");
             $(el).off("click");
             $(el).click(function() {uninstallPrinter("action-" + slug, id);});
-            $(status).text("check_circle");
+            $(status).text("check_box");
             tooltip(el, "delete");
         } else {
             $(el).text("get_app");
@@ -874,7 +874,7 @@ function updateStatus(name, packagesToInstall, level) {
                 $(el).click(function() {modalLogin(name, packagesToInstall, level);});
                 if (installed) {
                     tooltip(el, "login to delete " + name);
-                    $(status).text("check_circle");
+                    $(status).text("check_box");
 
                     $(descr).off("click");
                     $(descr).click(function() {modalLogin(name, packagesToInstall, level);});
@@ -888,7 +888,7 @@ function updateStatus(name, packagesToInstall, level) {
                     $(el).off("click");
                     $(el).click(function() {uninstall(name, packagesToInstall, level);});
                     tooltip(el, "delete " + name);
-                    $(status).text("check_circle");
+                    $(status).text("check_box");
                 } else {
                     if (packagesToInstall != "") {
                         $(el).text("get_app");
