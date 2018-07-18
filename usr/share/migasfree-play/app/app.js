@@ -50,7 +50,11 @@ function tooltip(id, text) {
 
     anchor.attr("data-tooltip", text);
     anchor.attr("delay", 100);
-    anchor.attr("position", "bottom");
+    if (id == "#machine") {
+		anchor.attr("data-position", "bottom");
+    } else {
+        anchor.attr("data-position", "left");
+    }
     anchor.tooltip();
 }
 
@@ -121,7 +125,7 @@ function labelDone() {
         $("#machine").html(
             "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label["name"] + "</a>"
         );
-        tooltip("#machine", global.server);
+        tooltip("#machine", "View computer in server: "+ global.server);
 
         var typeNumber = 4;
         var errorCorrectionLevel = "L";
@@ -871,7 +875,6 @@ function updateStatus(name, packagesToInstall, level) {
                 if (installed) {
                     tooltip(el, "login to delete " + name);
                     $(status).text("check_circle");
-                    tooltip(status, "installed");
 
                     $(descr).off("click");
                     $(descr).click(function() {modalLogin(name, packagesToInstall, level);});
@@ -886,7 +889,6 @@ function updateStatus(name, packagesToInstall, level) {
                     $(el).click(function() {uninstall(name, packagesToInstall, level);});
                     tooltip(el, "delete " + name);
                     $(status).text("check_circle");
-                    tooltip(status, "installed");
                 } else {
                     if (packagesToInstall != "") {
                         $(el).text("get_app");
