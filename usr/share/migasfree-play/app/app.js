@@ -6,6 +6,7 @@ var win = gui.Window.get();
 var confFile = "settings.json";
 var consoleLog = path.join(gui.__dirname, "console.log");
 var toastTime = 3000;
+var colorTheme = "#009688"; //teal
 
 function getOS() {
     var osName = "Unknown";
@@ -157,6 +158,7 @@ function getToken(username="migasfree-play", password="migasfree-play") {
                 title: "Server: " + global.server ,
                 text:  "Token:" + jqXHR.responseText ,
                 type: "error",
+                confirmButtonColor: colorTheme,
                 showCancelButton: false
             }).then(
             function () {
@@ -791,7 +793,8 @@ function onDemand(application) {
         title: application + " no available",
         html: global.label["helpdesk"] + "<br />" + global.label["name"] ,
         type: "warning",
-        showCancelButton: false
+        showCancelButton: false,
+        confirmButtonColor: colorTheme
     }, function() {
     });
 }
@@ -965,7 +968,8 @@ function checkUser(user, password) {
             html: "login error",
             type: "error",
             showCancelButton: false,
-            confirmButtonText: "OK"
+            confirmButtonText: "OK",
+            confirmButtonColor: colorTheme
         }).then(
             function () {},
             function (dismiss){
@@ -1010,6 +1014,7 @@ function modalLogin(name, packagesToInstall, level) {
         html: fs.readFileSync("templates/login.html", "utf8"),
         focusConfirm: false,
         showCancelButton: true,
+        confirmButtonColor: colorTheme,
         preConfirm() {
             return new Promise(function (resolve) {
                 resolve([
