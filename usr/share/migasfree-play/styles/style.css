@@ -93,10 +93,6 @@ h1 {
     left: 34px;
 }
 
-.card .card-content {
-    padding: 6px;
-}
-
 #logo {
     opacity: .7;
 }
@@ -125,6 +121,10 @@ hr {
     padding: 0;
 }
 
+.card .card-content {
+    padding: 6px;
+}
+
 .card-content :first-of-type {
     font-size: 18px;
 }
@@ -134,7 +134,7 @@ hr {
     padding: 0 !important;
 }
 
-.card-content p {
+.card-content > p {
     font-size: 12px;
 }
 
