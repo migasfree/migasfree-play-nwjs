@@ -1233,6 +1233,8 @@ function ready() {
     var gui = require('nw.gui');
     win = gui.Window.get()
     getGlobalData();
+    $("#sync").click(sync);
+    tooltip($("#sync"),"synchronize");
     if (global.sync) {
         if (fs.existsSync(consoleLog)) {
             fs.unlinkSync(consoleLog);
