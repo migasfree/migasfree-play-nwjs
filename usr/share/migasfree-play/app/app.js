@@ -660,7 +660,7 @@ function renderApp(item) {
     const marked = require("marked");
 
     var renderer = new marked.Renderer();
-    /*
+    
     renderer.heading = function (text, level) {
         var escapedText = text.toLowerCase().replace(/[^\w]+/g, "-");
         return "<h" + (level + 3) + "><a name='" +
@@ -669,7 +669,7 @@ function renderApp(item) {
              escapedText + "'></a><span>" + text +
              "</span></h" + (level + 3) + ">";
     };
-    */
+    
     var data;
     var truncatedDesc = "";
     if (item.description) {
