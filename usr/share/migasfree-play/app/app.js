@@ -450,13 +450,13 @@ function updateStatusPrinter(name, id) {
             $(el).off("click");
             $(el).click(function() {uninstallPrinter("action-" + slug, id);});
             $(status).text("check_box");
-            tooltip(el, "delete");
+            //tooltip(el, "delete");
         } else {
             $(el).text("get_app");
             $(el).off("click");
             $(el).click(function() {installPrinter("action-" + slug, id);});
             $(status).text("");
-            tooltip(el, "install");
+            //tooltip(el, "install");
         }
     }
     catch (err){
@@ -820,7 +820,7 @@ function postAction(name, pkgs, level) {
 }
 
 function install(name, pkgs, level) {
-    $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
+    //$("#action-" + replaceAll(name, " ", "")).tooltip("remove");
     Materialize.toast("installing " + name + " ...", toastTime, "rounded grey");
 
     var cmd;
@@ -838,7 +838,7 @@ function install(name, pkgs, level) {
 }
 
 function uninstall(name, pkgs, level) {
-    $("#action-" + replaceAll(name, " ", "")).tooltip("remove");
+    //$("#action-" + replaceAll(name, " ", "")).tooltip("remove");
     Materialize.toast("deleting " + name  + " ...", toastTime, "rounded grey");
 
     var cmd;
@@ -876,13 +876,13 @@ function updateStatus(name, packagesToInstall, level) {
                 $(el).off("click");
                 $(el).click(function() {modalLogin(name, packagesToInstall, level);});
                 if (installed) {
-                    tooltip(el, "login to delete " + name);
+                    //tooltip(el, "login to delete " + name);
                     $(status).text("check_box");
 
                     $(descr).off("click");
                     $(descr).click(function() {modalLogin(name, packagesToInstall, level);});
                 } else {
-                    tooltip(el, "login to install " + name);
+                    //tooltip(el, "login to install " + name);
                     $(status).text("");
                 }
             } else {
@@ -890,14 +890,14 @@ function updateStatus(name, packagesToInstall, level) {
                     $(el).text("delete");
                     $(el).off("click");
                     $(el).click(function() {uninstall(name, packagesToInstall, level);});
-                    tooltip(el, "delete " + name);
+                    //tooltip(el, "delete " + name);
                     $(status).text("check_box");
                 } else {
                     if (packagesToInstall != "") {
                         $(el).text("get_app");
                         $(el).off("click");
                         $(el).click(function() {install(name, packagesToInstall, level);});
-                        tooltip(el, "install " + name);
+                        //tooltip(el, "install " + name);
                         $(status).text("");
                     }
                 }
@@ -906,7 +906,7 @@ function updateStatus(name, packagesToInstall, level) {
             $(el).text("lock_open");
             $(el).off("click");
             $(el).click(function() {onDemand(name);});
-            tooltip(el, name + " is not available");
+            //tooltip(el, name + " is not available");
         }
     }
     catch(err) {
@@ -943,7 +943,7 @@ function showLabel() {
     };
 
     $("#container").html(Mustache.to_html(fs.readFileSync("templates/label.html", "utf8"), data));
-    $(".tooltipped").tooltip({delay: 100});
+    //$(".tooltipped").tooltip({delay: 100});
 
     $("#print-label").click(printLabel);
 
@@ -1242,7 +1242,7 @@ function ready() {
     win = gui.Window.get()
     getGlobalData();
     $("#sync").click(sync);
-    tooltip($("#sync"),"synchronize");
+    //tooltip($("#sync"),"synchronize");
     if (global.sync) {
         if (fs.existsSync(consoleLog)) {
             fs.unlinkSync(consoleLog);
