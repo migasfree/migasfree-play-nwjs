@@ -1,3 +1,13 @@
+
+<script type="text/javascript">
+// don't let browser remember the password
+$(function(){
+    setTimeout(function(){
+        $("input#password").attr("type","password");
+    },10);
+});
+</script>
+
 <div class="row">
     <div class="col s12 m3 right-align">
         <div><i class="material-icons large center grey-text">person</i></div>
@@ -6,7 +16,7 @@
         <div><input id="user" name="user" type="text" placeholder="User" /></div>
 
         <div>
-            <input id="password" name="password" type="password" placeholder="Password" autocomplete="off" />
+            <input id="password" name="password" placeholder="Password" autocomplete="off" />
         </div>
     </div>
 </div>
