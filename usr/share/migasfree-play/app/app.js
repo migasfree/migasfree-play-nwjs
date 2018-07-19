@@ -449,14 +449,12 @@ function updateStatusPrinter(name, id) {
             $(el).text("delete");
             $(el).off("click");
             $(el).click(function() {uninstallPrinter("action-" + slug, id);});
-            $(status).text("check_box");
-            //tooltip(el, "delete");
+            $(status).removeClass("hide");
         } else {
             $(el).text("get_app");
             $(el).off("click");
             $(el).click(function() {installPrinter("action-" + slug, id);});
-            $(status).text("");
-            //tooltip(el, "install");
+            $(status).addClass("hide");
         }
     }
     catch (err){
@@ -820,9 +818,7 @@ function postAction(name, pkgs, level) {
 }
 
 function install(name, pkgs, level) {
-    //$("#action-" + replaceAll(name, " ", "")).tooltip("remove");
     Materialize.toast("installing " + name + " ...", toastTime, "rounded grey");
-
     var cmd;
     if (getOS() === "Linux") {
         cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
@@ -838,9 +834,7 @@ function install(name, pkgs, level) {
 }
 
 function uninstall(name, pkgs, level) {
-    //$("#action-" + replaceAll(name, " ", "")).tooltip("remove");
     Materialize.toast("deleting " + name  + " ...", toastTime, "rounded grey");
-
     var cmd;
     if (getOS() === "Linux") {
         cmd = 'LANG_ALL=C echo "y"|migasfree -rp "' + pkgs + '"';
@@ -876,29 +870,24 @@ function updateStatus(name, packagesToInstall, level) {
                 $(el).off("click");
                 $(el).click(function() {modalLogin(name, packagesToInstall, level);});
                 if (installed) {
-                    //tooltip(el, "login to delete " + name);
-                    $(status).text("check_box");
-
+                    $(status).removeClass("hide");
                     $(descr).off("click");
                     $(descr).click(function() {modalLogin(name, packagesToInstall, level);});
                 } else {
-                    //tooltip(el, "login to install " + name);
-                    $(status).text("");
+                    $(status).addClass("hide");
                 }
             } else {
                 if (installed) {
                     $(el).text("delete");
                     $(el).off("click");
                     $(el).click(function() {uninstall(name, packagesToInstall, level);});
-                    //tooltip(el, "delete " + name);
-                    $(status).text("check_box");
+                    $(status).removeClass("hide");
                 } else {
                     if (packagesToInstall != "") {
                         $(el).text("get_app");
                         $(el).off("click");
                         $(el).click(function() {install(name, packagesToInstall, level);});
-                        //tooltip(el, "install " + name);
-                        $(status).text("");
+                        $(status).addClass("hide");
                     }
                 }
             }
@@ -906,7 +895,6 @@ function updateStatus(name, packagesToInstall, level) {
             $(el).text("lock_open");
             $(el).off("click");
             $(el).click(function() {onDemand(name);});
-            //tooltip(el, name + " is not available");
         }
     }
     catch(err) {
@@ -943,7 +931,6 @@ function showLabel() {
     };
 
     $("#container").html(Mustache.to_html(fs.readFileSync("templates/label.html", "utf8"), data));
-    //$(".tooltipped").tooltip({delay: 100});
 
     $("#print-label").click(printLabel);
 
@@ -1242,7 +1229,6 @@ function ready() {
     win = gui.Window.get()
     getGlobalData();
     $("#sync").click(sync);
-    //tooltip($("#sync"),"synchronize");
     if (global.sync) {
         if (fs.existsSync(consoleLog)) {
             fs.unlinkSync(consoleLog);

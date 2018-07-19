@@ -76,12 +76,6 @@ h1 {
     position: relative;
 }
 
-#apps .avatar i {
-    position: absolute;
-    top: 34px;
-    left: 34px;
-}
-
 #printers .icon {
     width: 48px;
     height: 48px;
@@ -89,12 +83,6 @@ h1 {
 
 #printers .avatar {
     position: relative;
-}
-
-#printers .avatar i {
-    position: absolute;
-    top: 34px;
-    left: 34px;
 }
 
 #logo {
