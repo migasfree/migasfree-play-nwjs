@@ -57,6 +57,12 @@ h1 {
     margin: 0;
 }
 
+#printers .title {
+    font-size: 150%;
+    display: block;
+    margin: 0;
+}
+
 #apps .category {
     font-size: 70%;
     padding-left: 8px;
