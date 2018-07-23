@@ -943,7 +943,11 @@ function checkUser(user, password) {
     var execSync = require("child_process").execSync;
 
     try {
-        execSync("python " + script + " " + user + " " + password);
+        process.env._LOGIN_MP_USER = user;
+        process.env._LOGIN_MP_PASS = password;
+        execSync("python " + script);
+        process.env._LOGIN_MP_USER = "";
+        process.env._LOGIN_MP_PASS = "";
         $("#auth").text("yes");
         return true;
     }
@@ -995,7 +999,7 @@ function showSettings() {
 
 function modalLogin(name, packagesToInstall, level) {
     const fs = require("fs");
-
+    var resolve = [];
     swal({
         title: "login",
         html: fs.readFileSync("templates/login.html", "utf8"),
@@ -1003,15 +1007,10 @@ function modalLogin(name, packagesToInstall, level) {
         showCancelButton: true,
         confirmButtonColor: colorTheme,
         preConfirm() {
-            return new Promise(function (resolve) {
-                resolve([
-                    $("#user").val(),
-                    $("#password").val()
-                ]);
-            });
+            resolve=[$("#user").val(), $("#password").val()];
         }
     }).then(function (result) {
-        if (checkUser(result[0], result[1])) {
+        if (checkUser(resolve[0], resolve[1])) {
             updateStatus(name, packagesToInstall, level);
         }
     }).catch(swal.noop);

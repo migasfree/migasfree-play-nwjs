@@ -1,9 +1,12 @@
+import os
 import sys
 import platform
 
 if __name__ == '__main__':
-    user = str(sys.argv[1])
-    password = str(sys.argv[2])
+    user = os.environ['_LOGIN_MP_USER']
+    password = os.environ['_LOGIN_MP_PASS']
+
+    print user, password 
 
     if platform.system() == "Windows":
         import os
