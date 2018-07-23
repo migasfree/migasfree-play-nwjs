@@ -1240,6 +1240,7 @@ function ready() {
         }
         showSync();
         sync();
+        global.sync = false;
     } else {
         fs.stat(consoleLog, function(err, stat) {
             if (err === null) {
