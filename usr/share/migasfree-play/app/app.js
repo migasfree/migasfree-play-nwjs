@@ -920,6 +920,7 @@ function showLabel() {
         "ip": global.ip,
         "mask": global.mask,
         "network": global.network,
+        "computer": global.computer,
         "qrcode": Mustache.to_html(
             fs.readFileSync("templates/qrcode.html", "utf8"),
             {"qrcode": global.qr.createImgTag(2, 2)}
@@ -1202,7 +1203,23 @@ function getGlobalData() {
             global.label = data;
             global.cid = global.label["id"];
             getAttributeCID();
-            labelDone();
+            $.ajax({
+                url: "http://" + global.server + "/api/v1/token/computers/?id="+global.cid,
+                type: "GET",
+                beforeSend: addTokenHeader,
+                data: {},
+                success(data) {
+                    if (data.count === 1) {
+                        global.computer = data.results[0];
+                        global.computer.ram = (global.computer.ram/1024/1024/1024).toFixed(2)+ " GB"; 
+                        global.computer.storage = (global.computer.storage/1024/1024/1024).toFixed(2) + " GB";
+                        labelDone();
+                    }
+                },
+                error(jqXHR, textStatus, errorThrown) {
+                    swal("Error:" + jqXHR.responseText);
+                },
+            });            
         });
     } else {
         labelDone();
