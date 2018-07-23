@@ -1,11 +1,95 @@
 <br>
-<div class="row flow-text">
-    <div class="col s12 m12">
-         <div class="row">
-             <div class="col s4 m4 right-align">
-                 <img  class "center" src="assets/migasfree-grey.svg" />
+
+<div class="row">
+    <div class="col s2 m2">
+    </div>
+    <div class="col s8 m8">
+
+
+        <div class="card horizontal">
+             <div class="card-image center">
+                 <i class="material-icons center medium grey-text">person</i>
              </div>
-             <div class="col s8 m8">
+             <div class="card-content">
+             <div class="row">
+                <div class="col s12 m12">
+                    {{user}}
+                </div>
+             </div>
+                <div class="row">
+                    <div class="col s12 m12">
+                        {{computer.sync_end_date}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="card horizontal">
+            <div class="card-image center">
+                <i class="material-icons center medium grey-text">computer</i>
+            </div>
+            <div class="card-content">
+            <div class="row">
+                <div class="col s12 m12">
+                    {{computer.fqdn}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m12">
+                    {{computer.product}} {{computer.machine}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m12">
+                    {{computer.cpu}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12 m12">
+                    {{computer.ram}} RAM
+                </div>
+            </div>
+                <div class="row">
+                    <div class="col s12 m12">
+                        {{computer.storage}}  - {{computer.disks}} Disks
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card horizontal">
+             <div class="card-image center">
+                 <i class="material-icons center medium grey-text">swap_vert</i>
+             </div>
+             <div class="card-content">
+             <div class="row">
+                <div class="col s12 m12">
+                    {{ip}}
+                </div>
+             </div>
+                <div class="row">
+                    <div class="col s12 m12">
+                        {{mask}} - {{network}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m12">
+                        {{computer.mac_address}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card horizontal">
+             <div class="card-image">
+                 <img  class "center" src="assets/migasfree-grey.svg"/>
+                 <i class="material-icons center medium grey-text">x</i>
+             </div>
+             <div class="card-content">
                  <div class="row">
                      <div class="col s12 m12">
                         {{server}}
@@ -17,77 +101,25 @@
                     </div>
                  </div>
                  <div class="row">
-                    <div class="col s6 m6">
+                    <div class="col s12 m12">
                         CID-{{cid}}
                     </div>
-
-                    <div class="col s6 m6">
-                        <i class="material-icons center small grey-text">flag</i>
+                 </div>
+                 <div class="row">
+                    <div class="col s12 m12">
                         {{computer.status}}
                     </div>
                  </div>
-             </div>
-         </div>
-         <div class="row">
-             <div class="col s4 m4 right-align">
-                 <i class="material-icons center medium grey-text">computer</i>
-             </div>
-             <div class="col s8 m8">
                  <div class="row">
                     <div class="col s12 m12">
-                        {{computer.fqdn}}
+                        <div id="tags">
+                        </div>
                     </div>
-                 </div>
+                </div>
+            </div>
+        </div>
 
-                 <div class="row">
-                    <div class="col s12 m12">
-                        <i class="material-icons center small grey-text">select_all</i>
-                        {{computer.cpu}}
-                    </div>
-                    <div class="col s6 m6">
-                        <i class="material-icons center small grey-text">memory</i>
-                        {{computer.ram}}
-                    </div>
-                    <div class="col s6 m6">
-                        <i class="material-icons center small grey-text">storage</i>
-                        {{computer.storage}}
-                    </div>
-                 </div>
-             </div>
-         </div>
-         <div class="row">
-             <div class="col s4 m4 right-align">
-                 <i class="material-icons center medium grey-text">person</i>
-             </div>
-             <div class="col s8 m8">
-                 <div class="row">
-                    <div class="col s12 m12">
-                        {{user}}
-                    </div>
-                    <div class="col s12 m12">
-                        <i class="material-icons center small grey-text">access_time</i>
-                        {{computer.sync_end_date}}
-                    </div>
-                 </div>
-             </div>
-         </div>
-         <div class="row">
-             <div class="col s4 m4 right-align">
-                 <i class="material-icons center medium grey-text">swap_vert</i>
-             </div>
-             <div class="col s8 m8">
-                    <div class="col s12 m12">
-                        {{ip}}
-                    </div>
-                    <div class="col s12 m12">
-                        {{mask}} - {{network}}
-                    </div>
-                    <div class="col s12 m12">
-                        {{computer.mac_address}}
-                    </div>
 
-             </div>
-         </div>
     </div>
 </div>
 
@@ -111,7 +143,8 @@
     </div>
 </div>
 
-<div class="row noScreen normal-size">
+<div class="row noScreen normal-size new_page">
+    <br><br><br><br>
     <div class="col s12 m12 l12">
         <div class="card horizontal valign-wrapper bordered">
             {{{qrcode2}}}

@@ -203,11 +203,17 @@ hr {
     width: 25%;
 }
 
+.chip{
+   border-radius: 16px;
+   font-size: 12px !important;
+}
+
 @media print {
     .noPrint {
         display:none;
     }
     .noScreen {}
+    .new_page {page-break-before:always;}
 }
 
 @media screen {

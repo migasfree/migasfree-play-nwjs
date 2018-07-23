@@ -46,13 +46,24 @@ function replaceColors(txt) {
     return txt;
 }
 
+function show_err(txt) {
+    swal({
+        title: "Error",
+        text:  txt,
+        type: "error",
+        confirmButtonColor: colorTheme,
+        showCancelButton: false
+    });
+}
+
+
 function tooltip(id, text) {
     var anchor = $(id);
 
     anchor.attr("data-tooltip", text);
     anchor.attr("delay", 100);
     if (id == "#machine") {
-		anchor.attr("data-position", "bottom");
+        anchor.attr("data-position", "bottom");
     } else {
         anchor.attr("data-position", "left");
     }
@@ -101,16 +112,16 @@ $(window).bind("resize", function () {
 });
 
 gui.Window.get().on("close", function () {
-	if (global.running) {
-		 Materialize.toast(
-			"<i class='material-icons'>warning</i>" + " please wait, one process is running!!!",
-			toastTime,
-			"rounded red"
-		);
+    if (global.running) {
+         Materialize.toast(
+            "<i class='material-icons'>warning</i>" + " please wait, one process is running!!!",
+            toastTime,
+            "rounded red"
+        );
     } else {
         exit();
         gui.App.quit();
-	}
+    }
 });
 
 Array.prototype.diff = function (a) {
@@ -188,7 +199,7 @@ function getAttributeCID() {
                 }
             },
             error(jqXHR, textStatus, errorThrown) {
-                swal("Error:" + jqXHR.responseText);
+                show_err(jqXHR.responseText);
             },
         });
     }
@@ -277,6 +288,7 @@ function sync() {
 
 function showSync() {
     const fs = require("fs");
+
     $("#container").html(fs.readFileSync("templates/sync.html", "utf8"));
     resizeTerminal();
     global.TERMINAL.refresh();
@@ -360,7 +372,7 @@ function queryPrintersPage(url) {
             }
         },
         error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
+            show_err(jqXHR.responseText);
         },
     });
 }
@@ -393,7 +405,7 @@ function changeAttributesPrinter(element, id, atts) {
            );
         },
         error(jqXHR, textStatus, errorThrown) {
-            swal("changeAttributesPrinter Error:" + jqXHR.responseText);
+            show_err("changeAttributesPrinter:" + jqXHR.responseText);
         },
     });
 }
@@ -410,7 +422,7 @@ function installPrinter(element, id) {
             changeAttributesPrinter(element, id, atts);
         },
         error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
+            show_err(jqXHR.responseText);
         },
     });
 }
@@ -432,7 +444,7 @@ function uninstallPrinter(element, id) {
             changeAttributesPrinter(element, id, atts);
         },
         error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
+            show_err(jqXHR.responseText);
         },
     });
 }
@@ -510,7 +522,7 @@ function getDevice(logicalDev) {
             );
         },
         error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
+            show_err(jqXHR.responseText);
         },
     });
 }
@@ -554,7 +566,7 @@ function queryCategories() {
            showCategories(global.categories);
         },
         error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
+            show_err(jqXHR.responseText);
         },
     });
 }
@@ -602,7 +614,7 @@ function queryAppsPage(url) {
             }
         },
         error(jqXHR, textStatus, errorThrown) {
-            swal("Error:" + jqXHR.responseText);
+            show_err(jqXHR.responseText);
         },
     });
 }
@@ -658,7 +670,7 @@ function renderApp(item) {
     const marked = require("marked");
 
     var renderer = new marked.Renderer();
-    
+
     renderer.heading = function (text, level) {
         var escapedText = text.toLowerCase().replace(/[^\w]+/g, "-");
         return "<h" + (level + 3) + "><a name='" +
@@ -667,7 +679,7 @@ function renderApp(item) {
              escapedText + "'></a><span>" + text +
              "</span></h" + (level + 3) + ">";
     };
-    
+
     var data;
     var truncatedDesc = "";
     if (item.description) {
@@ -758,6 +770,7 @@ function getCharPrint(event){
 
 function showPrinters() {
     const fs = require("fs");
+
     global.devs = installedDevs();
 
     $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
@@ -783,6 +796,16 @@ function showApps() {
     $("#search").bind("keydown", getChar);
     $("#search").focus();
 }
+
+
+function renderTag(tag) {
+    const fs = require("fs");
+    var data = {
+        tag: tag
+    };
+    return Mustache.to_html(fs.readFileSync("templates/tag.html", "utf8"), data);
+}
+
 
 function onDemand(application) {
     const path = require("path");
@@ -909,6 +932,7 @@ function printLabel() {
 
 function showLabel() {
     const fs = require("fs");
+
     var data = {
         "server": global.server,
         "cid":  global.label["id"],
@@ -932,6 +956,10 @@ function showLabel() {
     };
 
     $("#container").html(Mustache.to_html(fs.readFileSync("templates/label.html", "utf8"), data));
+
+    global.computer.tags.forEach( function(tag) {
+        $("#tags").append(renderTag(tag));
+    } );
 
     $("#print-label").click(printLabel);
 
@@ -1194,36 +1222,39 @@ function getGlobalData() {
         global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"');
     }
 
-    if (typeof global.label === "undefined") {
-        // LABEL
-        $.getJSON(
-            "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid,
-            {}
-        ).done(function( data ) {
-            global.label = data;
-            global.cid = global.label["id"];
-            getAttributeCID();
-            $.ajax({
-                url: "http://" + global.server + "/api/v1/token/computers/?id="+global.cid,
-                type: "GET",
-                beforeSend: addTokenHeader,
-                data: {},
-                success(data) {
-                    if (data.count === 1) {
-                        global.computer = data.results[0];
-                        global.computer.ram = (global.computer.ram/1024/1024/1024).toFixed(2)+ " GB"; 
-                        global.computer.storage = (global.computer.storage/1024/1024/1024).toFixed(2) + " GB";
-                        labelDone();
+    // LABEL
+    $.getJSON(
+        "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid,
+        {},
+    ).done(function( data ) {
+        global.label = data;
+        global.cid = global.label["id"];
+        getAttributeCID();
+        $.ajax({
+            url: "http://" + global.server + "/api/v1/token/computers/?id="+global.cid,
+            type: "GET",
+            beforeSend: addTokenHeader,
+            data: {},
+            success(data) {
+                if (data.count === 1) {
+                    global.computer = data.results[0];
+                    global.computer.ram = (global.computer.ram/1024/1024/1024).toFixed(1)+ " GB";
+                    global.computer.storage = (global.computer.storage/1024/1024/1024).toFixed(1) + " GB";
+                    if (global.computer.machine = "V") {
+                        global.computer.machine = "(virtual)" ;
+                    } else {
+                        global.computer.machine="" ;
                     }
-                },
-                error(jqXHR, textStatus, errorThrown) {
-                    swal("Error:" + jqXHR.responseText);
-                },
-            });            
+
+                    labelDone();
+                }
+            },
+            error(jqXHR, textStatus, errorThrown) {
+                show_err(jqXHR.responseText);
+            },
         });
-    } else {
-        labelDone();
-    }
+
+    });
 
     if (typeof global.category === "undefined") {
         global.category = 0;
