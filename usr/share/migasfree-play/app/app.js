@@ -625,7 +625,7 @@ function queryApps() {
     global.packages = "";
 
     var categoryFilter = "";
-    if (global.category !== 0) {
+    if (global.category != 0) {
         categoryFilter = "&category=" + global.category;
     }
 
@@ -633,24 +633,11 @@ function queryApps() {
     queryAppsPage(
         "http://" + global.server + "/api/v1/token/catalog/apps/availables/" +
         "?cid=" +  global.label["id"] +
-        "&level=" + global.level +
         "&q=" + global.search +
         categoryFilter
     );
 }
 
-function showLevels() {
-    var levels = {"": "All", "U": "User", "A": "Administrator"};
-
-    $.each(levels, function(key, value) {
-        $("#levels")
-            .append($("<option>", {value: key})
-            .text(value)
-        );
-    });
-    $("#levels").val(global.level);
-    $("#levels").material_select();
-}
 
 function renderRating(score) {
     var rating = "";
@@ -712,19 +699,17 @@ function renderApp(item) {
 
 function showAppItem(data) {
     $.each(data.results, function(i, item) {
-        if (item.category.id == global.category || global.category === 0) {
-            if (item.level.id == global.level || global.level === "")  {
-                $.each(item.packages_by_project, function(i, pkgs) {
-                    if (pkgs.project.name == global.project) {
-                        $("#apps").append(renderApp(item));
-                        updateStatus(
-                            item.name,
-                            pkgs.packages_to_install.join(" "),
-                            item.level.id
-                        );
-                    }
-                });
-            }
+        if (item.category.id == global.category || global.category == 0) {
+            $.each(item.packages_by_project, function(i, pkgs) {
+                if (pkgs.project.name == global.project) {
+                    $("#apps").append(renderApp(item));
+                    updateStatus(
+                        item.name,
+                        pkgs.packages_to_install.join(" "),
+                        item.level.id
+                    );
+                }
+            });
         }
     });
     $(".collapsible").collapsible();  // FIXME
@@ -745,10 +730,12 @@ function changedCategory() {
     queryApps();
 }
 
-function changedLevel() {
-    global.level = $("#levels").val();
+
+function changed_only_apps_installed(){
+    global.only_apps_installed = $("#only_apps_installed").prop('checked');
     queryApps();
 }
+
 
 function getChar(event) {
     var keyCode = ("which" in event) ? event.which : event.keyCode;
@@ -787,14 +774,16 @@ function showApps() {
     queryCategories();
     $("#container").html(fs.readFileSync("templates/apps.html", "utf8"));
     spinner("apps");
-    queryApps();
-    showLevels();
+    $("#only_apps_installed").prop('checked', global.only_apps_installed);
 
-    $("#levels").change(changedLevel);
+    queryApps();
+
     $("#categories").change(changedCategory);
     $("#search").val(global.search);
     $("#search").bind("keydown", getChar);
     $("#search").focus();
+
+    $("#only_apps_installed").change(changed_only_apps_installed);
 }
 
 
@@ -883,6 +872,12 @@ function updateStatus(name, packagesToInstall, level) {
         installed = false;
     } else {
         installed = (packagesToInstall.split(" ").diff(global.packagesInstalled).length === 0);
+    }
+
+    if (global.only_apps_installed && (installed == false)){
+        $("#card-action-"+slug).addClass("hide");
+    } else {
+        $("#card-action-"+slug).removeClass("hide");
     }
 
     try {
@@ -1260,8 +1255,8 @@ function getGlobalData() {
         global.category = 0;
     }
 
-    if (typeof global.level === "undefined") {
-        global.level = "";
+    if (typeof global.only_apps_installed === "undefined") {
+        global.only_apps_installed = false;
     }
 
     if (typeof global.pks_availables === "undefined") {
