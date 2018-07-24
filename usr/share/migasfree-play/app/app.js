@@ -580,6 +580,8 @@ function installedPkgs(pks) {
 }
 
 function queryAppsPage(url) {
+  if (global.flag_apps) {
+    global.flag_apps = false;
     $.ajax({
         url,
         type: "GET",
@@ -612,11 +614,13 @@ function queryAppsPage(url) {
             } else {
                 $("#preload-next").hide();
             }
+            global.flag_apps = true;
         },
         error(jqXHR, textStatus, errorThrown) {
             show_err(jqXHR.responseText);
         },
     });
+  }
 }
 
 function queryApps() {
@@ -1216,6 +1220,8 @@ function getGlobalData() {
     if (typeof global.user === "undefined") {
         global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"');
     }
+
+    global.flag_apps = true;
 
     // LABEL
     $.getJSON(
