@@ -382,7 +382,7 @@ function queryPrinters() {
     $("#preload-next").show();
     spinner("preload-next");
     queryPrintersPage(
-        "http://" + global.server + "/api/v1/token/devices/logical/availables/" +
+        "http://" + global.server + "/api/v1/token/devices/devices/available/" +
         "?cid=" +  global.label["id"] + "&q=" + global.searchPrint
     );
 }
@@ -453,7 +453,6 @@ function updateStatusPrinter(name, id) {
     var slug = replaceAll(name, " ", "");
     var el = "#action-" + slug;
     var status = "#status-action-" + slug;
-    var descr = "#description-action-" + slug;
     var installed = ($.inArray(id, global.devs) >= 0);
 
     try {
@@ -487,7 +486,7 @@ function renderInfoPrinter(data) {
     return renderDict(JSON.parse(data));
 }
 
-function renderPrinter(logicalDev, dev) {
+function renderPrinter(dev) {
     const fs = require("fs");
     var icon;
 
@@ -498,28 +497,42 @@ function renderPrinter(logicalDev, dev) {
     }
 
     var data = {
-        name: logicalDev.device.name + " " + logicalDev.feature.name,
-        idaction: "action-" + replaceAll(logicalDev.device.name + logicalDev.feature.name, " ", ""),
+        name: dev.name,
+        idaction: "dev-" + replaceAll(dev.name, " ", ""),
         icon,
-        description: dev.model.name + " (" + dev.connection.name + ")" + "<hr />" + renderInfoPrinter(dev.data),
+        description: dev.model.name + " (" + dev.connection.name + ")" + "<br>" +renderInfoPrinter(dev.data),
         truncated: dev.model.name + " (" + dev.connection.name + ")"
     };
 
     return Mustache.to_html(fs.readFileSync("templates/printer.html", "utf8"), data);
 }
 
-function getDevice(logicalDev) {
+
+function renderLogical(logical) {
+    const fs = require("fs");
+    var data = {
+        name: logical.feature.name,
+        idaction: "action-" + replaceAll(logical.device.name + logical.feature.name, " ", ""),
+    };
+    return Mustache.to_html(fs.readFileSync("templates/logical.html", "utf8"), data);
+}
+
+
+function getDevice(dev) {
+    $("#printers").append(renderPrinter(dev));
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/devices/" + logicalDev.device.id + "/",
+        url: "http://" + global.server + "/api/v1/token/devices/logical/available/?cid=" + global.cid.toString() + "&did=" + dev.id,
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
-        success(dev) {
-            $("#printers").append(renderPrinter(logicalDev, dev));
-            updateStatusPrinter(
-                logicalDev.device.name + logicalDev.feature.name,
-                logicalDev.id
-            );
+        success(logicalDevs) {
+            $.each(logicalDevs.results, function(i, logical) {
+                $("#logicals-dev-"+logical.device.name).append(renderLogical(logical));
+                updateStatusPrinter(
+                    logical.device.name + logical.feature.name,
+                    logical.id
+                );
+            });
         },
         error(jqXHR, textStatus, errorThrown) {
             show_err(jqXHR.responseText);
@@ -635,7 +648,7 @@ function queryApps() {
 
     spinner("preload-next");
     queryAppsPage(
-        "http://" + global.server + "/api/v1/token/catalog/apps/availables/" +
+        "http://" + global.server + "/api/v1/token/catalog/apps/available/" +
         "?cid=" +  global.label["id"] +
         "&q=" + global.search +
         categoryFilter

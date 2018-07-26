@@ -203,9 +203,13 @@ hr {
     width: 25%;
 }
 
-.chip{
+.chip {
    border-radius: 16px;
    font-size: 12px !important;
+}
+
+.feature {
+   font-size: 28px !important;
 }
 
 @media print {
