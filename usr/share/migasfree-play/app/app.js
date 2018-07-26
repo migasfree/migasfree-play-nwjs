@@ -94,11 +94,6 @@ function resizeTerminal() {
             location.reload();
             return false;
         }
-//        if (e.keyCode === 123) {  // F12
-//            e.preventDefault();
-//            gui.Window.get().showDevTools();
-//            return false;
-//        }
     };
 }());
 
