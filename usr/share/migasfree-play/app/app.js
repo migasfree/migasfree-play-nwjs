@@ -382,7 +382,7 @@ function queryPrinters() {
     );
 }
 
-function changeAttributesPrinter(element, id, atts) {
+function changeAttributesPrinter(dev, feature, id, atts) {
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "PATCH",
@@ -391,7 +391,7 @@ function changeAttributesPrinter(element, id, atts) {
         data: JSON.stringify({"attributes": atts}),
         success(data) {
            getDevs();
-           updateStatusPrinter(element, id);
+           updateStatusPrinter(dev, feature, id);
         },
         error(jqXHR, textStatus, errorThrown) {
             show_err("changeAttributesPrinter:" + jqXHR.responseText);
@@ -399,7 +399,7 @@ function changeAttributesPrinter(element, id, atts) {
     });
 }
 
-function installPrinter(element, id) {
+function installPrinter(dev, feature, id) {
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "GET",
@@ -408,7 +408,7 @@ function installPrinter(element, id) {
         success(data) {
             var atts =  data.attributes;
             atts.push(global.att_cid);
-            changeAttributesPrinter(element, id, atts);
+            changeAttributesPrinter(dev, feature, id, atts);
         },
         error(jqXHR, textStatus, errorThrown) {
             show_err(jqXHR.responseText);
@@ -416,7 +416,7 @@ function installPrinter(element, id) {
     });
 }
 
-function uninstallPrinter(element, id) {
+function uninstallPrinter(dev, feature, id) {
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "GET",
@@ -430,7 +430,7 @@ function uninstallPrinter(element, id) {
                 atts.splice(index, 1);
             }
 
-            changeAttributesPrinter(element, id, atts);
+            changeAttributesPrinter(dev, feature, id, atts);
         },
         error(jqXHR, textStatus, errorThrown) {
             show_err(jqXHR.responseText);
@@ -438,18 +438,33 @@ function uninstallPrinter(element, id) {
     });
 }
 
-function updateStatusPrinter(name, id) {
-    var slug = replaceAll(name, " ", "");
+function updateStatusPrinter(dev, feature, id) {
+    dev=replaceAll(dev, " ", " ");
+    feature=replaceAll(feature, " ", " ");
+    var slug = dev + feature;
     var el = "#action-" + slug;
     var status = "#status-action-" + slug;
     var assigned = ($.inArray(id, global.devs) >= 0);
     var inflicted = ($.inArray(id, global.inflicted) >= 0);
 
+    if (global.only_devs_installed) {
+        if (assigned || inflicted){
+            $("#dev-"+dev).removeClass("hide");
+            $("#logical-action-"+slug).removeClass("hide");
+
+        } else {
+            $("#logical-action-"+slug).addClass("hide");
+        }
+    } else {
+        $("#dev-"+dev).removeClass("hide");
+        $("#logical-action-"+slug).removeClass("hide");
+    }
+
     try {
         if (assigned) {
             $(el).text("delete");
             $(el).off("click");
-            $(el).click(function() {uninstallPrinter(slug, id);});
+            $(el).click(function() {uninstallPrinter(dev, feature, id);});
             $(status).text("assigned");
             $(status).removeClass("hide");
         } else if (inflicted) {
@@ -459,7 +474,7 @@ function updateStatusPrinter(name, id) {
         } else {
             $(el).text("get_app");
             $(el).off("click");
-            $(el).click(function() {installPrinter(slug, id);});
+            $(el).click(function() {installPrinter(dev, feature, id);});
             $(status).text("");
             $(status).addClass("hide");
         }
@@ -525,7 +540,7 @@ function getDevice(dev) {
             $.each(logicalDevs.results, function(i, logical) {
                 $("#logicals-dev-"+logical.device.name).append(renderLogical(logical));
                 updateStatusPrinter(
-                    logical.device.name + logical.feature.name,
+                    logical.device.name, logical.feature.name,
                     logical.id
                 );
             });
@@ -741,6 +756,11 @@ function changed_only_apps_installed(){
     queryApps();
 }
 
+function changed_only_devs_installed(){
+    global.only_devs_installed = $("#only_devs_installed").prop('checked');
+    queryPrinters();
+}
+
 
 function getChar(event) {
     var keyCode = ("which" in event) ? event.which : event.keyCode;
@@ -790,10 +810,15 @@ function showPrinters() {
 
     $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
     spinner("printers");
+    $("#only_devs_installed").prop('checked', global.only_devs_installed);
+
     queryPrinters();
+
     $("#searchPrint").val(global.searchPrint);
     $("#searchPrint").bind("keydown", getCharPrint);
     $("#searchPrint").focus();
+
+    $("#only_devs_installed").change(changed_only_devs_installed);
 }
 
 function showApps() {
@@ -1287,6 +1312,10 @@ function getGlobalData() {
 
     if (typeof global.only_apps_installed === "undefined") {
         global.only_apps_installed = false;
+    }
+
+    if (typeof global.only_devs_installed === "undefined") {
+        global.only_devs_installed = false;
     }
 
     if (typeof global.pks_availables === "undefined") {
