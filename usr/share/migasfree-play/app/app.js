@@ -287,7 +287,6 @@ function showSync() {
     $("#container").html(fs.readFileSync("templates/sync.html", "utf8"));
     resizeTerminal();
     global.TERMINAL.refresh();
-    $("#sync").click(sync);
 }
 
 function runAsUserSync(cmd) {
@@ -376,6 +375,7 @@ function queryPrinters() {
     $("#printers").html("");
     $("#preload-next").show();
     spinner("preload-next");
+    getDevs();
     queryPrintersPage(
         "http://" + global.server + "/api/v1/token/devices/devices/available/" +
         "?cid=" +  global.label["id"] + "&q=" + global.searchPrint
@@ -390,14 +390,8 @@ function changeAttributesPrinter(element, id, atts) {
         contentType: "application/json",
         data: JSON.stringify({"attributes": atts}),
         success(data) {
-           global.TERMINAL.run(
-                "migasfree -u",
-                null,
-                function() {
-                    showPrinters();
-                },
-                element
-           );
+           getDevs();
+           updateStatusPrinter(element, id);
         },
         error(jqXHR, textStatus, errorThrown) {
             show_err("changeAttributesPrinter:" + jqXHR.responseText);
@@ -448,18 +442,25 @@ function updateStatusPrinter(name, id) {
     var slug = replaceAll(name, " ", "");
     var el = "#action-" + slug;
     var status = "#status-action-" + slug;
-    var installed = ($.inArray(id, global.devs) >= 0);
+    var assigned = ($.inArray(id, global.devs) >= 0);
+    var inflicted = ($.inArray(id, global.inflicted) >= 0);
 
     try {
-        if (installed) {
+        if (assigned) {
             $(el).text("delete");
             $(el).off("click");
-            $(el).click(function() {uninstallPrinter("action-" + slug, id);});
+            $(el).click(function() {uninstallPrinter(slug, id);});
+            $(status).text("assigned");
             $(status).removeClass("hide");
+        } else if (inflicted) {
+            $(el).addClass("hide");
+            $(status).removeClass("hide");
+            $(status).text("inflicted");
         } else {
             $(el).text("get_app");
             $(el).off("click");
-            $(el).click(function() {installPrinter("action-" + slug, id);});
+            $(el).click(function() {installPrinter(slug, id);});
+            $(status).text("");
             $(status).addClass("hide");
         }
     }
@@ -542,14 +543,6 @@ function showPrinterItem(data) {
     $(".collapsible").collapsible();  // FIXME
 }
 
-function installedDevs() {
-    const path = require("path");
-    const execSync = require("child_process").execSync;
-    var script = '"' + path.join(gui.__dirname, "py", "printers_installed.py") + '"';
-    var cmd = "python " + script;
-
-    return JSON.parse(execSync(cmd));
-}
 
 // APPS
 function showCategories(categories) {
@@ -767,10 +760,33 @@ function getCharPrint(event){
     }
 }
 
+
+function getDevs() {
+    $.ajax({
+        url: "http://" + global.server + "/api/v1/token/computers/"+global.cid+"/devices/",
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        async: false,
+        success(data) {
+            global.devs = [];
+            global.inflicted = [];
+            data.assigned_logical_devices_to_cid.forEach( function(item) {
+                global.devs.push(item.id);
+            } );
+            data.inflicted_logical_devices.forEach( function(item) {
+                global.inflicted.push(item.id);
+            } );
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            show_err(jqXHR.responseText);
+        },
+    });
+}
+
+
 function showPrinters() {
     const fs = require("fs");
-
-    global.devs = installedDevs();
 
     $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
     spinner("printers");
