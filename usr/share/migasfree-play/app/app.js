@@ -221,7 +221,9 @@ function readSettings() {
         global.settings = {};
         global.settings["language"] = "en";
         global.settings["theme"] = "dark";
-        global.settings["showalways"] = false;
+        global.settings["show_details_to_sync"] = false;
+        global.settings["show_menu_apps"] = true;
+        global.settings["show_menu_printers"] = true;
         saveSettings(global.settings);
     }
 }
@@ -1054,11 +1056,11 @@ function checkUser(user, password) {
 function getSettings() {
     global.settings["language"] = "en";
     global.settings["theme"] = "dark";
-    global.settings["showalways"] = $("#showalways").is(":checked");
+    global.settings["show_details_to_sync"] = $("#show_details_to_sync").is(":checked");
 }
 
 function setSettings() {
-    $("#showalways").prop("checked", global.settings["showalways"]);
+    $("#show_details_to_sync").prop("checked", global.settings["show_details_to_sync"]);
 }
 
 function showSettings() {
@@ -1068,7 +1070,7 @@ function showSettings() {
 
     setSettings();
 
-    $("#showalways").change(function() {
+    $("#show_details_to_sync").change(function() {
         getSettings();
         saveSettings(global.settings);
     });
@@ -1334,7 +1336,7 @@ function ready() {
         if (fs.existsSync(consoleLog)) {
             fs.unlinkSync(consoleLog);
         }
-        if (global.settings["showalways"]) {
+        if (global.settings["show_details_to_sync"]) {
             win.show();
         } else {
             win.show();
@@ -1353,6 +1355,15 @@ function ready() {
 
         win.show();
     }
+
+    if (! global.settings["show_menu_apps"]) {
+       $("#menu-apps").addClass("hide");
+    }
+
+    if (! global.settings["show_menu_printers"]) {
+       $("#menu-printers").addClass("hide");
+    }
+
     $("#menu-console").click(showSync);
     $("#menu-apps").click(showApps);
     $("#menu-printers").click(showPrinters);
