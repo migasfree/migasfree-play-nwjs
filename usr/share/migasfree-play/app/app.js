@@ -252,25 +252,13 @@ function execDir(directory) {
     }
 }
 
-function presync() {
-    const path = require("path");
-
-    execDir(path.join(gui.__dirname, "presync.d"));
-}
-
-function postsync() {
-    const path = require("path");
-
-    execDir(path.join(gui.__dirname, "postsync.d"));
-}
 
 function beforeSync() {
     Materialize.toast("synchronizing...", toastTime, "rounded grey");
-    presync();
 }
 
+
 function afterSync() {
-    postsync();
     global.pks_availables = getPkgNames();
     Materialize.toast(
         "<i class='material-icons'>play_arrow</i>" + " synchronized",
@@ -278,6 +266,13 @@ function afterSync() {
         "rounded green"
     );
 }
+
+
+function sync_each_24() {
+    setTimeout(sync_each_24, 24*60*60*1000);
+    sync();
+}
+
 
 function sync() {
     global.TERMINAL.run("migasfree -u", beforeSync, afterSync, "sync");
@@ -1343,9 +1338,10 @@ function ready() {
             win.minimize();
         }
         showSync();
-        sync();
+        sync_each_24();
         global.sync = false;
     } else {
+        setTimeout(sync_each_24, 24*60*60*1000);
         fs.stat(consoleLog, function(err, stat) {
             if (err === null) {
                 // consoleLog exists
