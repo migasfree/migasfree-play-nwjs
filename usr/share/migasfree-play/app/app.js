@@ -70,22 +70,19 @@ function tooltip(id, text) {
     anchor.tooltip();
 }
 
-function exit() {
-    const fs = require("fs");
 
-    fs.writeFile(consoleLog, global.terminal, function (err) {
+function saveTerminal() {
+    const fs = require("fs");
+    fs.writeFile(consoleLog, JSON.stringify(global.terminal), function (err) {
         if (err) {throw err;}
     });
+}
 
+
+function exit() {
     win.window.close();
 }
 
-function resizeTerminal() {
-    scroll(0, 0);
-    $("#console-output").height(
-        $(window).height() - $("#footer-bar").height() - $("#menu-bar").height() - 80
-    );
-}
 
 (function() {
     document.onkeydown = function (e) {
@@ -97,14 +94,6 @@ function resizeTerminal() {
     };
 }());
 
-$(window).bind("resize", function () {
-    try {
-        resizeTerminal();
-    }
-    catch(err) {
-        // nothing
-    }
-});
 
 gui.Window.get().on("close", function () {
     if (global.running) {
@@ -273,17 +262,30 @@ function sync_each_24() {
     sync();
 }
 
+function renderRun(idx) {
+    const fs = require("fs");
+
+    var data = {
+        id: idx,
+        date: global.terminal[idx]["date"],
+        icon: global.terminal[idx]["icon"],
+        header: global.terminal[idx]["header"],
+        body: global.terminal[idx]["body"]
+    };
+
+    return Mustache.to_html(fs.readFileSync("templates/run.html", "utf8"), data);
+}
 
 function sync() {
-    global.TERMINAL.run("migasfree -u", beforeSync, afterSync, "sync");
+    global.TERMINAL.run("migasfree -u", beforeSync, afterSync, "sync", "synchronization");
 }
 
 function showSync() {
     const fs = require("fs");
 
     $("#container").html(fs.readFileSync("templates/sync.html", "utf8"));
-    resizeTerminal();
     global.TERMINAL.refresh();
+
 }
 
 function runAsUserSync(cmd) {
@@ -891,7 +893,8 @@ function install(name, pkgs, level) {
         cmd,
         null,
         function() {postAction(name, pkgs, level);},
-        "action-" + name
+        "action-" + name,
+        name
     );
 }
 
@@ -907,7 +910,8 @@ function uninstall(name, pkgs, level) {
         cmd,
         null,
         function() {postAction(name, pkgs, level);},
-        "action-" + name
+        "action-" + name,
+        name
     );
 }
 
@@ -1090,6 +1094,32 @@ function modalLogin(name, packagesToInstall, level) {
     }).catch(swal.noop);
 }
 
+
+function loadTerminal() {
+    if (! global.sync) {
+        $.each(global.terminal, function(i, term) {
+           $("#console").append(renderRun(i));
+        });
+    } else {
+        global.sync =false
+    }
+
+    if (global.idx) {
+        $('.collapsible').collapsible();
+        $('#console > li:nth-child(' + global.idx + ') > div.collapsible-header').click();
+        window.scrollTo(0,document.body.scrollHeight);
+    }
+}
+
+
+function padLeft(nr, n, str){
+    return Array(n-String(nr).length+1).join(str||'0')+nr;
+}
+
+function formatDate(date) {
+    return date.getFullYear()+ "/" + padLeft(parseInt(date.getMonth())+1,2) + "/" + padLeft(parseInt(date.getDate()),2) + "  " + padLeft(parseInt(date.getHours()),2) +":" + padLeft(parseInt(date.getMinutes()),2)+":"+ padLeft(parseInt(date.getSeconds()),2);
+}
+
 function getGlobalData() {
     const execSync = require("child_process").execSync;
     const fs = require("fs");
@@ -1109,7 +1139,7 @@ function getGlobalData() {
 
     global.TERMINAL = (function() {
         if (typeof global.terminal == "undefined") {
-            global.terminal = "";
+            global.terminal = {};
         }
         var stderr = "";
 
@@ -1120,7 +1150,7 @@ function getGlobalData() {
         return {
             add(txt) {
                 try {
-                    global.terminal = replaceColors(global.terminal + txt);
+                    global.terminal[global.run_idx]["body"] = replaceColors(global.terminal[global.run_idx]["body"] + txt);
                     this.refresh();
                 }
                 catch(err) {
@@ -1129,15 +1159,16 @@ function getGlobalData() {
             },
             refresh() {
                  try {
-                     $("#console-output").html(global.terminal);
-                     var x = document.getElementById("console-output");
-                     x.scrollTop = x.scrollHeight;
+                     $("#"+global.run_idx).html(global.terminal[global.run_idx]["body"]);
+                     if ( $('#console > li:nth-child(' + global.idx + ') > div.collapsible-body').attr("style")!=="display: none;") {
+                         window.scrollTo(0,document.body.scrollHeight);
+                     }
                  }
                  catch(err) {
                     // nothing
                  }
             },
-            run(cmd, beforeCallback=null, afterCallback=null, id) {
+            run(cmd, beforeCallback=null, afterCallback=null, id, txt) {
                 if (global.running) {
                     Materialize.toast(
                         "<i class='material-icons'>warning</i>" + " please wait, other process is running!!!",
@@ -1163,13 +1194,14 @@ function getGlobalData() {
                         process = spawn("cmd", ["/C", cmd]);
                     }
 
-                    this.add("<h3># " + cmd + "</h3>");
-
                     var date = new Date();
-                    var n = date.toDateString();
-                    var time = date.toLocaleTimeString();
 
-                    global.TERMINAL.add("<h5>" + date + "</h5>");
+                    global.idx = global.idx+1;
+                    global.run_idx = "_run_"+ (global.idx).toString();
+                    global.terminal[global.run_idx]={"icon": $("#"+id).text(), "date": formatDate(date), "header": txt, "body": ""};
+
+                    $("#console").append(renderRun(global.run_idx));
+                    $('#console > li:nth-child(' + global.idx + ') > div.collapsible-header').click();
 
                     process.stdout.on("data", function(data) {global.TERMINAL.add(data.toString());});
 
@@ -1211,6 +1243,9 @@ function getGlobalData() {
                         global.TERMINAL.add("<hr />");
 
                         $("#" + id).removeClass("blink");
+
+                        saveTerminal();
+
                         global.running = false;
                     });
                 }
@@ -1324,12 +1359,15 @@ function getGlobalData() {
 function ready() {
     const fs = require("fs");
     var gui = require('nw.gui');
+    global.idx = 0;
     win = gui.Window.get()
     getGlobalData();
     $("#sync").click(sync);
     if (global.sync) {
         if (fs.existsSync(consoleLog)) {
             fs.unlinkSync(consoleLog);
+            global.terminal = {};
+
         }
         if (global.settings["show_details_to_sync"]) {
             win.show();
@@ -1339,13 +1377,14 @@ function ready() {
         }
         showSync();
         sync_each_24();
-        global.sync = false;
     } else {
         setTimeout(sync_each_24, 24*60*60*1000);
         fs.stat(consoleLog, function(err, stat) {
             if (err === null) {
                 // consoleLog exists
-                global.TERMINAL.add(fs.readFileSync(consoleLog, "utf8"));
+                var data = fs.readFileSync(consoleLog, "utf8");
+                global.terminal = JSON.parse(data);
+                global.idx = Object.keys(global.terminal).length;
             }
         });
 
