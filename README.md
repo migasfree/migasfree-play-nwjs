@@ -21,8 +21,15 @@ Requirements
 
     * migasfree-client
 
+Prebuild deb
+============
+
+    * devscripts
+    * debhelper
+    * npm
 
 build deb
 =========
+
 /usr/bin/debuild --no-tgz-check -us -uc
 
