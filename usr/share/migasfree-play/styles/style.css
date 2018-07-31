@@ -170,6 +170,10 @@ hr {
     margin-right: 0;
 }
 
+.md-72 {
+    font-size: 72px !important;
+}
+
 .md-36 {
     font-size: 36px !important;
 }
