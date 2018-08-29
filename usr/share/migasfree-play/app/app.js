@@ -71,6 +71,19 @@ function tooltip(id, text) {
 }
 
 
+function slugify(name){
+  return name
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w\-]+/g, "")
+    .replace(/\-\-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
+}
+
+
 function saveTerminal() {
     const fs = require("fs");
     fs.writeFile(consoleLog, JSON.stringify(global.terminal), function (err) {
@@ -698,14 +711,14 @@ function renderApp(item) {
             project: global.project,
             uuid: global.uuid,
             app: item.name,
-            _app: replaceAll(item.name, " ", "")
+            _app: slugify(item.name)
         };
         item.description = Mustache.render(item.description, data);
     }
 
     data = {
         name: item.name,
-        idaction: "action-" + replaceAll(item.name, " ", ""),
+        idaction: "action-" + slugify(item.name),
         icon: item.icon,
         description: marked(item.description, {renderer: renderer}),
         truncated: truncatedDesc,
@@ -715,6 +728,7 @@ function renderApp(item) {
 
     return Mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
 }
+
 
 function showAppItem(data) {
     $.each(data.results, function(i, item) {
@@ -916,7 +930,7 @@ function uninstall(name, pkgs, level) {
 }
 
 function updateStatus(name, packagesToInstall, level) {
-    var slug = replaceAll(name, " ", "");
+    var slug = slugify(name);
     var el = "#action-" + slug;
     var status = "#status-action-" + slug;
     var descr = "#description-action-" + slug;
