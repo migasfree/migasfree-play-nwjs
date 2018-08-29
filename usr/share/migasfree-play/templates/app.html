@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col s1 m1">
                 <div class="avatar">
-                    <img class="icon" height="48" width="48" src="{{icon}}" onerror="this.src='assets/app-default.png'" />
+                    <img class="icon" id="avatar-{{idaction}}" height="48" width="48" src="{{icon}}" />
                 </div>
             </div>
             <div class="col s9 m9">
@@ -56,6 +56,9 @@ $(document).ready(function() {
     });
     $("#descr-{{idaction}} i").on("click", function () {
         showTruncated("{{idaction}}");
+    });
+    $("#avatar-{{idaction}}").on("error", function () {
+        $(this).attr("src", "assets/app-default.png");
     });
 });
 </script>
