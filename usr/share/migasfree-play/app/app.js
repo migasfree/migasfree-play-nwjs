@@ -8,6 +8,40 @@ var consoleLog = path.join(gui.__dirname, "console.log");
 var toastTime = 3000;
 var colorTheme = "#009688"; //teal
 
+
+function getServerVersion() {
+    var url = "http://" + global.server + "/api/v1/public/server/info/"
+    $.support.cors = true;
+    $.ajax({
+        type: 'HEAD',
+        method: 'POST',
+        url: url,
+        crossDomain: true,
+        success: function() {
+            // url found
+            $.ajax({
+                url,
+                type: "POST",
+                beforeSend: addTokenHeader,
+                data: {},
+                async: false,
+                success(data) {
+                    global.serverversion = parseFloat(data.version);
+                },
+                error(jqXHR, textStatus, errorThrown) {
+                    global.serverversion = 0;
+                },
+            });
+
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            // url not found
+            global.serverversion = 0;
+        }
+    });
+
+}
+
 function getOS() {
     var osName = "Unknown";
 
@@ -656,14 +690,22 @@ function queryApps() {
     $("#preload-next").show();
     global.packages = "";
 
+    var url = "";
     var categoryFilter = "";
     if (global.category != 0) {
         categoryFilter = "&category=" + global.category;
     }
 
     spinner("preload-next");
+
+    if (global.serverversion >= 4.16) {
+        url = "http://" + global.server + "/api/v1/token/catalog/apps/available/"
+    } else {
+        url = "http://" + global.server + "/api/v1/token/catalog/apps/"
+    }
+
     queryAppsPage(
-        "http://" + global.server + "/api/v1/token/catalog/apps/available/" +
+        url +
         "?cid=" +  global.label["id"] +
         "&q=" + global.search +
         categoryFilter
@@ -1314,6 +1356,10 @@ function getGlobalData() {
 
     if (typeof global.user === "undefined") {
         global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"');
+    }
+
+    if (typeof global.serverversion === "undefined") {
+        getServerVersion();
     }
 
     global.flag_apps = true;
