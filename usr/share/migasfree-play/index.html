@@ -43,6 +43,12 @@
                             <i class="material-icons">settings</i>
                         </a>
                     </li>
+                    <li>
+                        <a id="menu-help" class="waves-effect waves-light js-external-link" title="Help" href="https://fun-with-migasfree.readthedocs.io/es/master/chapter10.html#migasfree-play">
+                            <i class="material-icons">help</i>
+                        </a>
+                    </li>
+
                     <li><a id="auth" class="hide"></a></li>
                 </ul>
             </div>
@@ -54,25 +60,9 @@
             <br><br><br>
             <img id="logo" src="assets/migasfree-play.svg" alt="migasfree-play" class="logo">
             <center>
-                <h4 id="version">migasfree play</h4>
-                <h5>A frontend for migasfree client<h5>
+                <h5>migasfree-play</h5>
+                <span id="connecting" class="brand-logo"></span>
             </center>
-
-            <center>
-                <p>&copy; 2017-2018 migasfree team</p>
-                <p>Alberto Gacías & José Antonio Chavarría</p>
-                <a class='js-external-link teal-text' href="http://migasfree.org">
-                    <i class="material-icons teal-text">public</i>
-                </a>
-                <a class='js-external-link teal-text' href="https://github.com/migasfree/migasfree-play">
-                    <i class="material-icons teal-text">code</i>
-                </a>
-                <br>
-                <a class='js-external-link' href="https://fun-with-migasfree.readthedocs.io/es/master/chapter10.html#migasfree-play">
-                   <i class="material-icons teal-text md-72">help_outline</i>
-                </a>
-            </center>
-
         </div>
     </main>
 
@@ -83,11 +73,6 @@
         </div>
 
     <footer id="footer-bar" class="page-footer grey lighten-4">
-        <p class="center">
-            <a class='teal-text' href="index.html">
-              <i class="material-icons teal-text">help</i>
-            </a>
-        </p>
     </footer>
 
     <script type="text/javascript" src="node_modules/jquery/dist/jquery.min.js"></script>
@@ -107,6 +92,7 @@
         $('select').material_select();
         $('.tooltipped').tooltip({delay: 100});
         spinner('machine');
+        spinner('connecting');
         ready();
         document.body.addEventListener('click', supportExternalLinks, false);
     });

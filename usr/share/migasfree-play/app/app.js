@@ -301,6 +301,7 @@ function afterSync() {
         toastTime,
         "rounded green"
     );
+    global.sync = false;
 }
 
 
@@ -1037,9 +1038,14 @@ function printLabel() {
 
 function showLabel() {
     const fs = require("fs");
-
+    const pk = require('./package.json');
     var data = {
         "server": global.server,
+        "app_name": pk.name,
+        "app_version": pk.version,
+        "app_description": pk.description,
+        "app_copyright": pk.copyright,
+        "app_author": pk.author,
         "cid":  global.label["id"],
         "name": global.label["name"],
         "project": global.project,
@@ -1156,10 +1162,7 @@ function loadTerminal() {
         $.each(global.terminal, function(i, term) {
            $("#console").append(renderRun(i));
         });
-    } else {
-        global.sync =false
-    }
-
+    } 
     if (global.idx) {
         $('.collapsible').collapsible();
         $('#console > li:nth-child(' + global.idx + ') > div.collapsible-header').click();
@@ -1391,6 +1394,11 @@ function getGlobalData() {
                     }
 
                     labelDone();
+
+                    if (! global.sync) {
+                        showApps();
+                    }
+
                 }
             },
             error(jqXHR, textStatus, errorThrown) {
