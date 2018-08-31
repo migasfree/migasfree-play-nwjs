@@ -1216,8 +1216,10 @@ function getGlobalData() {
             refresh() {
                  try {
                      $("#"+global.run_idx).html(global.terminal[global.run_idx]["body"]);
-                     if ( $('#console > li:nth-child(' + global.idx + ') > div.collapsible-body').attr("style")!=="display: none;") {
-                         window.scrollTo(0,document.body.scrollHeight);
+                     if ($('#console').length > 0) {
+                         if ( $('#console > li:nth-child(' + global.idx + ') > div.collapsible-body').attr("style")!=="display: none;") {
+                             window.scrollTo(0,document.body.scrollHeight);
+                         }
                      }
                  }
                  catch(err) {
