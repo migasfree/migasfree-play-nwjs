@@ -2,14 +2,12 @@ import os
 import sys
 import platform
 
+
 if __name__ == '__main__':
     user = os.environ['_LOGIN_MP_USER']
     password = os.environ['_LOGIN_MP_PASS']
 
-    print user, password 
-
     if platform.system() == "Windows":
-        import os
         import win32security
         import ctypes
 
@@ -26,7 +24,6 @@ if __name__ == '__main__':
             sys.exit(1)
         else:
             if ctypes.windll.shell32.IsUserAnAdmin() == 1:  # is an admin
-                print "OK"
                 sys.exit(0)
             else:
                 sys.exit(1)
@@ -69,7 +66,6 @@ if __name__ == '__main__':
             return False
 
         if auth(user, password) and (is_sudo_group(user) or is_root(user)):
-            print "OK"
             sys.exit(0)
         else:
             sys.exit(1)
