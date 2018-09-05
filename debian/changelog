@@ -1,3 +1,9 @@
+migasfree-play (1.2-1) unstable; urgency=low
+
+  * global.settings show_menu_apps and show_menu_printers
+
+ -- Alberto Gacías <alberto@migasfree.org>  Wed, 5 Sep 2018 19:28:47 +0200
+
 migasfree-play (1.1-1) unstable; urgency=low
 
   * Changed devices (required migasfree-server >= 4.16)
