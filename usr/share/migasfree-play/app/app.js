@@ -10,7 +10,8 @@ var colorTheme = "#009688"; //teal
 
 
 function getServerVersion() {
-    var url = "http://" + global.server + "/api/v1/public/server/info/"
+    var url = "http://" + global.server + "/api/v1/public/server/info/";
+    var err_version = "migasfree-server version 4.16 is required";
     $.support.cors = true;
     $.ajax({
         type: 'HEAD',
@@ -30,6 +31,7 @@ function getServerVersion() {
                 },
                 error(jqXHR, textStatus, errorThrown) {
                     global.serverversion = 0;
+                    show_err(err_version);
                 },
             });
 
@@ -37,6 +39,7 @@ function getServerVersion() {
         error: function(jqXHR, textStatus, errorThrown) {
             // url not found
             global.serverversion = 0;
+            show_err(err_version);
         }
     });
 
@@ -252,6 +255,14 @@ function readSettings() {
     if (fs.existsSync(filePath)) {
         var data = fs.readFileSync(filePath, "utf8");
         global.settings = JSON.parse(data);
+        if (! global.settings.hasOwnProperty('show_menu_apps')) {
+            global.settings["show_menu_apps"] = true;
+            saveSettings(global.settings);
+        }
+        if (! global.settings.hasOwnProperty('show_menu_printers')) {
+            global.settings["show_menu_printers"] = true;
+            saveSettings(global.settings);
+        }
     }
     else {
         global.settings = {};
@@ -1396,7 +1407,13 @@ function getGlobalData() {
                     labelDone();
 
                     if (! global.sync) {
-                        showApps();
+                        if (global.settings["show_menu_apps"]) {  
+                            showApps();
+                        } else if (global.settings["show_menu_printers"]) {
+                            showPrinters();
+                        } else {
+                            showSync();
+                        }
                     }
 
                 }
