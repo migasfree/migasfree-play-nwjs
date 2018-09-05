@@ -1,7 +1,7 @@
 {
   "name": "migasfree-play",
   "description": "A Migasfree Client front-end",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "index.html",
   "repository": "tofill",
   "chromium-args": "--disable-gpu --disable-ios-password-suggestions --enable-logging --remote-debugging-port=9999",
