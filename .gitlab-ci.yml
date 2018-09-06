@@ -12,12 +12,11 @@ build-deb-32-precise:
   image: migasfree/deb-ci:32
   stage: build
   script:
-    - export _NWJS_VERSION="0.14.7"
     - useradd -m $_USER
     - mkdir -p $_PATH
     - mv * $_PATH
     - pushd $_PATH
-    - su -c "/usr/bin/debuild --no-tgz-check -us -uc" $_USER
+    - su -c "export _NWJS_VERSION='0.14.7';/usr/bin/debuild --no-tgz-check -us -uc" $_USER
     - popd
     - mv /home/$_USER/*.deb .
   artifacts:
