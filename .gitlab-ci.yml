@@ -11,9 +11,8 @@ stages:
 build-deb-32-precise:
   image: migasfree/deb-ci:32
   stage: build
-  variables:
-    _NWJS_VERSION: 0.14.7
   script:
+    - export _NWJS_VERSION="0.14.7":
     - useradd -m $_USER
     - mkdir -p $_PATH
     - mv * $_PATH
