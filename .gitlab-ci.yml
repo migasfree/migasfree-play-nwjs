@@ -29,6 +29,7 @@ upload-deb-32:
   image: migasfree/deb-ci:32
   stage: upload
   script:
+    - MIGASFREE_PACKAGER_PROJECT=AZL-12 migasfree-upload -f *.deb
     - MIGASFREE_PACKAGER_PROJECT=AZL-14 migasfree-upload -f *.deb
   dependencies:
     - build-deb-32
