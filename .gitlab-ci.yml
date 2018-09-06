@@ -7,6 +7,38 @@ stages:
   - build
   - upload
 
+
+build-deb-32-precise:
+  image: migasfree/deb-ci:32
+  stage: build
+  variables:
+    _NWJS_VERSION: 0.14.7
+  script:
+    - useradd -m $_USER
+    - mkdir -p $_PATH
+    - mv * $_PATH
+    - pushd $_PATH
+    - su -c "/usr/bin/debuild --no-tgz-check -us -uc" $_USER
+    - popd
+    - mv /home/$_USER/*.deb .
+  artifacts:
+    expire_in: 1 days
+    paths:
+    - ./*.deb
+  only:
+    - tags
+
+upload-deb-32-precise:
+  image: migasfree/deb-ci:32
+  stage: upload
+  script:
+    - MIGASFREE_PACKAGER_PROJECT=AZL-12 migasfree-upload -f *.deb
+  dependencies:
+    - build-deb-32-precise
+  only:
+    - tags
+
+
 build-deb-32:
   image: migasfree/deb-ci:32
   stage: build
@@ -29,7 +61,6 @@ upload-deb-32:
   image: migasfree/deb-ci:32
   stage: upload
   script:
-    - MIGASFREE_PACKAGER_PROJECT=AZL-12 migasfree-upload -f *.deb
     - MIGASFREE_PACKAGER_PROJECT=AZL-14 migasfree-upload -f *.deb
   dependencies:
     - build-deb-32
@@ -62,6 +93,7 @@ upload-deb-64:
   stage: upload
   script:
     - MIGASFREE_PACKAGER_PROJECT=AZL-16 migasfree-upload -f *.deb
+    - MIGASFREE_PACKAGER_PROJECT=AZL-18 migasfree-upload -f *.deb
   dependencies:
     - build-deb-64
   only:

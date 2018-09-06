@@ -1,6 +1,9 @@
 set -e
 
-_NWJS_VERSION=0.31.5
+
+if [ -z $_NWJS_VERSION ]; then
+    _NWJS_VERSION=0.31.5
+fi
 
 PATH=$PATH:/usr/local/bin
 
