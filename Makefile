@@ -1,3 +1,5 @@
+include .env
+export
 
 .PHONY: all clean
 
@@ -7,5 +9,5 @@ clean:
 	rm -rf usr/share/migasfree-play/node_modules
 	rm -rf usr/share/migasfree-play/nwjs
 
-migasfree-play: 
+migasfree-play:
 	./scripts/download.sh
