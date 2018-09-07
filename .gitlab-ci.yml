@@ -120,7 +120,7 @@ build-rpm-64:
     - mv $_PATH/SOURCES/$CI_PROJECT_NAME-$_VERSION/rpm/* $_PATH/SPECS
     - rm -rf $_PATH/SOURCES/rpm/
     - pushd $_PATH/SOURCES
-    - echo "_NWJS_VERSION=0.31.5" > $_PATH/BUILD/.env
+    - echo "_NWJS_VERSION=0.31.5" > $CI_PROJECT_NAME-$_VERSION/.env
     - tar -cvzf $CI_PROJECT_NAME-$_VERSION.tar.gz $CI_PROJECT_NAME-$_VERSION
     - su -c "rpmbuild --define '_topdir $_PATH' -ba $_PATH/SPECS/$CI_PROJECT_NAME.spec" $_USER
     - popd
