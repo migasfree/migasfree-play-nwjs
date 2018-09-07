@@ -46,6 +46,7 @@ build-deb-32:
     - mkdir -p $_PATH
     - mv * $_PATH
     - pushd $_PATH
+    - echo "_NWJS_VERSION=0.31.5" > $_PATH/.env
     - su -c "/usr/bin/debuild --no-tgz-check -us -uc" $_USER
     - popd
     - mv /home/$_USER/*.deb .
@@ -76,6 +77,7 @@ build-deb-64:
     - mkdir -p $_PATH
     - mv * $_PATH
     - pushd $_PATH
+    - echo "_NWJS_VERSION=0.31.5" > $_PATH/.env
     - su -c "/usr/bin/debuild --no-tgz-check -us -uc" $_USER
     - popd
     - mv /home/$_USER/*.deb .
@@ -118,6 +120,7 @@ build-rpm-64:
     - mv $_PATH/SOURCES/$CI_PROJECT_NAME-$_VERSION/rpm/* $_PATH/SPECS
     - rm -rf $_PATH/SOURCES/rpm/
     - pushd $_PATH/SOURCES
+    - echo "_NWJS_VERSION=0.31.5" > $_PATH/.env
     - tar -cvzf $CI_PROJECT_NAME-$_VERSION.tar.gz $CI_PROJECT_NAME-$_VERSION
     - su -c "rpmbuild --define '_topdir $_PATH' -ba $_PATH/SPECS/$CI_PROJECT_NAME.spec" $_USER
     - popd
