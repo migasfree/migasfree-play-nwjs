@@ -961,7 +961,7 @@ function install(name, pkgs, level) {
         cmd,
         null,
         function() {postAction(name, pkgs, level);},
-        "action-" + name,
+        "action-" + slugify(name),
         name
     );
 }
@@ -978,7 +978,7 @@ function uninstall(name, pkgs, level) {
         cmd,
         null,
         function() {postAction(name, pkgs, level);},
-        "action-" + name,
+        "action-" + slugify(name),
         name
     );
 }
@@ -1173,7 +1173,7 @@ function loadTerminal() {
         $.each(global.terminal, function(i, term) {
            $("#console").append(renderRun(i));
         });
-    } 
+    }
     if (global.idx) {
         $('.collapsible').collapsible();
         $('#console > li:nth-child(' + global.idx + ') > div.collapsible-header').click();
@@ -1407,7 +1407,7 @@ function getGlobalData() {
                     labelDone();
 
                     if (! global.sync) {
-                        if (global.settings["show_menu_apps"]) {  
+                        if (global.settings["show_menu_apps"]) {
                             showApps();
                         } else if (global.settings["show_menu_printers"]) {
                             showPrinters();
