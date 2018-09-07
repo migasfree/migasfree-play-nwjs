@@ -1,10 +1,5 @@
 set -e
 
-
-if [ -z $_NWJS_VERSION ]; then
-    _NWJS_VERSION=0.31.5
-fi
-
 PATH=$PATH:/usr/local/bin
 
 if [ "$DEB_BUILD_ARCH_BITS" = "32" ]; then
@@ -17,4 +12,5 @@ cd usr/share/migasfree-play
 npm set strict-ssl false
 npm install
 
+echo "Downloading nwjs-v${_NWJS_VERSION}-linux-${_ARCH}.tar.gz"
 wget --quiet --tries=3 --no-check-certificate -O nwjs.tar.gz https://dl.nwjs.io/v${_NWJS_VERSION}/nwjs-v${_NWJS_VERSION}-linux-${_ARCH}.tar.gz
