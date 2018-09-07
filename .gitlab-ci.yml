@@ -16,7 +16,7 @@ build-deb-32-precise:
     - mkdir -p $_PATH
     - mv * $_PATH
     - pushd $_PATH
-    - echo "_NWJS_VERSION=0.31.5" > .env
+    - echo "_NWJS_VERSION=0.14.7" > $_PATH/.env
     - su -c "/usr/bin/debuild --no-tgz-check -us -uc" $_USER
     - popd
     - mv /home/$_USER/*.deb .
