@@ -57,7 +57,7 @@ h1 {
     margin: 0;
 }
 
-#printers .title {
+#devices .title {
     font-size: 150%;
     display: block;
     margin: 0;
@@ -82,12 +82,12 @@ h1 {
     position: relative;
 }
 
-#printers .icon {
+#devices .icon {
     width: 48px;
     height: 48px;
 }
 
-#printers .avatar {
+#devices .avatar {
     position: relative;
 }
 
