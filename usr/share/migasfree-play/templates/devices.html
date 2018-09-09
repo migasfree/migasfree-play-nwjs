@@ -2,25 +2,23 @@
     <div class="col s12 m3"></div>
 
     <div class="flow-text col s12 m6 center-align">
-        <div><input id="searchPrint" type="text" placeholder="Search devices"></div>
+        <div><input id="searchPrint" type="text" placeholder="{{txt_search}}"></div>
 
         <div class="switch">
             <label class="flow-text">
-                only installed
-                <input id="only_devs_installed" type="checkbox">
+                {{txt_assigned}}
+                <input id="only_devs_assigned" type="checkbox">
                 <span class="lever"></span>
             </label>
         </div>
 
     </div>
 
-
-
 </div>
 
 <div class="row">
     <div class="col s12 m12 flow-text">
-        <div id="printers" class="js-external-link">
+        <div id="devices" class="js-external-link">
         </div>
 
         <input type="hidden" id="auth" name="auth" value="" />
