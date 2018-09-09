@@ -148,7 +148,7 @@ function exit() {
 gui.Window.get().on("close", function () {
     if (global.running) {
          Materialize.toast(
-            "<i class='material-icons'>warning</i>" + " please wait, one process is running!!!",
+            "<i class='material-icons'>warning</i>" + _("please wait, other process is running!!!"),
             toastTime,
             "rounded red"
         );
@@ -171,7 +171,7 @@ function labelDone() {
         $("#machine").html(
             "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label["name"] + "</a>"
         );
-        tooltip("#machine", "View computer in server: "+ global.server);
+        tooltip("#machine", _("View computer in migasfree server"));
 
         var typeNumber = 4;
         var errorCorrectionLevel = "L";
@@ -259,20 +259,42 @@ function readSettings() {
             global.settings["show_menu_apps"] = true;
             saveSettings(global.settings);
         }
-        if (! global.settings.hasOwnProperty('show_menu_printers')) {
-            global.settings["show_menu_printers"] = true;
+        if (! global.settings.hasOwnProperty('show_menu_devices')) {
+            global.settings["show_menu_devices"] = true;
+            saveSettings(global.settings);
+        }
+        if (! global.settings.hasOwnProperty('show_menu_details')) {
+            global.settings["show_menu_details"] = true;
+            saveSettings(global.settings);
+        }
+        if (! global.settings.hasOwnProperty('show_menu_settings')) {
+            global.settings["show_menu_settings"] = true;
+            saveSettings(global.settings);
+        }
+        if (! global.settings.hasOwnProperty('show_menu_information')) {
+            global.settings["show_menu_information"] = true;
+            saveSettings(global.settings);
+        }
+        if (! global.settings.hasOwnProperty('show_menu_help')) {
+            global.settings["show_menu_help"] = true;
             saveSettings(global.settings);
         }
     }
     else {
         global.settings = {};
-        global.settings["language"] = "en";
+        global.settings["language"] = "es";
         global.settings["theme"] = "dark";
         global.settings["show_details_to_sync"] = false;
         global.settings["show_menu_apps"] = true;
-        global.settings["show_menu_printers"] = true;
+        global.settings["show_menu_devices"] = true;
+        global.settings["show_menu_details"] = true;
+        global.settings["show_menu_settings"] = true;
+        global.settings["show_menu_information"] = true;
+        global.settings["show_menu_help"] = true;
+        
         saveSettings(global.settings);
     }
+    loadLocale(global.settings["language"]);
 }
 
 function getPkgNames() {
@@ -301,14 +323,14 @@ function execDir(directory) {
 
 
 function beforeSync() {
-    Materialize.toast("synchronizing...", toastTime, "rounded grey");
+    Materialize.toast(_("synchronizing..."), toastTime, "rounded grey");
 }
 
 
 function afterSync() {
     global.pks_availables = getPkgNames();
     Materialize.toast(
-        "<i class='material-icons'>play_arrow</i>" + " synchronized",
+        "<i class='material-icons'>play_arrow</i>" + _("synchronized"),
         toastTime,
         "rounded green"
     );
@@ -336,15 +358,13 @@ function renderRun(idx) {
 }
 
 function sync() {
-    global.TERMINAL.run("migasfree -u", beforeSync, afterSync, "sync", "synchronization");
+    global.TERMINAL.run("migasfree -u", beforeSync, afterSync, "sync", _("synchronization"));
 }
 
-function showSync() {
+function showDetails() {
     const fs = require("fs");
-
-    $("#container").html(fs.readFileSync("templates/sync.html", "utf8"));
+    $("#container").html(fs.readFileSync("templates/details.html", "utf8"));
     global.TERMINAL.refresh();
-
 }
 
 function runAsUserSync(cmd) {
@@ -399,22 +419,22 @@ function supportExternalLinks(event) {
     crawlDom(event.target);
 }
 
-// PRINTERS
-function queryPrintersPage(url) {
+// DEVICES
+function queryDevicesPage(url) {
     $.ajax({
         url,
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
         success(data) {
-            showPrinterItem(data);
+            showDeviceItem(data);
             if (data.next) {
                 var options = [{
                     selector: "footer",
                     offset: 0,
                     callback() {
                         if (data.next) {
-                            queryPrintersPage(data.next);
+                            queryDevicesPage(data.next);
                         }
                     }
                 }];
@@ -429,18 +449,18 @@ function queryPrintersPage(url) {
     });
 }
 
-function queryPrinters() {
-    $("#printers").html("");
+function queryDevices() {
+    $("#devices").html("");
     $("#preload-next").show();
     spinner("preload-next");
     getDevs();
-    queryPrintersPage(
+    queryDevicesPage(
         "http://" + global.server + "/api/v1/token/devices/devices/available/" +
         "?cid=" +  global.label["id"] + "&q=" + global.searchPrint
     );
 }
 
-function changeAttributesPrinter(dev, feature, id, atts) {
+function changeAttributesDevice(dev, feature, id, atts) {
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "PATCH",
@@ -449,15 +469,15 @@ function changeAttributesPrinter(dev, feature, id, atts) {
         data: JSON.stringify({"attributes": atts}),
         success(data) {
            getDevs();
-           updateStatusPrinter(dev, feature, id);
+           updateStatusDevice(dev, feature, id);
         },
         error(jqXHR, textStatus, errorThrown) {
-            show_err("changeAttributesPrinter:" + jqXHR.responseText);
+            show_err("changeAttributesDevice:" + jqXHR.responseText);
         },
     });
 }
 
-function installPrinter(dev, feature, id) {
+function installDevice(dev, feature, id) {
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "GET",
@@ -466,7 +486,7 @@ function installPrinter(dev, feature, id) {
         success(data) {
             var atts =  data.attributes;
             atts.push(global.att_cid);
-            changeAttributesPrinter(dev, feature, id, atts);
+            changeAttributesDevice(dev, feature, id, atts);
         },
         error(jqXHR, textStatus, errorThrown) {
             show_err(jqXHR.responseText);
@@ -474,7 +494,7 @@ function installPrinter(dev, feature, id) {
     });
 }
 
-function uninstallPrinter(dev, feature, id) {
+function uninstallDevice(dev, feature, id) {
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "GET",
@@ -488,7 +508,7 @@ function uninstallPrinter(dev, feature, id) {
                 atts.splice(index, 1);
             }
 
-            changeAttributesPrinter(dev, feature, id, atts);
+            changeAttributesDevice(dev, feature, id, atts);
         },
         error(jqXHR, textStatus, errorThrown) {
             show_err(jqXHR.responseText);
@@ -496,16 +516,16 @@ function uninstallPrinter(dev, feature, id) {
     });
 }
 
-function updateStatusPrinter(dev, feature, id) {
-    dev=replaceAll(dev, " ", " ");
-    feature=replaceAll(feature, " ", " ");
+function updateStatusDevice(dev, feature, id) {
+    dev=slugify(dev);
+    feature=slugify(feature);
     var slug = dev + feature;
     var el = "#action-" + slug;
     var status = "#status-action-" + slug;
     var assigned = ($.inArray(id, global.devs) >= 0);
     var inflicted = ($.inArray(id, global.inflicted) >= 0);
 
-    if (global.only_devs_installed) {
+    if (global.only_devs_assigned) {
         if (assigned || inflicted){
             $("#dev-"+dev).removeClass("hide");
             $("#logical-action-"+slug).removeClass("hide");
@@ -522,17 +542,17 @@ function updateStatusPrinter(dev, feature, id) {
         if (assigned) {
             $(el).text("delete");
             $(el).off("click");
-            $(el).click(function() {uninstallPrinter(dev, feature, id);});
-            $(status).text("assigned");
+            $(el).click(function() {uninstallDevice(dev, feature, id);});
+            $(status).text(_("assigned"));
             $(status).removeClass("hide");
         } else if (inflicted) {
             $(el).addClass("hide");
             $(status).removeClass("hide");
-            $(status).text("inflicted");
+            $(status).text(_("inflicted"));
         } else {
             $(el).text("get_app");
             $(el).off("click");
-            $(el).click(function() {installPrinter(dev, feature, id);});
+            $(el).click(function() {installDevice(dev, feature, id);});
             $(status).text("");
             $(status).addClass("hide");
         }
@@ -551,11 +571,11 @@ function renderDict(data) {
     return ret;
 }
 
-function renderInfoPrinter(data) {
+function renderInfoDevice(data) {
     return renderDict(JSON.parse(data));
 }
 
-function renderPrinter(dev) {
+function renderDevice(dev) {
     const fs = require("fs");
     var icon;
 
@@ -567,13 +587,13 @@ function renderPrinter(dev) {
 
     var data = {
         name: dev.name,
-        idaction: "dev-" + replaceAll(dev.name, " ", ""),
+        idaction: "dev-" + slugify(dev.name),
         icon,
-        description: dev.model.name + " (" + dev.connection.name + ")" + "<br>" +renderInfoPrinter(dev.data),
+        description: dev.model.name + " (" + dev.connection.name + ")" + "<br>" +renderInfoDevice(dev.data),
         truncated: dev.model.name + " (" + dev.connection.name + ")"
     };
 
-    return Mustache.to_html(fs.readFileSync("templates/printer.html", "utf8"), data);
+    return Mustache.to_html(fs.readFileSync("templates/device.html", "utf8"), data);
 }
 
 
@@ -581,14 +601,14 @@ function renderLogical(logical) {
     const fs = require("fs");
     var data = {
         name: logical.feature.name,
-        idaction: "action-" + replaceAll(logical.device.name + logical.feature.name, " ", ""),
+        idaction: "action-" + slugify(logical.device.name + logical.feature.name),
     };
     return Mustache.to_html(fs.readFileSync("templates/logical.html", "utf8"), data);
 }
 
 
 function getDevice(dev) {
-    $("#printers").append(renderPrinter(dev));
+    $("#devices").append(renderDevice(dev));
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/devices/logical/available/?cid=" + global.cid.toString() + "&did=" + dev.id,
         type: "GET",
@@ -596,8 +616,8 @@ function getDevice(dev) {
         data: {},
         success(logicalDevs) {
             $.each(logicalDevs.results, function(i, logical) {
-                $("#logicals-dev-"+logical.device.name).append(renderLogical(logical));
-                updateStatusPrinter(
+                $("#logicals-dev-"+slugify(logical.device.name)).append(renderLogical(logical));
+                updateStatusDevice(
                     logical.device.name, logical.feature.name,
                     logical.id
                 );
@@ -609,7 +629,7 @@ function getDevice(dev) {
     });
 }
 
-function showPrinterItem(data) {
+function showDeviceItem(data) {
     $.each(data.results, function(i, item) {
         getDevice(item);
     });
@@ -777,7 +797,8 @@ function renderApp(item) {
         description: marked(item.description, {renderer: renderer}),
         truncated: truncatedDesc,
         category: item.category.name,
-        rating: renderRating(item.score)
+        rating: renderRating(item.score),
+        txt_installed: _("installed")
     };
 
     return Mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
@@ -823,9 +844,9 @@ function changed_only_apps_installed(){
     queryApps();
 }
 
-function changed_only_devs_installed(){
-    global.only_devs_installed = $("#only_devs_installed").prop('checked');
-    queryPrinters();
+function changed_only_devs_assigned(){
+    global.only_devs_assigned = $("#only_devs_assigned").prop('checked');
+    queryDevices();
 }
 
 
@@ -843,7 +864,7 @@ function getCharPrint(event){
 
     if (keyCode === 13) {  // Enter
         global.searchPrint = $("#searchPrint").val();
-        queryPrinters();
+        queryDevices();
     }
 }
 
@@ -872,27 +893,38 @@ function getDevs() {
 }
 
 
-function showPrinters() {
+function showDevices() {
     const fs = require("fs");
 
-    $("#container").html(fs.readFileSync("templates/printers.html", "utf8"));
-    spinner("printers");
-    $("#only_devs_installed").prop('checked', global.only_devs_installed);
+    var data = {
+		txt_search: _("search"), 
+		txt_assigned: _("assigned")
+	};
+    
+    $("#container").html( Mustache.to_html(fs.readFileSync("templates/devices.html", "utf8"), data) );
+    
+    spinner("devices");
+    $("#only_devs_assigned").prop('checked', global.only_devs_assigned);
 
-    queryPrinters();
+    queryDevices();
 
     $("#searchPrint").val(global.searchPrint);
     $("#searchPrint").bind("keydown", getCharPrint);
     $("#searchPrint").focus();
 
-    $("#only_devs_installed").change(changed_only_devs_installed);
+    $("#only_devs_assigned").change(changed_only_devs_assigned);
 }
 
 function showApps() {
     const fs = require("fs");
 
     queryCategories();
-    $("#container").html(fs.readFileSync("templates/apps.html", "utf8"));
+    var data = {
+		txt_search: _("search"), 
+		txt_installed: _("installed")
+	};
+    
+    $("#container").html( Mustache.to_html(fs.readFileSync("templates/apps.html", "utf8"), data) );
     spinner("apps");
     $("#only_apps_installed").prop('checked', global.only_apps_installed);
 
@@ -934,14 +966,14 @@ function postAction(name, pkgs, level) {
     global.packagesInstalled = installedPkgs(global.packages);
     if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
         Materialize.toast(
-            "<i class='material-icons'>get_app</i> " + name + " installed.",
+            "<i class='material-icons'>get_app</i> " + _("{{name}} installed", {name: name}),
             toastTime,
             "rounded green"
         );
     }
     else {
         Materialize.toast(
-            "<i class='material-icons'>delete</i> " + name + " deleted.",
+            "<i class='material-icons'>delete</i> " + _("{{name}} deleted", {name: name}),
             toastTime,
             "rounded green"
         );
@@ -950,7 +982,7 @@ function postAction(name, pkgs, level) {
 }
 
 function install(name, pkgs, level) {
-    Materialize.toast("installing " + name + " ...", toastTime, "rounded grey");
+    Materialize.toast(_("installing {{name}}...", {name: name}), toastTime, "rounded grey");
     var cmd;
     if (getOS() === "Linux") {
         cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
@@ -967,7 +999,7 @@ function install(name, pkgs, level) {
 }
 
 function uninstall(name, pkgs, level) {
-    Materialize.toast("deleting " + name  + " ...", toastTime, "rounded grey");
+    Materialize.toast(_("deleting {{name}}...", {name: name}), toastTime, "rounded grey");
     var cmd;
     if (getOS() === "Linux") {
         cmd = 'LANG_ALL=C echo "y"|migasfree -rp "' + pkgs + '"';
@@ -1054,7 +1086,7 @@ function showLabel() {
         "server": global.server,
         "app_name": pk.name,
         "app_version": pk.version,
-        "app_description": pk.description,
+        "app_description": _(pk.description),
         "app_copyright": pk.copyright,
         "app_author": pk.author,
         "cid":  global.label["id"],
@@ -1067,6 +1099,7 @@ function showLabel() {
         "mask": global.mask,
         "network": global.network,
         "computer": global.computer,
+        "txt_status": _(global.computer.status),
         "qrcode": Mustache.to_html(
             fs.readFileSync("templates/qrcode.html", "utf8"),
             {"qrcode": global.qr.createImgTag(2, 2)}
@@ -1077,7 +1110,7 @@ function showLabel() {
         )
     };
 
-    $("#container").html(Mustache.to_html(fs.readFileSync("templates/label.html", "utf8"), data));
+    $("#container").html(Mustache.to_html(fs.readFileSync("templates/information.html", "utf8"), data));
 
     global.computer.tags.forEach( function(tag) {
         $("#tags").append(renderTag(tag));
@@ -1124,21 +1157,46 @@ function checkUser(user, password) {
     }
 }
 
+
+// I18N
+function loadLocale(locale) {
+	const fs = require("fs");
+    const path = require("path");
+    var filePath = path.join(".", "app", "locales", locale + ".json");
+    if (fs.existsSync(filePath)) {
+        var data = fs.readFileSync(filePath, "utf8");
+        global.strings = JSON.parse(data);
+    }
+}
+
+function _(txt,data = {}) {
+	if ( !(typeof global.strings === "undefined") &&  global.strings.hasOwnProperty(txt)) {
+		return Mustache.render(global.strings[txt], data);
+	} else {
+	    return Mustache.render(txt, data);
+	}	
+}
+
+
 // SETTINGS
 function getSettings() {
-    global.settings["language"] = "en";
+    global.settings["language"] = $("#language").val();
     global.settings["theme"] = "dark";
     global.settings["show_details_to_sync"] = $("#show_details_to_sync").is(":checked");
 }
 
 function setSettings() {
     $("#show_details_to_sync").prop("checked", global.settings["show_details_to_sync"]);
+    $("#language").val(global.settings["language"]);
 }
 
 function showSettings() {
     const fs = require("fs");
-
-    $("#container").html(fs.readFileSync("templates/settings.html", "utf8"));
+    var data = {
+		txt_synchronize: _("Show details to synchronize")
+	};
+    
+    $("#container").html( Mustache.to_html(fs.readFileSync("templates/settings.html", "utf8"), data) );
 
     setSettings();
 
@@ -1146,6 +1204,24 @@ function showSettings() {
         getSettings();
         saveSettings(global.settings);
     });
+    
+    $('#language').append($('<option>', {
+        value: "en",
+        text: 'English'
+    }));
+    $('#language').append($('<option>', {
+        value: "es",
+        text: 'Español'
+    }));
+    
+    $("#language").val(global.settings["language"]);
+    $("#language").material_select();
+
+    $("#language").change(function() {
+        getSettings();
+        saveSettings(global.settings);
+    });
+
 }
 
 function modalLogin(name, packagesToInstall, level) {
@@ -1243,7 +1319,7 @@ function getGlobalData() {
             run(cmd, beforeCallback=null, afterCallback=null, id, txt) {
                 if (global.running) {
                     Materialize.toast(
-                        "<i class='material-icons'>warning</i>" + " please wait, other process is running!!!",
+                        "<i class='material-icons'>warning</i>" + _("please wait, other process is running!!!"),
                         toastTime,
                         "rounded red"
                     );
@@ -1409,10 +1485,10 @@ function getGlobalData() {
                     if (! global.sync) {
                         if (global.settings["show_menu_apps"]) {
                             showApps();
-                        } else if (global.settings["show_menu_printers"]) {
-                            showPrinters();
+                        } else if (global.settings["show_menu_devices"]) {
+                            showDevices();
                         } else {
-                            showSync();
+                            showDetails();
                         }
                     }
 
@@ -1433,8 +1509,8 @@ function getGlobalData() {
         global.only_apps_installed = false;
     }
 
-    if (typeof global.only_devs_installed === "undefined") {
-        global.only_devs_installed = false;
+    if (typeof global.only_devs_assigned === "undefined") {
+        global.only_devs_assigned = false;
     }
 
     if (typeof global.pks_availables === "undefined") {
@@ -1454,7 +1530,6 @@ function ready() {
         if (fs.existsSync(consoleLog)) {
             fs.unlinkSync(consoleLog);
             global.terminal = {};
-
         }
         if (global.settings["show_details_to_sync"]) {
             win.show();
@@ -1462,7 +1537,7 @@ function ready() {
             win.show();
             win.minimize();
         }
-        showSync();
+        showDetails();
         sync_each_24();
     } else {
         setTimeout(sync_each_24, 24*60*60*1000);
@@ -1482,14 +1557,41 @@ function ready() {
        $("#menu-apps").addClass("hide");
     }
 
-    if (! global.settings["show_menu_printers"]) {
-       $("#menu-printers").addClass("hide");
+    if (! global.settings["show_menu_devices"]) {
+       $("#menu-devices").addClass("hide");
     }
 
-    $("#menu-console").click(showSync);
+    if (! global.settings["show_menu_details"]) {
+       $("#menu-details").addClass("hide");
+    }
+
+    if (! global.settings["show_menu_information"]) {
+       $("#menu-information").addClass("hide");
+    }
+
+    if (! global.settings["show_menu_settings"]) {
+       $("#menu-settings").addClass("hide");
+    }
+
+    if (! global.settings["show_menu_help"]) {
+       $("#menu-help").addClass("hide");
+    }
+
+    $("#menu-apps").prop("title",_("Applications"));
     $("#menu-apps").click(showApps);
-    $("#menu-printers").click(showPrinters);
-    $("#menu-label").click(showLabel);
+
+    $("#menu-devices").prop("title",_("Devices"));
+    $("#menu-devices").click(showDevices);
+
+    $("#menu-details").prop("title",_("Details"));
+    $("#menu-details").click(showDetails);
+
+    $("#menu-information").prop("title",_("Information"));
+    $("#menu-information").click(showLabel);
+    
+    $("#menu-settings").prop("title",_("Settings"));
     $("#menu-settings").click(showSettings);
+
+    $("#menu-help").prop("title",_("Help"));
 }
 
