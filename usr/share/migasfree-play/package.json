@@ -1,6 +1,6 @@
 {
   "name": "migasfree-play",
-  "description": "A Migasfree Client front-end",
+  "description": "A front-end for migasfree client",
   "version": "1.2.0",
   "main": "index.html",
   "repository": "tofill",
