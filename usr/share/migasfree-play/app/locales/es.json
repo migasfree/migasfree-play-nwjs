@@ -1,8 +1,8 @@
 {
-	"View computer in migasfree server": "Ver el ordenador en el servidor migasfree",
-	"Applications": "Aplicaciones",
-	"Devices": "Dispositivos",
-	"Details": "Detalles",
+    "View computer in migasfree server": "Ver el ordenador en el servidor migasfree",
+    "Applications": "Aplicaciones",
+    "Devices": "Dispositivos",
+    "Details": "Detalles",
     "Information": "Información",
     "Settings": "Preferencias",
     "Help": "Ayuda",
@@ -20,10 +20,11 @@
     "Show details to synchronize": "Mostrar detalles al sincronizar",
     "A front-end for migasfree client": "Un frontal para el cliente migasfree",
     "intended": "asignado",
-	"reserved": "reservado",
-	"unknown": "desconocido",
-	"in repair": "en reparación", 
-	"available": "disponible",
-	"unsubscribed": "baja",
-	"please wait, other process is running!!!": "Espere, otro proceso se está ejecutando!!!"
+    "reserved": "reservado",
+    "unknown": "desconocido",
+    "in repair": "en reparación",
+    "available": "disponible",
+    "unsubscribed": "baja",
+    "please wait, other process is running!!!": "Espere, otro proceso se está ejecutando!!!",
+    "All": "Todo"
 }

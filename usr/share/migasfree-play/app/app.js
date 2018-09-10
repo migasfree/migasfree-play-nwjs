@@ -291,7 +291,7 @@ function readSettings() {
         global.settings["show_menu_settings"] = true;
         global.settings["show_menu_information"] = true;
         global.settings["show_menu_help"] = true;
-        
+
         saveSettings(global.settings);
     }
     loadLocale(global.settings["language"]);
@@ -656,7 +656,7 @@ function queryCategories() {
         data: {},
         success(data) {
            global.categories = data;
-           global.categories[0] = "All";
+           global.categories[0] = _("All");
            showCategories(global.categories);
         },
         error(jqXHR, textStatus, errorThrown) {
@@ -897,12 +897,12 @@ function showDevices() {
     const fs = require("fs");
 
     var data = {
-		txt_search: _("search"), 
+		txt_search: _("search"),
 		txt_assigned: _("assigned")
 	};
-    
+
     $("#container").html( Mustache.to_html(fs.readFileSync("templates/devices.html", "utf8"), data) );
-    
+
     spinner("devices");
     $("#only_devs_assigned").prop('checked', global.only_devs_assigned);
 
@@ -920,10 +920,10 @@ function showApps() {
 
     queryCategories();
     var data = {
-		txt_search: _("search"), 
+		txt_search: _("search"),
 		txt_installed: _("installed")
 	};
-    
+
     $("#container").html( Mustache.to_html(fs.readFileSync("templates/apps.html", "utf8"), data) );
     spinner("apps");
     $("#only_apps_installed").prop('checked', global.only_apps_installed);
@@ -1195,7 +1195,7 @@ function showSettings() {
     var data = {
 		txt_synchronize: _("Show details to synchronize")
 	};
-    
+
     $("#container").html( Mustache.to_html(fs.readFileSync("templates/settings.html", "utf8"), data) );
 
     setSettings();
@@ -1204,7 +1204,7 @@ function showSettings() {
         getSettings();
         saveSettings(global.settings);
     });
-    
+
     $('#language').append($('<option>', {
         value: "en",
         text: 'English'
@@ -1213,7 +1213,7 @@ function showSettings() {
         value: "es",
         text: 'Español'
     }));
-    
+
     $("#language").val(global.settings["language"]);
     $("#language").material_select();
 
@@ -1588,7 +1588,7 @@ function ready() {
 
     $("#menu-information").prop("title",_("Information"));
     $("#menu-information").click(showLabel);
-    
+
     $("#menu-settings").prop("title",_("Settings"));
     $("#menu-settings").click(showSettings);
 
