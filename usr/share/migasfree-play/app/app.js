@@ -1494,7 +1494,7 @@ function getGlobalData() {
     // LABEL
     $.getJSON(
         "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid,
-        {},
+        {}
     ).done(function( data ) {
         global.label = data;
         global.cid = global.label["id"];
