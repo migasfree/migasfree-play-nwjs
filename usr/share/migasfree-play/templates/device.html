@@ -7,8 +7,8 @@
                 </div>
             </div>
             <div class="col s9 m9">
-                <span class="title">{{name}}</span>
-                {{#description}}
+                <span class="title">{{name}} </span>
+                {{#details}}
                     <div id="trunc-{{idaction}}" >
                         <span class="black-text">
                             <a class="tooltipped waves-effect waves-light left teal-text">
@@ -22,12 +22,16 @@
                             <a class="tooltipped waves-effect waves-light left teal-text">
                                 <i class="material-icons">change_history</i>
                             </a>
-                            {{{description}}}
+                            {{{truncated}}}
+                            <br>
+                            {{{details}}}
                         </span>
                     </div>
-                {{/description}}
+                {{/details}}
             </div>
-            <div class="col s2 m2">
+            <div class="col s2 m2"> 
+                <span class="title right">{{id}}</span>
+                <span class="right">{{connection}}</span>
             </div>
         </div>
         <div id="logicals-{{idaction}}" class="row">

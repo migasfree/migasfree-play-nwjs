@@ -571,6 +571,16 @@ function renderDict(data) {
     return ret;
 }
 
+
+function deleteEmptyElement(obj) {
+    for (const prop in obj) {
+		if (! obj[prop]) {
+	        delete obj[prop];
+	    }
+	}
+}
+
+
 function renderInfoDevice(data) {
     return renderDict(JSON.parse(data));
 }
@@ -585,12 +595,31 @@ function renderDevice(dev) {
         icon = "assets/printer-local.png";
     }
 
+    var datavar = JSON.parse(dev.data);
+    var location = "";
+    if (datavar.LOCATION) {
+	    location = 	datavar.LOCATION;
+	    delete datavar["LOCATION"];
+	}
+
+    deleteEmptyElement(datavar);
+
+    if (datavar.NAME) {
+		var name = datavar.NAME;
+		datavar.MODEL = dev.model.manufacturer.name + " " + dev.model.name;
+		delete datavar["NAME"];
+    } else {
+		var name = dev.model.manufacturer.name + " " + dev.model.name;
+    }
+
     var data = {
-        name: dev.name,
+        id: dev.name,
+        name: name,
         idaction: "dev-" + slugify(dev.name),
         icon,
-        description: dev.model.name + " (" + dev.connection.name + ")" + "<br>" +renderInfoDevice(dev.data),
-        truncated: dev.model.name + " (" + dev.connection.name + ")"
+        details: renderDict(datavar),
+        truncated: location,
+        connection: dev.connection.name 
     };
 
     return Mustache.to_html(fs.readFileSync("templates/device.html", "utf8"), data);
@@ -599,8 +628,14 @@ function renderDevice(dev) {
 
 function renderLogical(logical) {
     const fs = require("fs");
+
+    var name = logical.feature.name;
+    if (logical.alternative_feature_name) {
+		name = logical.alternative_feature_name;
+	} 
+
     var data = {
-        name: logical.feature.name,
+        name: name,
         idaction: "action-" + slugify(logical.device.name + logical.feature.name),
     };
     return Mustache.to_html(fs.readFileSync("templates/logical.html", "utf8"), data);
