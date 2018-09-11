@@ -1,3 +1,10 @@
+migasfree-play (1.3.0-1) unstable; urgency=low
+
+  * Added i18n
+  * Improve device template
+
+ -- Alberto Gacías <alberto@migasfree.org>  Tue, 11 Sep 2018 17:54:47 +0200
+
 migasfree-play (1.2-1) unstable; urgency=low
 
   * global.settings show_menu_apps and show_menu_printers
