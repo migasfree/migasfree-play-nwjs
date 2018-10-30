@@ -7,27 +7,31 @@
                 </div>
             </div>
             <div class="col s9 m9">
-                <span class="title">{{name}}</span>
+                <span class="title">
+				    {{name}}
+				</span>
                 <span class="left ">{{{rating}}}</span>
                 <span class="category">{{category}}</span>
-                {{#description}}
+                {{#exists_title}}
                     <div id="trunc-{{idaction}}" >
                         <span class="black-text">
-                            <a class="tooltipped waves-effect waves-light left teal-text">
+							{{#exists_description}}
+                            <a class="waves-effect waves-light left teal-text">
                                 <i class="material-icons">details</i>
                             </a>
+                            {{/exists_description}}
                             {{{truncated}}}
                         </span>
                     </div>
                     <div hidden id="descr-{{idaction}}">
                         <span class="black-text">
-                            <a class="tooltipped waves-effect waves-light left teal-text">
+                            <a class="waves-effect waves-light left teal-text">
                                 <i class="material-icons">change_history</i>
                             </a>
                             {{{description}}}
                         </span>
                     </div>
-                {{/description}}
+                {{/exists_title}}              
             </div>
             <div class="col s2 m2">
                 <div class="row">
@@ -39,13 +43,13 @@
                 <div>
                 <div class="row">
                      <div class="col s6 m6">
-                        <a class="tooltipped waves-effect waves-light right teal-text">
+                        <a class="tooltipped waves-effect waves-light right teal-text"  data-tooltip="{{packages}}">
                             <i id="{{idaction}}" class="material-icons md-36"></i>
                         </a>
                     </div>
                 <div>
             </div>
-        </div>
+        </div>    
     </div>
 </div>
 

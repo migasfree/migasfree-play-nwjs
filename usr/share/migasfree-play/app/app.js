@@ -574,10 +574,10 @@ function renderDict(data) {
 
 function deleteEmptyElement(obj) {
     for (const prop in obj) {
-		if (! obj[prop]) {
-	        delete obj[prop];
-	    }
-	}
+        if (! obj[prop]) {
+            delete obj[prop];
+        }
+    }
 }
 
 
@@ -598,18 +598,18 @@ function renderDevice(dev) {
     var datavar = JSON.parse(dev.data);
     var location = "";
     if (datavar.LOCATION) {
-	    location = 	datavar.LOCATION;
-	    delete datavar["LOCATION"];
-	}
+        location = datavar.LOCATION;
+        delete datavar["LOCATION"];
+    }
 
     deleteEmptyElement(datavar);
 
     if (datavar.NAME) {
-		var name = datavar.NAME;
-		datavar.MODEL = dev.model.manufacturer.name + " " + dev.model.name;
-		delete datavar["NAME"];
+        var name = datavar.NAME;
+        datavar.MODEL = dev.model.manufacturer.name + " " + dev.model.name;
+        delete datavar["NAME"];
     } else {
-		var name = dev.model.manufacturer.name + " " + dev.model.name;
+        var name = dev.model.manufacturer.name + " " + dev.model.name;
     }
 
     var data = {
@@ -619,7 +619,7 @@ function renderDevice(dev) {
         icon,
         details: renderDict(datavar),
         truncated: location,
-        connection: dev.connection.name 
+        connection: dev.connection.name
     };
 
     return Mustache.to_html(fs.readFileSync("templates/device.html", "utf8"), data);
@@ -631,8 +631,8 @@ function renderLogical(logical) {
 
     var name = logical.feature.name;
     if (logical.alternative_feature_name) {
-		name = logical.alternative_feature_name;
-	} 
+        name = logical.alternative_feature_name;
+    }
 
     var data = {
         name: name,
@@ -811,7 +811,7 @@ function renderApp(item) {
     var data;
     var truncatedDesc = "";
     if (item.description) {
-        truncatedDesc = item.description.split("\n")[0] + "...";
+        truncatedDesc = item.description.split("\n")[0];
 
         data = {
             server: global.server,
@@ -833,7 +833,9 @@ function renderApp(item) {
         truncated: truncatedDesc,
         category: item.category.name,
         rating: renderRating(item.score),
-        txt_installed: _("installed")
+        txt_installed: _("installed"),
+        exists_title: (truncatedDesc),
+        exists_description:  item.description.split("\n").length > 1
     };
 
     return Mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
@@ -932,9 +934,9 @@ function showDevices() {
     const fs = require("fs");
 
     var data = {
-		txt_search: _("search"),
-		txt_assigned: _("assigned")
-	};
+        txt_search: _("search"),
+        txt_assigned: _("assigned")
+    };
 
     $("#container").html( Mustache.to_html(fs.readFileSync("templates/devices.html", "utf8"), data) );
 
@@ -955,9 +957,9 @@ function showApps() {
 
     queryCategories();
     var data = {
-		txt_search: _("search"),
-		txt_installed: _("installed")
-	};
+        txt_search: _("search"),
+        txt_installed: _("installed")
+    };
 
     $("#container").html( Mustache.to_html(fs.readFileSync("templates/apps.html", "utf8"), data) );
     spinner("apps");
@@ -987,7 +989,7 @@ function onDemand(application) {
     const path = require("path");
 
     swal({
-        title: application + " no available",
+        title: application + " " + _("no available"),
         html: global.label["helpdesk"] + "<br />" + global.label["name"] ,
         type: "warning",
         showCancelButton: false,
@@ -1174,8 +1176,8 @@ function checkUser(user, password) {
         $("#auth").text("");
 
         swal({
-            title: "Cancelled",
-            html: "login error",
+            title: _("Cancelled"),
+            html: _("Autentication error"),
             type: "error",
             showCancelButton: false,
             confirmButtonText: "OK",
@@ -1195,7 +1197,7 @@ function checkUser(user, password) {
 
 // I18N
 function loadLocale(locale) {
-	const fs = require("fs");
+    const fs = require("fs");
     const path = require("path");
     var filePath = path.join(".", "app", "locales", locale + ".json");
     if (fs.existsSync(filePath)) {
@@ -1205,11 +1207,11 @@ function loadLocale(locale) {
 }
 
 function _(txt,data = {}) {
-	if ( !(typeof global.strings === "undefined") &&  global.strings.hasOwnProperty(txt)) {
-		return Mustache.render(global.strings[txt], data);
-	} else {
-	    return Mustache.render(txt, data);
-	}	
+    if ( !(typeof global.strings === "undefined") &&  global.strings.hasOwnProperty(txt)) {
+        return Mustache.render(global.strings[txt], data);
+    } else {
+        return Mustache.render(txt, data);
+    }
 }
 
 
@@ -1228,8 +1230,8 @@ function setSettings() {
 function showSettings() {
     const fs = require("fs");
     var data = {
-		txt_synchronize: _("Show details to synchronize")
-	};
+        txt_synchronize: _("Show details to synchronize")
+    };
 
     $("#container").html( Mustache.to_html(fs.readFileSync("templates/settings.html", "utf8"), data) );
 
@@ -1263,7 +1265,7 @@ function modalLogin(name, packagesToInstall, level) {
     const fs = require("fs");
     var resolve = [];
     swal({
-        title: "login",
+        title: _("administrator"),
         html: fs.readFileSync("templates/login.html", "utf8"),
         focusConfirm: false,
         showCancelButton: true,
@@ -1629,4 +1631,3 @@ function ready() {
 
     $("#menu-help").prop("title",_("Help"));
 }
-
