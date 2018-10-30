@@ -132,16 +132,3 @@ build-rpm-64:
 
   only:
     - tags
-
-upload-migasfree:
-  image: migasfree/deb-ci:64
-  stage: upload
-  script:
-    - MIGASFREE_PACKAGER_PROJECT=AZS-CENTOS7 migasfree-upload -f *.rpm
-
-  dependencies:
-    - build-rpm-64
-
-  only:
-    - tags
-
