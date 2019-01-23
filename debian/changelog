@@ -1,3 +1,9 @@
+migasfree-play (1.5.0-1) unstable; urgency=low
+
+  * wait ip
+
+ -- Alberto Gacías <alberto@migasfree.org>  Tue, 22 jan 2019 14:04:47 +0200
+
 migasfree-play (1.4.0-1) unstable; urgency=low
 
   * Improve app template
