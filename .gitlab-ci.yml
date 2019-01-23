@@ -1,7 +1,6 @@
 variables:
   _USER: "builduser"
   _PATH: /home/$_USER/$CI_PROJECT_NAME
-  GIT_SSL_NO_VERIFY: "1"
 
 stages:
   - build
@@ -27,17 +26,6 @@ build-deb-32-precise:
   only:
     - tags
 
-upload-deb-32-precise:
-  image: migasfree/deb-ci:32
-  stage: upload
-  script:
-    - MIGASFREE_PACKAGER_PROJECT=AZL-12 migasfree-upload -f *.deb
-  dependencies:
-    - build-deb-32-precise
-  only:
-    - tags
-
-
 build-deb-32:
   image: migasfree/deb-ci:32
   stage: build
@@ -57,18 +45,6 @@ build-deb-32:
   only:
     - tags
 
-upload-deb-32:
-  image: migasfree/deb-ci:32
-  stage: upload
-  script:
-    - MIGASFREE_PACKAGER_PROJECT=AZL-14 migasfree-upload -f *.deb
-  dependencies:
-    - build-deb-32
-  only:
-    - tags
-
-
-
 build-deb-64:
   image: migasfree/deb-ci:64
   stage: build
@@ -87,20 +63,6 @@ build-deb-64:
     - ./*.deb
   only:
     - tags
-
-
-upload-deb-64:
-  image: migasfree/deb-ci:64
-  stage: upload
-  script:
-    - MIGASFREE_PACKAGER_PROJECT=AZL-16 migasfree-upload -f *.deb
-    - MIGASFREE_PACKAGER_PROJECT=AZL-18 migasfree-upload -f *.deb
-  dependencies:
-    - build-deb-64
-  only:
-    - tags
-
-
 
 build-rpm-64:
   image: migasfree/rpm-ci:64
@@ -129,6 +91,5 @@ build-rpm-64:
     expire_in: 1 days
     paths:
       - ./*.rpm
-
   only:
     - tags
