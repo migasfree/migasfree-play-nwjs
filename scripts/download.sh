@@ -9,6 +9,7 @@ else
 fi
 
 cd usr/share/migasfree-play
+npm config set ca ""
 npm install
 
 echo "Downloading nwjs-v${_NWJS_VERSION}-linux-${_ARCH}.tar.gz"
