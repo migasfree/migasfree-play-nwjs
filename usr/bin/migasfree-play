@@ -5,6 +5,21 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
+_wait_ip_src="
+from migasfree_client.network import get_gateway
+import time
+WAIT_IP_TIMEOUT = 120 # seconds
+def has_ip_address():
+    _cont = WAIT_IP_TIMEOUT
+    while (get_gateway() is None or get_gateway() == '') and _cont > 0:
+        time.sleep(1)
+        _cont -= 1
+    return get_gateway() != '' and get_gateway() is not None
+print has_ip_address()
+"
+
+_CONECTIVITY=$(python -c "$_wait_ip_src")
+
 _USER=$(python -c "from migasfree_client import utils; print utils.get_graphic_user(utils.get_graphic_pid()[0])")
 
 if [ "$1" = "sync" ]; then #  Cron -> 24 hours
@@ -17,5 +32,8 @@ if [ "$1" = "sync" ]; then #  Cron -> 24 hours
     rm $_FILE
 fi
 
-/usr/share/migasfree-play/nwjs/nw /usr/share/migasfree-play "$1"
+if [ "$_CONECTIVITY" = "True" ]; then
+    /usr/share/migasfree-play/nwjs/nw /usr/share/migasfree-play "$1"
+fi
+
 
