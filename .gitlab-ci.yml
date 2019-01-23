@@ -4,8 +4,6 @@ variables:
 
 stages:
   - build
-  - upload
-
 
 build-deb-32-precise:
   image: migasfree/deb-ci:32
