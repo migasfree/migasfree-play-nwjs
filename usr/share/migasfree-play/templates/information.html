@@ -3,23 +3,23 @@
 <div class="row noPrint">
     <div class="col s2 m2">
     </div>
+
     <div class="col s8 m8">
-		<center>
-			<img id="logo" src="assets/migasfree-play.svg" alt="migasfree-play" class="logo">
-			<h5>{{app_name}} {{app_version}}</h5>
-			<p>{{app_description}}</p>
-			<p>{{app_copyright}}</p>
-			<p>{{app_author}}</p>
-		</center>
-	</div>
+        <center>
+            <img id="logo" src="assets/migasfree-play.svg" alt="migasfree-play" class="logo">
+            <h5>{{app_name}} {{app_version}}</h5>
+            <p>{{app_description}}</p>
+            <p>{{app_copyright}}</p>
+            <p>{{app_author}}</p>
+        </center>
+    </div>
 </div>
 
 <div class="row">
     <div class="col s2 m2">
     </div>
+
     <div class="col s8 m8">
-
-
         <div class="card horizontal">
              <div class="card-image center">
                  <i class="material-icons center medium grey-text">person</i>
@@ -38,57 +38,62 @@
             </div>
         </div>
 
-
-
         <div class="card horizontal">
             <div class="card-image center">
                 <i class="material-icons center medium grey-text">computer</i>
             </div>
+
             <div class="card-content">
-            <div class="row">
-                <div class="col s12 m12">
-                    {{computer.fqdn}}
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12 m12">
-                    {{computer.product}} {{computer.machine}}
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12 m12">
-                    {{computer.cpu}}
-                </div>
-            </div>
-            <div class="row">
-                <div class="col s12 m12">
-                    {{computer.ram}} RAM
-                </div>
-            </div>
                 <div class="row">
                     <div class="col s12 m12">
-                        {{computer.storage}}  - {{computer.disks}} Disks
+                        {{computer.fqdn}}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col s12 m12">
+                        {{computer.product}} {{computer.machine}}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col s12 m12">
+                        {{computer.cpu}}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col s12 m12">
+                        {{computer.ram}} RAM
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col s12 m12">
+                        {{computer.storage}} - {{computer.disks}} Disks
                     </div>
                 </div>
             </div>
         </div>
 
-
         <div class="card horizontal">
              <div class="card-image center">
                  <i class="material-icons center medium grey-text">swap_vert</i>
              </div>
+
              <div class="card-content">
-             <div class="row">
-                <div class="col s12 m12">
-                    {{ip}}
+                <div class="row">
+                    <div class="col s12 m12">
+                        {{ip}}
+                    </div>
                 </div>
-             </div>
+
                 <div class="row">
                     <div class="col s12 m12">
                         {{mask}} - {{network}}
                     </div>
                 </div>
+
                 <div class="row">
                     <div class="col s12 m12">
                         {{computer.mac_address}}
@@ -96,7 +101,6 @@
                 </div>
             </div>
         </div>
-
 
         <div class="card horizontal">
              <div class="card-image">
@@ -108,21 +112,25 @@
                         {{server}}
                     </div>
                  </div>
+
                  <div class="row">
                      <div class="col s12 m12">
                         {{project}}
                     </div>
                  </div>
+
                  <div class="row">
                     <div class="col s12 m12">
                         CID-{{cid}}
                     </div>
                  </div>
+
                  <div class="row">
                     <div class="col s12 m12">
                         {{txt_status}}
                     </div>
                  </div>
+
                  <div class="row">
                     <div class="col s12 m12">
                         <div id="tags">
@@ -131,11 +139,8 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 </div>
-
 
 <div class="row normal-size left-align">
     <div class="col s12 m12 l12">
@@ -148,6 +153,7 @@
                 <p>{{helpdesk}}</p>
             </div>
         </div>
+
         <div class="card-action noPrint">
             <a id="print-label" class="btn-floating  right">
                 <i class="material-icons">print</i>
@@ -191,6 +197,7 @@
             <div class="card-image">
                 <div>{{{qrcode}}}</div>
             </div>
+
             <div class="card-content">
                 <p>{{name}}</p>
                 <p>{{uuid}}</p>
@@ -203,10 +210,11 @@
 
 <div class="row noScreen normal-size">
     <div id="label" class="col s12 m12 l12">
-        <div class=" valign-wrapper">
+        <div class="valign-wrapper">
             <div class="card-image">
                 <div >{{{qrcode2}}}</div>
             </div>
+
             <div class="card-image">
                 <div >{{{qrcode2}}}</div>
             </div>
@@ -214,10 +222,10 @@
             <div class="card-image">
                 <div >{{{qrcode}}}</div>
             </div>
+
             <div class="card-image">
                 <div >{{{qrcode}}}</div>
             </div>
         </div>
     </div>
 </div>
-
