@@ -1,4 +1,11 @@
+/* jshint node: true */
+/* jshint browser: true */
+/* globals $:false */
 "use strict";
+
+// import swal from "sweetalert2";
+// import Materialize from "materialize-css";
+// import qrcode from "qrcode";
 
 var gui = require("nw.gui");
 var path = require("path");
@@ -6,10 +13,42 @@ var win = gui.Window.get();
 var confFile = "settings.json";
 var consoleLog = path.join(gui.__dirname, "console.log");
 var toastTime = 3000;
-var colorTheme = "#009688"; //teal
+var colorTheme = "#009688";  //teal
 
 function addTokenHeader(xhr) {
     xhr.setRequestHeader("authorization", global.token);
+}
+
+// I18N
+function loadLocale(locale) {
+    const fs = require("fs");
+    const path = require("path");
+    var filePath = path.join(".", "app", "locales", locale + ".json");
+
+    if (fs.existsSync(filePath)) {
+        var data = fs.readFileSync(filePath, "utf8");
+        global.strings = JSON.parse(data);
+    }
+}
+
+function _(txt, data = {}) {
+    const mustache = require("mustache");
+
+    if (typeof global.strings !== "undefined" && global.strings.hasOwnProperty(txt)) {
+        return mustache.render(global.strings[txt], data);
+    } else {
+        return mustache.render(txt, data);
+    }
+}
+
+function showError(txt) {
+    swal({
+        title: "Error",
+        text:  txt,
+        type: "error",
+        confirmButtonColor: colorTheme,
+        showCancelButton: false
+    });
 }
 
 function getServerVersion() {
@@ -31,10 +70,10 @@ function getServerVersion() {
                 data: {},
                 async: false,
                 success(data) {
-                    global.serverversion = parseFloat(data.version);
+                    global.serverVersion = parseFloat(data.version);
                 },
                 error(jqXHR, textStatus, errorThrown) {
-                    global.serverversion = 0;
+                    global.serverVersion = 0;
                     showError(errVersion);
                 },
             });
@@ -42,7 +81,7 @@ function getServerVersion() {
         },
         error(jqXHR, textStatus, errorThrown) {
             // url not found
-            global.serverversion = 0;
+            global.serverVersion = 0;
             showError(errVersion);
         }
     });
@@ -86,17 +125,6 @@ function replaceColors(txt) {
 
     return txt;
 }
-
-function showError(txt) {
-    swal({
-        title: "Error",
-        text:  txt,
-        type: "error",
-        confirmButtonColor: colorTheme,
-        showCancelButton: false
-    });
-}
-
 
 function tooltip(id, text) {
     var anchor = $(id);
@@ -250,28 +278,28 @@ function readSettings() {
     if (fs.existsSync(filePath)) {
         var data = fs.readFileSync(filePath, "utf8");
         global.settings = JSON.parse(data);
-        if (!global.settings.hasOwnProperty("show_menu_apps")) {
-            global.settings.show_menu_apps = true;
+        if (!global.settings.hasOwnProperty("showAppsMenu")) {
+            global.settings.showAppsMenu = true;
             saveSettings(global.settings);
         }
-        if (!global.settings.hasOwnProperty("show_menu_devices")) {
-            global.settings.show_menu_devices = true;
+        if (!global.settings.hasOwnProperty("showDevicesMenu")) {
+            global.settings.showDevicesMenu = true;
             saveSettings(global.settings);
         }
-        if (!global.settings.hasOwnProperty("show_menu_details")) {
-            global.settings.show_menu_details = true;
+        if (!global.settings.hasOwnProperty("showDetailsMenu")) {
+            global.settings.showDetailsMenu = true;
             saveSettings(global.settings);
         }
-        if (!global.settings.hasOwnProperty("show_menu_settings")) {
-            global.settings.show_menu_settings = true;
+        if (!global.settings.hasOwnProperty("showSettingsMenu")) {
+            global.settings.showSettingsMenu = true;
             saveSettings(global.settings);
         }
-        if (!global.settings.hasOwnProperty("show_menu_information")) {
-            global.settings.show_menu_information = true;
+        if (!global.settings.hasOwnProperty("showInfoMenu")) {
+            global.settings.showInfoMenu = true;
             saveSettings(global.settings);
         }
-        if (!global.settings.hasOwnProperty("show_menu_help")) {
-            global.settings.show_menu_help = true;
+        if (!global.settings.hasOwnProperty("showHelpMenu")) {
+            global.settings.showHelpMenu = true;
             saveSettings(global.settings);
         }
     }
@@ -279,13 +307,13 @@ function readSettings() {
         global.settings = {};
         global.settings.language = "es";
         global.settings.theme = "dark";
-        global.settings.show_details_to_sync = false;
-        global.settings.show_menu_apps = true;
-        global.settings.show_menu_devices = true;
-        global.settings.show_menu_details = true;
-        global.settings.show_menu_settings = true;
-        global.settings.show_menu_information = true;
-        global.settings.show_menu_help = true;
+        global.settings.showSyncDetails = false;
+        global.settings.showAppsMenu = true;
+        global.settings.showDevicesMenu = true;
+        global.settings.showDetailsMenu = true;
+        global.settings.showSettingsMenu = true;
+        global.settings.showInfoMenu = true;
+        global.settings.showHelpMenu = true;
 
         saveSettings(global.settings);
     }
@@ -317,11 +345,9 @@ function execDir(directory) {
     }
 }
 
-
 function beforeSync() {
     Materialize.toast(_("synchronizing..."), toastTime, "rounded grey");
 }
-
 
 function afterSync() {
     global.availablePkgs = getPkgNames();
@@ -333,6 +359,15 @@ function afterSync() {
     global.sync = false;
 }
 
+function sync() {
+    global.TERMINAL.run(
+        "migasfree -u",
+        beforeSync,
+        afterSync,
+        "sync",
+        _("synchronization")
+    );
+}
 
 function syncEveryDay() {
     setTimeout(syncEveryDay, 24 * 60 * 60 * 1000);
@@ -352,16 +387,6 @@ function renderRun(idx) {
     };
 
     return mustache.to_html(fs.readFileSync("templates/run.html", "utf8"), data);
-}
-
-function sync() {
-    global.TERMINAL.run(
-        "migasfree -u",
-        beforeSync,
-        afterSync,
-        "sync",
-        _("synchronization")
-    );
 }
 
 function showDetails() {
@@ -553,7 +578,7 @@ function updateStatusDevice(dev, feature, id) {
     var assigned = ($.inArray(id, global.devs) >= 0);
     var inflicted = ($.inArray(id, global.inflicted) >= 0);
 
-    if (global.only_devs_assigned) {
+    if (global.onlyAssignedDevs) {
         if (assigned || inflicted){
             $("#dev-" + dev).removeClass("hide");
             $("#logical-action-" + slug).removeClass("hide");
@@ -811,7 +836,7 @@ function queryApps() {
 
     spinner("preload-next");
 
-    if (global.serverversion >= 4.16) {
+    if (global.serverVersion >= 4.16) {
         url = "http://" + global.server + "/api/v1/token/catalog/apps/available/";
     } else {
         url = "http://" + global.server + "/api/v1/token/catalog/apps/";
@@ -898,12 +923,12 @@ function changedCategory() {
 }
 
 function changedOnlyInstalledApps(){
-    global.only_apps_installed = $("#only_apps_installed").prop('checked');
+    global.onlyInstalledApps = $("#only_apps_installed").prop('checked');
     queryApps();
 }
 
-function changed_only_devs_assigned(){
-    global.only_devs_assigned = $("#only_devs_assigned").prop('checked');
+function changedOnlyAssignedDevs(){
+    global.onlyAssignedDevs = $("#only_devs_assigned").prop('checked');
     queryDevices();
 }
 
@@ -938,7 +963,7 @@ function showDevices() {
     );
 
     spinner("devices");
-    $("#only_devs_assigned").prop('checked', global.only_devs_assigned);
+    $("#only_devs_assigned").prop('checked', global.onlyAssignedDevs);
 
     queryDevices();
 
@@ -946,7 +971,7 @@ function showDevices() {
     $("#searchPrint").bind("keydown", getCharPrint);
     $("#searchPrint").focus();
 
-    $("#only_devs_assigned").change(changed_only_devs_assigned);
+    $("#only_devs_assigned").change(changedOnlyAssignedDevs);
 }
 
 function showApps() {
@@ -963,7 +988,7 @@ function showApps() {
         mustache.to_html(fs.readFileSync("templates/apps.html", "utf8"), data)
     );
     spinner("apps");
-    $("#only_apps_installed").prop('checked', global.only_apps_installed);
+    $("#only_apps_installed").prop('checked', global.onlyInstalledApps);
 
     queryApps();
 
@@ -1097,7 +1122,7 @@ function updateStatus(name, packagesToInstall, level) {
         installed = (packagesToInstall.split(" ").diff(global.packagesInstalled).length === 0);
     }
 
-    if (global.only_apps_installed && (installed == false)){
+    if (global.onlyInstalledApps && (installed == false)){
         $("#card-action-" + slug).addClass("hide");
     } else {
         $("#card-action-" + slug).removeClass("hide");
@@ -1231,37 +1256,15 @@ function checkUser(user, password) {
     }
 }
 
-// I18N
-function loadLocale(locale) {
-    const fs = require("fs");
-    const path = require("path");
-    var filePath = path.join(".", "app", "locales", locale + ".json");
-
-    if (fs.existsSync(filePath)) {
-        var data = fs.readFileSync(filePath, "utf8");
-        global.strings = JSON.parse(data);
-    }
-}
-
-function _(txt, data = {}) {
-    const mustache = require("mustache");
-
-    if (typeof global.strings !== "undefined" && global.strings.hasOwnProperty(txt)) {
-        return mustache.render(global.strings[txt], data);
-    } else {
-        return mustache.render(txt, data);
-    }
-}
-
 // SETTINGS
 function getSettings() {
     global.settings.language = $("#language").val();
     global.settings.theme = "dark";
-    global.settings.show_details_to_sync = $("#show_details_to_sync").is(":checked");
+    global.settings.showSyncDetails = $("#show_details_to_sync").is(":checked");
 }
 
 function setSettings() {
-    $("#show_details_to_sync").prop("checked", global.settings.show_details_to_sync);
+    $("#show_details_to_sync").prop("checked", global.settings.showSyncDetails);
     $("#language").val(global.settings.language);
 }
 
@@ -1511,7 +1514,7 @@ function getGlobalData() {
         global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"');
     }
 
-    if (typeof global.serverversion === "undefined") {
+    if (typeof global.serverVersion === "undefined") {
         getServerVersion();
     }
 
@@ -1544,9 +1547,9 @@ function getGlobalData() {
                     labelDone();
 
                     if (!global.sync) {
-                        if (global.settings.show_menu_apps) {
+                        if (global.settings.showAppsMenu) {
                             showApps();
-                        } else if (global.settings.show_menu_devices) {
+                        } else if (global.settings.showDevicesMenu) {
                             showDevices();
                         } else {
                             showDetails();
@@ -1565,12 +1568,12 @@ function getGlobalData() {
         global.category = 0;
     }
 
-    if (typeof global.only_apps_installed === "undefined") {
-        global.only_apps_installed = false;
+    if (typeof global.onlyInstalledApps === "undefined") {
+        global.onlyInstalledApps = false;
     }
 
-    if (typeof global.only_devs_assigned === "undefined") {
-        global.only_devs_assigned = false;
+    if (typeof global.onlyAssignedDevs === "undefined") {
+        global.onlyAssignedDevs = false;
     }
 
     if (typeof global.availablePkgs === "undefined") {
@@ -1592,7 +1595,7 @@ function ready() {
             fs.unlinkSync(consoleLog);
             global.terminal = {};
         }
-        if (global.settings.show_details_to_sync) {
+        if (global.settings.showSyncDetails) {
             win.show();
         } else {
             win.show();
@@ -1614,27 +1617,27 @@ function ready() {
         win.show();
     }
 
-    if (!global.settings.show_menu_apps) {
+    if (!global.settings.showAppsMenu) {
        $("#menu-apps").addClass("hide");
     }
 
-    if (!global.settings.show_menu_devices) {
+    if (!global.settings.showDevicesMenu) {
        $("#menu-devices").addClass("hide");
     }
 
-    if (!global.settings.show_menu_details) {
+    if (!global.settings.showDetailsMenu) {
        $("#menu-details").addClass("hide");
     }
 
-    if (!global.settings.show_menu_information) {
+    if (!global.settings.showInfoMenu) {
        $("#menu-information").addClass("hide");
     }
 
-    if (!global.settings.show_menu_settings) {
+    if (!global.settings.showSettingsMenu) {
        $("#menu-settings").addClass("hide");
     }
 
-    if (!global.settings.show_menu_help) {
+    if (!global.settings.showHelpMenu) {
        $("#menu-help").addClass("hide");
     }
 
