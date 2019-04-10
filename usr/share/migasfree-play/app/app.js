@@ -8,17 +8,21 @@ var consoleLog = path.join(gui.__dirname, "console.log");
 var toastTime = 3000;
 var colorTheme = "#009688"; //teal
 
+function addTokenHeader(xhr) {
+    xhr.setRequestHeader("authorization", global.token);
+}
+
 function getServerVersion() {
     var url = "http://" + global.server + "/api/v1/public/server/info/";
     var errVersion = "migasfree-server version 4.16 is required";
 
     $.support.cors = true;
     $.ajax({
-        type: 'HEAD',
-        method: 'POST',
-        url: url,
+        type: "HEAD",
+        method: "POST",
+        url,
         crossDomain: true,
-        success: function() {
+        success() {
             // url found
             $.ajax({
                 url,
@@ -36,7 +40,7 @@ function getServerVersion() {
             });
 
         },
-        error: function(jqXHR, textStatus, errorThrown) {
+        error(jqXHR, textStatus, errorThrown) {
             // url not found
             global.serverversion = 0;
             showError(errVersion);
@@ -157,10 +161,6 @@ Array.prototype.diff = function (a) {
     return this.filter(function (i) {return a.indexOf(i) < 0;});
 };
 
-function addTokenHeader(xhr) {
-     xhr.setRequestHeader("authorization", global.token);
-}
-
 function labelDone() {
     if (typeof global.label !== "undefined") {
         $("#machine").html(
@@ -180,7 +180,6 @@ function labelDone() {
         global.qr = qr;
     }
 }
-
 
 function getToken(username="migasfree-play", password="migasfree-play") {
     $.ajax({
@@ -225,7 +224,7 @@ function getAttributeCID() {
             },
             success(data) {
                 if (data.count === 1) {
-                    global.att_cid = data.results[0].id;
+                    global.attCid = data.results[0].id;
                 }
             },
             error(jqXHR, textStatus, errorThrown) {
@@ -251,27 +250,27 @@ function readSettings() {
     if (fs.existsSync(filePath)) {
         var data = fs.readFileSync(filePath, "utf8");
         global.settings = JSON.parse(data);
-        if (!global.settings.hasOwnProperty('show_menu_apps')) {
+        if (!global.settings.hasOwnProperty("show_menu_apps")) {
             global.settings.show_menu_apps = true;
             saveSettings(global.settings);
         }
-        if (!global.settings.hasOwnProperty('show_menu_devices')) {
+        if (!global.settings.hasOwnProperty("show_menu_devices")) {
             global.settings.show_menu_devices = true;
             saveSettings(global.settings);
         }
-        if (!global.settings.hasOwnProperty('show_menu_details')) {
+        if (!global.settings.hasOwnProperty("show_menu_details")) {
             global.settings.show_menu_details = true;
             saveSettings(global.settings);
         }
-        if (!global.settings.hasOwnProperty('show_menu_settings')) {
+        if (!global.settings.hasOwnProperty("show_menu_settings")) {
             global.settings.show_menu_settings = true;
             saveSettings(global.settings);
         }
-        if (!global.settings.hasOwnProperty('show_menu_information')) {
+        if (!global.settings.hasOwnProperty("show_menu_information")) {
             global.settings.show_menu_information = true;
             saveSettings(global.settings);
         }
-        if (!global.settings.hasOwnProperty('show_menu_help')) {
+        if (!global.settings.hasOwnProperty("show_menu_help")) {
             global.settings.show_menu_help = true;
             saveSettings(global.settings);
         }
@@ -325,7 +324,7 @@ function beforeSync() {
 
 
 function afterSync() {
-    global.pks_availables = getPkgNames();
+    global.availablePkgs = getPkgNames();
     Materialize.toast(
         "<i class='material-icons'>play_arrow</i>" + _("synchronized"),
         toastTime,
@@ -342,6 +341,7 @@ function syncEveryDay() {
 
 function renderRun(idx) {
     const fs = require("fs");
+    const mustache = require("mustache");
 
     var data = {
         id: idx,
@@ -351,11 +351,17 @@ function renderRun(idx) {
         body: global.terminal[idx].body
     };
 
-    return Mustache.to_html(fs.readFileSync("templates/run.html", "utf8"), data);
+    return mustache.to_html(fs.readFileSync("templates/run.html", "utf8"), data);
 }
 
 function sync() {
-    global.TERMINAL.run("migasfree -u", beforeSync, afterSync, "sync", _("synchronization"));
+    global.TERMINAL.run(
+        "migasfree -u",
+        beforeSync,
+        afterSync,
+        "sync",
+        _("synchronization")
+    );
 }
 
 function showDetails() {
@@ -391,6 +397,7 @@ function supportExternalLinks(event) {
     var isExternal = false;
 
     function crawlDom(element) {
+        const mustache = require("mustache");
         if (element.nodeName.toLowerCase() === "a") {
             href = element.getAttribute("href");
         }
@@ -406,7 +413,7 @@ function supportExternalLinks(event) {
                 "project": global.project,
                 "uuid": global.uuid
             };
-            href = Mustache.render(href, data);
+            href = mustache.render(href, data);
             runAsUser('python -c "import webbrowser; webbrowser.open(\'' + href + '\')"');
         } else if (element.parentElement) {
             crawlDom(element.parentElement);
@@ -439,6 +446,29 @@ function queryDevicesPage(url) {
             } else {
                 $("#preload-next").hide();
             }
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            showError(jqXHR.responseText);
+        },
+    });
+}
+
+function getDevs() {
+    $.ajax({
+        url: "http://" + global.server + "/api/v1/token/computers/" + global.cid + "/devices/",
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        async: false,
+        success(data) {
+            global.devs = [];
+            global.inflicted = [];
+            data.assigned_logical_devices_to_cid.forEach(function(item) {
+                global.devs.push(item.id);
+            });
+            data.inflicted_logical_devices.forEach(function(item) {
+                global.inflicted.push(item.id);
+            });
         },
         error(jqXHR, textStatus, errorThrown) {
             showError(jqXHR.responseText);
@@ -482,7 +512,7 @@ function installDevice(dev, feature, id) {
         data: {},
         success(data) {
             var atts =  data.attributes;
-            atts.push(global.att_cid);
+            atts.push(global.attCid);
             changeAttributesDevice(dev, feature, id, atts);
         },
         error(jqXHR, textStatus, errorThrown) {
@@ -500,7 +530,7 @@ function uninstallDevice(dev, feature, id) {
         success(data) {
             var atts =  data.attributes;
             //delete attribute from array
-            var index = atts.indexOf(global.att_cid);
+            var index = atts.indexOf(global.attCid);
             if (index > -1) {
                 atts.splice(index, 1);
             }
@@ -583,6 +613,7 @@ function renderInfoDevice(data) {
 
 function renderDevice(dev) {
     const fs = require("fs");
+    const mustache = require("mustache");
     var icon, name;
 
     if (dev.connection.name === "TCP") {
@@ -610,7 +641,7 @@ function renderDevice(dev) {
 
     var data = {
         id: dev.name,
-        name: name,
+        name,
         idaction: "dev-" + slugify(dev.name),
         icon,
         details: renderDict(datavar),
@@ -618,12 +649,12 @@ function renderDevice(dev) {
         connection: dev.connection.name
     };
 
-    return Mustache.to_html(fs.readFileSync("templates/device.html", "utf8"), data);
+    return mustache.to_html(fs.readFileSync("templates/device.html", "utf8"), data);
 }
-
 
 function renderLogical(logical) {
     const fs = require("fs");
+    const mustache = require("mustache");
 
     var name = logical.feature.name;
     if (logical.alternative_feature_name) {
@@ -631,11 +662,11 @@ function renderLogical(logical) {
     }
 
     var data = {
-        name: name,
+        name,
         idaction: "action-" + slugify(logical.device.name + logical.feature.name),
     };
 
-    return Mustache.to_html(fs.readFileSync("templates/logical.html", "utf8"), data);
+    return mustache.to_html(fs.readFileSync("templates/logical.html", "utf8"), data);
 }
 
 function getDevice(dev) {
@@ -703,6 +734,24 @@ function installedPkgs(pks) {
     var cmd = "python " + script + ' "' + pks + '"';
 
     return execSync(cmd);
+}
+
+function showAppItem(data) {
+    $.each(data.results, function(i, item) {
+        if (item.category.id == global.category || global.category == 0) {
+            $.each(item.packages_by_project, function(i, pkgs) {
+                if (pkgs.project.name == global.project) {
+                    $("#apps").append(renderApp(item));
+                    updateStatus(
+                        item.name,
+                        pkgs.packages_to_install.join(" "),
+                        item.level.id
+                    );
+                }
+            });
+        }
+    });
+    $(".collapsible").collapsible();  // FIXME
 }
 
 function queryAppsPage(url) {
@@ -773,7 +822,6 @@ function queryApps() {
     );
 }
 
-
 function renderRating(score) {
     var rating = "";
 
@@ -790,6 +838,7 @@ function renderRating(score) {
 function renderApp(item) {
     const fs = require("fs");
     const marked = require("marked");
+    const mustache = require("mustache");
     var renderer = new marked.Renderer();
 
     renderer.heading = function (text, level) {
@@ -814,7 +863,7 @@ function renderApp(item) {
             app: item.name,
             _app: slugify(item.name)
         };
-        item.description = Mustache.render(item.description, data);
+        item.description = mustache.render(item.description, data);
     }
 
     data = {
@@ -830,25 +879,7 @@ function renderApp(item) {
         exists_description: item.description.split("\n").length > 1
     };
 
-    return Mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
-}
-
-function showAppItem(data) {
-    $.each(data.results, function(i, item) {
-        if (item.category.id == global.category || global.category == 0) {
-            $.each(item.packages_by_project, function(i, pkgs) {
-                if (pkgs.project.name == global.project) {
-                    $("#apps").append(renderApp(item));
-                    updateStatus(
-                        item.name,
-                        pkgs.packages_to_install.join(" "),
-                        item.level.id
-                    );
-                }
-            });
-        }
-    });
-    $(".collapsible").collapsible();  // FIXME
+    return mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
 }
 
 function showDescription(id) {
@@ -866,7 +897,7 @@ function changedCategory() {
     queryApps();
 }
 
-function changed_only_apps_installed(){
+function changedOnlyInstalledApps(){
     global.only_apps_installed = $("#only_apps_installed").prop('checked');
     queryApps();
 }
@@ -894,39 +925,16 @@ function getCharPrint(event){
     }
 }
 
-function getDevs() {
-    $.ajax({
-        url: "http://" + global.server + "/api/v1/token/computers/" + global.cid + "/devices/",
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        async: false,
-        success(data) {
-            global.devs = [];
-            global.inflicted = [];
-            data.assigned_logical_devices_to_cid.forEach(function(item) {
-                global.devs.push(item.id);
-            });
-            data.inflicted_logical_devices.forEach(function(item) {
-                global.inflicted.push(item.id);
-            });
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            showError(jqXHR.responseText);
-        },
-    });
-}
-
-
 function showDevices() {
     const fs = require("fs");
+    const mustache = require("mustache");
     var data = {
         txt_search: _("search"),
         txt_assigned: _("assigned")
     };
 
     $("#container").html(
-        Mustache.to_html(fs.readFileSync("templates/devices.html", "utf8"), data)
+        mustache.to_html(fs.readFileSync("templates/devices.html", "utf8"), data)
     );
 
     spinner("devices");
@@ -943,6 +951,7 @@ function showDevices() {
 
 function showApps() {
     const fs = require("fs");
+    const mustache = require("mustache");
 
     queryCategories();
     var data = {
@@ -951,7 +960,7 @@ function showApps() {
     };
 
     $("#container").html(
-        Mustache.to_html(fs.readFileSync("templates/apps.html", "utf8"), data)
+        mustache.to_html(fs.readFileSync("templates/apps.html", "utf8"), data)
     );
     spinner("apps");
     $("#only_apps_installed").prop('checked', global.only_apps_installed);
@@ -963,16 +972,17 @@ function showApps() {
     $("#search").bind("keydown", getChar);
     $("#search").focus();
 
-    $("#only_apps_installed").change(changed_only_apps_installed);
+    $("#only_apps_installed").change(changedOnlyInstalledApps);
 }
-
 
 function renderTag(tag) {
     const fs = require("fs");
+    const mustache = require("mustache");
     var data = {
-        tag: tag
+        tag
     };
-    return Mustache.to_html(fs.readFileSync("templates/tag.html", "utf8"), data);
+
+    return mustache.to_html(fs.readFileSync("templates/tag.html", "utf8"), data);
 }
 
 function onDemand(application) {
@@ -1040,7 +1050,7 @@ function uninstall(name, pkgs, level) {
     );
 
     if (getOS() === "Linux") {
-        cmd = 'LANG_ALL=C echo "y"|migasfree -rp "' + pkgs + '"';
+        cmd = 'LANG_ALL=C echo "y" | migasfree -rp "' + pkgs + '"';
     } else if (getOS() === "Windows") {
         cmd = 'migasfree -rp "' + pkgs + '"';
     }
@@ -1052,6 +1062,26 @@ function uninstall(name, pkgs, level) {
         "action-" + slugify(name),
         name
     );
+}
+
+function modalLogin(name, packagesToInstall, level) {
+    const fs = require("fs");
+    var resolve = [];
+
+    swal({
+        title: _("administrator"),
+        html: fs.readFileSync("templates/login.html", "utf8"),
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonColor: colorTheme,
+        preConfirm() {
+            resolve=[$("#user").val(), $("#password").val()];
+        }
+    }).then(function (result) {
+        if (checkUser(resolve[0], resolve[1])) {
+            updateStatus(name, packagesToInstall, level);
+        }
+    }).catch(swal.noop);
 }
 
 function updateStatus(name, packagesToInstall, level) {
@@ -1074,7 +1104,7 @@ function updateStatus(name, packagesToInstall, level) {
     }
 
     try {
-        if (packagesToInstall.split(" ").diff(global.pks_availables) == "") {  // AVAILABLE
+        if (packagesToInstall.split(" ").diff(global.availablePkgs) == "") {  // AVAILABLE
             if ($("#auth").text() === "" && level === "A") {  // NO LOGIN
                 $(el).text("person");
                 $(el).off("click");
@@ -1119,7 +1149,8 @@ function printLabel() {
 
 function showLabel() {
     const fs = require("fs");
-    const pk = require('./package.json');
+    const pk = require("./package.json");
+    const mustache = require("mustache");
     var data = {
         "server": global.server,
         "app_name": pk.name,
@@ -1138,18 +1169,18 @@ function showLabel() {
         "network": global.network,
         "computer": global.computer,
         "txt_status": _(global.computer.status),
-        "qrcode": Mustache.to_html(
+        "qrcode": mustache.to_html(
             fs.readFileSync("templates/qrcode.html", "utf8"),
             {"qrcode": global.qr.createImgTag(2, 2)}
         ),
-        "qrcode2": Mustache.to_html(
+        "qrcode2": mustache.to_html(
             fs.readFileSync("templates/qrcode2.html", "utf8"),
             {"qrcode": global.qr.createImgTag(3, 3)}
         )
     };
 
     $("#container").html(
-        Mustache.to_html(fs.readFileSync("templates/information.html", "utf8"), data)
+        mustache.to_html(fs.readFileSync("templates/information.html", "utf8"), data)
     );
 
     global.computer.tags.forEach(function(tag) {
@@ -1205,6 +1236,7 @@ function loadLocale(locale) {
     const fs = require("fs");
     const path = require("path");
     var filePath = path.join(".", "app", "locales", locale + ".json");
+
     if (fs.existsSync(filePath)) {
         var data = fs.readFileSync(filePath, "utf8");
         global.strings = JSON.parse(data);
@@ -1212,10 +1244,12 @@ function loadLocale(locale) {
 }
 
 function _(txt, data = {}) {
+    const mustache = require("mustache");
+
     if (typeof global.strings !== "undefined" && global.strings.hasOwnProperty(txt)) {
-        return Mustache.render(global.strings[txt], data);
+        return mustache.render(global.strings[txt], data);
     } else {
-        return Mustache.render(txt, data);
+        return mustache.render(txt, data);
     }
 }
 
@@ -1233,12 +1267,13 @@ function setSettings() {
 
 function showSettings() {
     const fs = require("fs");
+    const mustache = require("mustache");
     var data = {
         txt_synchronize: _("Show details to synchronize")
     };
 
     $("#container").html(
-        Mustache.to_html(fs.readFileSync("templates/settings.html", "utf8"), data)
+        mustache.to_html(fs.readFileSync("templates/settings.html", "utf8"), data)
     );
 
     setSettings();
@@ -1248,13 +1283,13 @@ function showSettings() {
         saveSettings(global.settings);
     });
 
-    $('#language').append($('<option>', {
+    $("#language").append($("<option>", {
         value: "en",
-        text: 'English'
+        text: "English"
     }));
-    $('#language').append($('<option>', {
+    $("#language").append($("<option>", {
         value: "es",
-        text: 'Español'
+        text: "Español"
     }));
 
     $("#language").val(global.settings.language);
@@ -1266,26 +1301,6 @@ function showSettings() {
     });
 }
 
-function modalLogin(name, packagesToInstall, level) {
-    const fs = require("fs");
-    var resolve = [];
-
-    swal({
-        title: _("administrator"),
-        html: fs.readFileSync("templates/login.html", "utf8"),
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonColor: colorTheme,
-        preConfirm() {
-            resolve=[$("#user").val(), $("#password").val()];
-        }
-    }).then(function (result) {
-        if (checkUser(resolve[0], resolve[1])) {
-            updateStatus(name, packagesToInstall, level);
-        }
-    }).catch(swal.noop);
-}
-
 function loadTerminal() {
     if (!global.sync) {
         $.each(global.terminal, function(i, term) {
@@ -1293,7 +1308,7 @@ function loadTerminal() {
         });
     }
     if (global.idx) {
-        $('.collapsible').collapsible();
+        $(".collapsible").collapsible();
         $('#console > li:nth-child(' + global.idx + ') > div.collapsible-header').click();
         window.scrollTo(0, document.body.scrollHeight);
     }
@@ -1347,7 +1362,7 @@ function getGlobalData() {
             refresh() {
                 try {
                     $("#" + global.run_idx).html(global.terminal[global.run_idx].body);
-                    if ($('#console').length > 0) {
+                    if ($("#console").length > 0) {
                         if ($('#console > li:nth-child(' + global.idx + ') > div.collapsible-body').attr("style") !== "display: none;") {
                             window.scrollTo(0, document.body.scrollHeight);
                         }
@@ -1558,15 +1573,15 @@ function getGlobalData() {
         global.only_devs_assigned = false;
     }
 
-    if (typeof global.pks_availables === "undefined") {
-        global.pks_availables = getPkgNames();
+    if (typeof global.availablePkgs === "undefined") {
+        global.availablePkgs = getPkgNames();
     }
 
 }
 
 function ready() {
     const fs = require("fs");
-    var gui = require('nw.gui');
+    var gui = require("nw.gui");
 
     global.idx = 0;
     win = gui.Window.get();
