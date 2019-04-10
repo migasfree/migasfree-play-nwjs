@@ -44,7 +44,7 @@ function _(txt, data = {}) {
 function showError(txt) {
     swal({
         title: "Error",
-        text:  txt,
+        text: txt,
         type: "error",
         confirmButtonColor: colorTheme,
         showCancelButton: false
@@ -575,7 +575,7 @@ function modalLogin(name, packagesToInstall, level) {
         showCancelButton: true,
         confirmButtonColor: colorTheme,
         preConfirm() {
-            resolve=[$("#user").val(), $("#password").val()];
+            resolve = [$("#user").val(), $("#password").val()];
         }
     }).then(function (result) {
         if (checkUser(resolve[0], resolve[1])) {
@@ -1081,7 +1081,7 @@ function queryApps() {
 
     var url = "";
     var categoryFilter = "";
-    if (global.category != 0) {
+    if (global.category !== 0) {
         categoryFilter = "&category=" + global.category;
     }
 
@@ -1547,7 +1547,7 @@ function getGlobalData() {
                     global.computer.ram = (global.computer.ram / 1024 / 1024 / 1024).toFixed(1) + " GB";
                     global.computer.storage = (global.computer.storage / 1024 / 1024 / 1024).toFixed(1) + " GB";
                     if (global.computer.machine == "V") {
-                        global.computer.machine = "(virtual)" ;
+                        global.computer.machine = "(virtual)";
                     } else {
                         global.computer.machine = "";
                     }
@@ -1592,10 +1592,8 @@ function getGlobalData() {
 
 function ready() {
     const fs = require("fs");
-    var gui = require("nw.gui");
 
     global.idx = 0;
-    win = gui.Window.get();
     getGlobalData();
     $("#sync").click(sync);
     if (global.sync) {
@@ -1649,20 +1647,20 @@ function ready() {
        $("#menu-help").addClass("hide");
     }
 
-    $("#menu-apps").prop("title",_("Applications"));
+    $("#menu-apps").prop("title", _("Applications"));
     $("#menu-apps").click(showApps);
 
-    $("#menu-devices").prop("title",_("Devices"));
+    $("#menu-devices").prop("title", _("Devices"));
     $("#menu-devices").click(showDevices);
 
-    $("#menu-details").prop("title",_("Details"));
+    $("#menu-details").prop("title", _("Details"));
     $("#menu-details").click(showDetails);
 
-    $("#menu-information").prop("title",_("Information"));
+    $("#menu-information").prop("title", _("Information"));
     $("#menu-information").click(showLabel);
 
-    $("#menu-settings").prop("title",_("Settings"));
+    $("#menu-settings").prop("title", _("Settings"));
     $("#menu-settings").click(showSettings);
 
-    $("#menu-help").prop("title",_("Help"));
+    $("#menu-help").prop("title", _("Help"));
 }
