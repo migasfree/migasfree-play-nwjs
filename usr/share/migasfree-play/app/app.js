@@ -761,6 +761,72 @@ function installedPkgs(pks) {
     return execSync(cmd);
 }
 
+function updateStatus(name, packagesToInstall, level) {
+    var slug = slugify(name);
+    var el = "#action-" + slug;
+    var status = "#status-action-" + slug;
+    var descr = "#description-action-" + slug;
+    var installed;
+
+    if (packagesToInstall == "") {
+        installed = false;
+    } else {
+        installed = (packagesToInstall.split(" ").diff(global.packagesInstalled).length === 0);
+    }
+
+    if (global.onlyInstalledApps && (installed == false)){
+        $("#card-action-" + slug).addClass("hide");
+    } else {
+        $("#card-action-" + slug).removeClass("hide");
+    }
+
+    try {
+        if (packagesToInstall.split(" ").diff(global.availablePkgs) == "") {  // AVAILABLE
+            if ($("#auth").text() === "" && level === "A") {  // NO LOGIN
+                $(el).text("person");
+                $(el).off("click");
+                $(el).click(function() {
+                    modalLogin(name, packagesToInstall, level);
+                });
+                if (installed) {
+                    $(status).removeClass("hide");
+                    $(descr).off("click");
+                    $(descr).click(function() {
+                        modalLogin(name, packagesToInstall, level);
+                    });
+                } else {
+                    $(status).addClass("hide");
+                }
+            } else {
+                if (installed) {
+                    $(el).text("delete");
+                    $(el).off("click");
+                    $(el).click(function() {
+                        uninstall(name, packagesToInstall, level);
+                    });
+                    $(status).removeClass("hide");
+                } else {
+                    if (packagesToInstall != "") {
+                        $(el).text("get_app");
+                        $(el).off("click");
+                        $(el).click(function() {
+                            install(name, packagesToInstall, level);
+                        });
+                        $(status).addClass("hide");
+                    }
+                }
+            }
+        } else {  // IS NOT AVAILABLE
+            $(el).text("lock_open");
+            $(el).off("click");
+            $(el).click(function() {onDemand(name);});
+        }
+    }
+    catch(err) {
+        // nothing
+    }
+}
+
 function showAppItem(data) {
     $.each(data.results, function(i, item) {
         if (item.category.id == global.category || global.category == 0) {
@@ -780,8 +846,8 @@ function showAppItem(data) {
 }
 
 function queryAppsPage(url) {
-  if (global.flag_apps) {
-    global.flag_apps = false;
+  if (global.flagApps) {
+    global.flagApps = false;
     $.ajax({
         url,
         type: "GET",
@@ -814,7 +880,7 @@ function queryAppsPage(url) {
             } else {
                 $("#preload-next").hide();
             }
-            global.flag_apps = true;
+            global.flagApps = true;
         },
         error(jqXHR, textStatus, errorThrown) {
             showError(jqXHR.responseText);
@@ -923,12 +989,12 @@ function changedCategory() {
 }
 
 function changedOnlyInstalledApps(){
-    global.onlyInstalledApps = $("#only_apps_installed").prop('checked');
+    global.onlyInstalledApps = $("#only_apps_installed").prop("checked");
     queryApps();
 }
 
 function changedOnlyAssignedDevs(){
-    global.onlyAssignedDevs = $("#only_devs_assigned").prop('checked');
+    global.onlyAssignedDevs = $("#only_devs_assigned").prop("checked");
     queryDevices();
 }
 
@@ -963,7 +1029,7 @@ function showDevices() {
     );
 
     spinner("devices");
-    $("#only_devs_assigned").prop('checked', global.onlyAssignedDevs);
+    $("#only_devs_assigned").prop("checked", global.onlyAssignedDevs);
 
     queryDevices();
 
@@ -988,7 +1054,7 @@ function showApps() {
         mustache.to_html(fs.readFileSync("templates/apps.html", "utf8"), data)
     );
     spinner("apps");
-    $("#only_apps_installed").prop('checked', global.onlyInstalledApps);
+    $("#only_apps_installed").prop("checked", global.onlyInstalledApps);
 
     queryApps();
 
@@ -1107,64 +1173,6 @@ function modalLogin(name, packagesToInstall, level) {
             updateStatus(name, packagesToInstall, level);
         }
     }).catch(swal.noop);
-}
-
-function updateStatus(name, packagesToInstall, level) {
-    var slug = slugify(name);
-    var el = "#action-" + slug;
-    var status = "#status-action-" + slug;
-    var descr = "#description-action-" + slug;
-    var installed;
-
-    if (packagesToInstall == "") {
-        installed = false;
-    } else {
-        installed = (packagesToInstall.split(" ").diff(global.packagesInstalled).length === 0);
-    }
-
-    if (global.onlyInstalledApps && (installed == false)){
-        $("#card-action-" + slug).addClass("hide");
-    } else {
-        $("#card-action-" + slug).removeClass("hide");
-    }
-
-    try {
-        if (packagesToInstall.split(" ").diff(global.availablePkgs) == "") {  // AVAILABLE
-            if ($("#auth").text() === "" && level === "A") {  // NO LOGIN
-                $(el).text("person");
-                $(el).off("click");
-                $(el).click(function() {modalLogin(name, packagesToInstall, level);});
-                if (installed) {
-                    $(status).removeClass("hide");
-                    $(descr).off("click");
-                    $(descr).click(function() {modalLogin(name, packagesToInstall, level);});
-                } else {
-                    $(status).addClass("hide");
-                }
-            } else {
-                if (installed) {
-                    $(el).text("delete");
-                    $(el).off("click");
-                    $(el).click(function() {uninstall(name, packagesToInstall, level);});
-                    $(status).removeClass("hide");
-                } else {
-                    if (packagesToInstall != "") {
-                        $(el).text("get_app");
-                        $(el).off("click");
-                        $(el).click(function() {install(name, packagesToInstall, level);});
-                        $(status).addClass("hide");
-                    }
-                }
-            }
-        } else {  // IS NOT AVAILABLE
-            $(el).text("lock_open");
-            $(el).off("click");
-            $(el).click(function() {onDemand(name);});
-        }
-    }
-    catch(err) {
-        // nothing
-    }
 }
 
 // LABEL
@@ -1518,7 +1526,7 @@ function getGlobalData() {
         getServerVersion();
     }
 
-    global.flag_apps = true;
+    global.flagApps = true;
 
     // LABEL
     $.getJSON(
