@@ -8,10 +8,10 @@ var consoleLog = path.join(gui.__dirname, "console.log");
 var toastTime = 3000;
 var colorTheme = "#009688"; //teal
 
-
 function getServerVersion() {
     var url = "http://" + global.server + "/api/v1/public/server/info/";
-    var err_version = "migasfree-server version 4.16 is required";
+    var errVersion = "migasfree-server version 4.16 is required";
+
     $.support.cors = true;
     $.ajax({
         type: 'HEAD',
@@ -31,7 +31,7 @@ function getServerVersion() {
                 },
                 error(jqXHR, textStatus, errorThrown) {
                     global.serverversion = 0;
-                    show_err(err_version);
+                    showError(errVersion);
                 },
             });
 
@@ -39,7 +39,7 @@ function getServerVersion() {
         error: function(jqXHR, textStatus, errorThrown) {
             // url not found
             global.serverversion = 0;
-            show_err(err_version);
+            showError(errVersion);
         }
     });
 
@@ -83,7 +83,7 @@ function replaceColors(txt) {
     return txt;
 }
 
-function show_err(txt) {
+function showError(txt) {
     swal({
         title: "Error",
         text:  txt,
@@ -107,9 +107,8 @@ function tooltip(id, text) {
     anchor.tooltip();
 }
 
-
-function slugify(name){
-  return name
+function slugify(value){
+  return value
     .toString()
     .trim()
     .toLowerCase()
@@ -120,7 +119,6 @@ function slugify(name){
     .replace(/-+$/, "");
 }
 
-
 function saveTerminal() {
     const fs = require("fs");
     fs.writeFile(consoleLog, JSON.stringify(global.terminal), function (err) {
@@ -128,11 +126,9 @@ function saveTerminal() {
     });
 }
 
-
 function exit() {
     win.window.close();
 }
-
 
 (function() {
     document.onkeydown = function (e) {
@@ -143,7 +139,6 @@ function exit() {
         }
     };
 }());
-
 
 gui.Window.get().on("close", function () {
     if (global.running) {
@@ -169,7 +164,7 @@ function addTokenHeader(xhr) {
 function labelDone() {
     if (typeof global.label !== "undefined") {
         $("#machine").html(
-            "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label["name"] + "</a>"
+            "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label.name + "</a>"
         );
         tooltip("#machine", _("View computer in migasfree server"));
 
@@ -178,7 +173,7 @@ function labelDone() {
         var qr = qrcode(typeNumber, errorCorrectionLevel);
 
         qr.addData(
-            '{"model":"Computer","id":' + global.label["id"] + ',"server":"' + global.label["server"] + '"}'
+            '{"model":"Computer","id":' + global.label.id + ',"server":"' + global.label.server + '"}'
         );
         qr.make();
 
@@ -194,14 +189,13 @@ function getToken(username="migasfree-play", password="migasfree-play") {
         data: {"username": username, "password": password},
         success(data) {
             const fs = require("fs");
-            const path = require("path");
             global.token = "token " + data.token;
             fs.writeFileSync("token", data.token);
         },
         error(jqXHR, textStatus, errorThrown) {
             swal({
-                title: "Server: " + global.server ,
-                text:  "Token:" + jqXHR.responseText ,
+                title: "Server: " + global.server,
+                text:  "Token:" + jqXHR.responseText,
                 type: "error",
                 confirmButtonColor: colorTheme,
                 showCancelButton: false
@@ -219,21 +213,23 @@ function getToken(username="migasfree-play", password="migasfree-play") {
     });
 }
 
-
 function getAttributeCID() {
     if (typeof global.label !== "undefined") {
         $.ajax({
             url: "http://" + global.server + "/api/v1/token/attributes/",
             type: "GET",
             beforeSend: addTokenHeader,
-            data: {"property_att__prefix": "CID", "value": global.cid},
+            data: {
+                "property_att__prefix": "CID", 
+                "value": global.cid
+            },
             success(data) {
                 if (data.count === 1) {
                     global.att_cid = data.results[0].id;
                 }
             },
             error(jqXHR, textStatus, errorThrown) {
-                show_err(jqXHR.responseText);
+                showError(jqXHR.responseText);
             },
         });
     }
@@ -255,52 +251,53 @@ function readSettings() {
     if (fs.existsSync(filePath)) {
         var data = fs.readFileSync(filePath, "utf8");
         global.settings = JSON.parse(data);
-        if (! global.settings.hasOwnProperty('show_menu_apps')) {
-            global.settings["show_menu_apps"] = true;
+        if (!global.settings.hasOwnProperty('show_menu_apps')) {
+            global.settings.show_menu_apps = true;
             saveSettings(global.settings);
         }
-        if (! global.settings.hasOwnProperty('show_menu_devices')) {
-            global.settings["show_menu_devices"] = true;
+        if (!global.settings.hasOwnProperty('show_menu_devices')) {
+            global.settings.show_menu_devices = true;
             saveSettings(global.settings);
         }
-        if (! global.settings.hasOwnProperty('show_menu_details')) {
-            global.settings["show_menu_details"] = true;
+        if (!global.settings.hasOwnProperty('show_menu_details')) {
+            global.settings.show_menu_details = true;
             saveSettings(global.settings);
         }
-        if (! global.settings.hasOwnProperty('show_menu_settings')) {
-            global.settings["show_menu_settings"] = true;
+        if (!global.settings.hasOwnProperty('show_menu_settings')) {
+            global.settings.show_menu_settings = true;
             saveSettings(global.settings);
         }
-        if (! global.settings.hasOwnProperty('show_menu_information')) {
-            global.settings["show_menu_information"] = true;
+        if (!global.settings.hasOwnProperty('show_menu_information')) {
+            global.settings.show_menu_information = true;
             saveSettings(global.settings);
         }
-        if (! global.settings.hasOwnProperty('show_menu_help')) {
-            global.settings["show_menu_help"] = true;
+        if (!global.settings.hasOwnProperty('show_menu_help')) {
+            global.settings.show_menu_help = true;
             saveSettings(global.settings);
         }
     }
     else {
         global.settings = {};
-        global.settings["language"] = "es";
-        global.settings["theme"] = "dark";
-        global.settings["show_details_to_sync"] = false;
-        global.settings["show_menu_apps"] = true;
-        global.settings["show_menu_devices"] = true;
-        global.settings["show_menu_details"] = true;
-        global.settings["show_menu_settings"] = true;
-        global.settings["show_menu_information"] = true;
-        global.settings["show_menu_help"] = true;
+        global.settings.language = "es";
+        global.settings.theme = "dark";
+        global.settings.show_details_to_sync = false;
+        global.settings.show_menu_apps = true;
+        global.settings.show_menu_devices = true;
+        global.settings.show_menu_details = true;
+        global.settings.show_menu_settings = true;
+        global.settings.show_menu_information = true;
+        global.settings.show_menu_help = true;
 
         saveSettings(global.settings);
     }
-    loadLocale(global.settings["language"]);
+    loadLocale(global.settings.language);
 }
 
 function getPkgNames() {
     var execSync = require("child_process").execSync;
     var packages = execSync('python -c "from __future__ import print_function; from migasfree_client.client import MigasFreeClient; print(MigasFreeClient().pms.available_packages(), end=\'\')"').toString();
     packages = replaceAll(packages, "'", '"');
+
     return JSON.parse(packages);
 }
 
@@ -338,8 +335,8 @@ function afterSync() {
 }
 
 
-function sync_each_24() {
-    setTimeout(sync_each_24, 24*60*60*1000);
+function syncEveryDay() {
+    setTimeout(syncEveryDay, 24 * 60 * 60 * 1000);
     sync();
 }
 
@@ -348,10 +345,10 @@ function renderRun(idx) {
 
     var data = {
         id: idx,
-        date: global.terminal[idx]["date"],
-        icon: global.terminal[idx]["icon"],
-        header: global.terminal[idx]["header"],
-        body: global.terminal[idx]["body"]
+        date: global.terminal[idx].date,
+        icon: global.terminal[idx].icon,
+        header: global.terminal[idx].header,
+        body: global.terminal[idx].body
     };
 
     return Mustache.to_html(fs.readFileSync("templates/run.html", "utf8"), data);
@@ -404,8 +401,8 @@ function supportExternalLinks(event) {
             event.preventDefault();
             var data = {
                 "server": global.server,
-                "cid":  global.label["id"],
-                "computer": global.label["name"],
+                "cid":  global.label.id,
+                "computer": global.label.name,
                 "project": global.project,
                 "uuid": global.uuid
             };
@@ -444,7 +441,7 @@ function queryDevicesPage(url) {
             }
         },
         error(jqXHR, textStatus, errorThrown) {
-            show_err(jqXHR.responseText);
+            showError(jqXHR.responseText);
         },
     });
 }
@@ -456,7 +453,7 @@ function queryDevices() {
     getDevs();
     queryDevicesPage(
         "http://" + global.server + "/api/v1/token/devices/devices/available/" +
-        "?cid=" +  global.label["id"] + "&q=" + global.searchPrint
+        "?cid=" +  global.label.id + "&q=" + global.searchPrint
     );
 }
 
@@ -472,7 +469,7 @@ function changeAttributesDevice(dev, feature, id, atts) {
            updateStatusDevice(dev, feature, id);
         },
         error(jqXHR, textStatus, errorThrown) {
-            show_err("changeAttributesDevice:" + jqXHR.responseText);
+            showError("changeAttributesDevice:" + jqXHR.responseText);
         },
     });
 }
@@ -489,7 +486,7 @@ function installDevice(dev, feature, id) {
             changeAttributesDevice(dev, feature, id, atts);
         },
         error(jqXHR, textStatus, errorThrown) {
-            show_err(jqXHR.responseText);
+            showError(jqXHR.responseText);
         },
     });
 }
@@ -511,14 +508,15 @@ function uninstallDevice(dev, feature, id) {
             changeAttributesDevice(dev, feature, id, atts);
         },
         error(jqXHR, textStatus, errorThrown) {
-            show_err(jqXHR.responseText);
+            showError(jqXHR.responseText);
         },
     });
 }
 
 function updateStatusDevice(dev, feature, id) {
-    dev=slugify(dev);
-    feature=slugify(feature);
+    dev = slugify(dev);
+    feature = slugify(feature);
+
     var slug = dev + feature;
     var el = "#action-" + slug;
     var status = "#status-action-" + slug;
@@ -527,15 +525,15 @@ function updateStatusDevice(dev, feature, id) {
 
     if (global.only_devs_assigned) {
         if (assigned || inflicted){
-            $("#dev-"+dev).removeClass("hide");
-            $("#logical-action-"+slug).removeClass("hide");
+            $("#dev-" + dev).removeClass("hide");
+            $("#logical-action-" + slug).removeClass("hide");
 
         } else {
-            $("#logical-action-"+slug).addClass("hide");
+            $("#logical-action-" + slug).addClass("hide");
         }
     } else {
-        $("#dev-"+dev).removeClass("hide");
-        $("#logical-action-"+slug).removeClass("hide");
+        $("#dev-" + dev).removeClass("hide");
+        $("#logical-action-" + slug).removeClass("hide");
     }
 
     try {
@@ -566,11 +564,10 @@ function renderDict(data) {
     var ret= "";
 
     for (var element in data) {
-        ret+= element + ": " + data[element] + "<br />";
+        ret += element + ": " + data[element] + "<br />";
     }
     return ret;
 }
-
 
 function deleteEmptyElement(obj) {
     for (const prop in obj) {
@@ -580,14 +577,13 @@ function deleteEmptyElement(obj) {
     }
 }
 
-
 function renderInfoDevice(data) {
     return renderDict(JSON.parse(data));
 }
 
 function renderDevice(dev) {
     const fs = require("fs");
-    var icon;
+    var icon, name;
 
     if (dev.connection.name === "TCP") {
         icon = "assets/printer-net.png";
@@ -599,17 +595,17 @@ function renderDevice(dev) {
     var location = "";
     if (datavar.LOCATION) {
         location = datavar.LOCATION;
-        delete datavar["LOCATION"];
+        delete datavar.LOCATION;
     }
 
     deleteEmptyElement(datavar);
 
     if (datavar.NAME) {
-        var name = datavar.NAME;
+        name = datavar.NAME;
         datavar.MODEL = dev.model.manufacturer.name + " " + dev.model.name;
-        delete datavar["NAME"];
+        delete datavar.NAME;
     } else {
-        var name = dev.model.manufacturer.name + " " + dev.model.name;
+        name = dev.model.manufacturer.name + " " + dev.model.name;
     }
 
     var data = {
@@ -638,9 +634,9 @@ function renderLogical(logical) {
         name: name,
         idaction: "action-" + slugify(logical.device.name + logical.feature.name),
     };
+
     return Mustache.to_html(fs.readFileSync("templates/logical.html", "utf8"), data);
 }
-
 
 function getDevice(dev) {
     $("#devices").append(renderDevice(dev));
@@ -651,15 +647,16 @@ function getDevice(dev) {
         data: {},
         success(logicalDevs) {
             $.each(logicalDevs.results, function(i, logical) {
-                $("#logicals-dev-"+slugify(logical.device.name)).append(renderLogical(logical));
+                $("#logicals-dev-" + slugify(logical.device.name)).append(renderLogical(logical));
                 updateStatusDevice(
-                    logical.device.name, logical.feature.name,
+                    logical.device.name,
+                    logical.feature.name,
                     logical.id
                 );
             });
         },
         error(jqXHR, textStatus, errorThrown) {
-            show_err(jqXHR.responseText);
+            showError(jqXHR.responseText);
         },
     });
 }
@@ -670,7 +667,6 @@ function showDeviceItem(data) {
     });
     $(".collapsible").collapsible();  // FIXME
 }
-
 
 // APPS
 function showCategories(categories) {
@@ -695,7 +691,7 @@ function queryCategories() {
            showCategories(global.categories);
         },
         error(jqXHR, textStatus, errorThrown) {
-            show_err(jqXHR.responseText);
+            showError(jqXHR.responseText);
         },
     });
 }
@@ -705,6 +701,7 @@ function installedPkgs(pks) {
     const execSync = require("child_process").execSync;
     var script = '"' + path.join(gui.__dirname, "py", "installed.py") + '"';
     var cmd = "python " + script + ' "' + pks + '"';
+
     return execSync(cmd);
 }
 
@@ -746,7 +743,7 @@ function queryAppsPage(url) {
             global.flag_apps = true;
         },
         error(jqXHR, textStatus, errorThrown) {
-            show_err(jqXHR.responseText);
+            showError(jqXHR.responseText);
         },
     });
   }
@@ -766,16 +763,13 @@ function queryApps() {
     spinner("preload-next");
 
     if (global.serverversion >= 4.16) {
-        url = "http://" + global.server + "/api/v1/token/catalog/apps/available/"
+        url = "http://" + global.server + "/api/v1/token/catalog/apps/available/";
     } else {
-        url = "http://" + global.server + "/api/v1/token/catalog/apps/"
+        url = "http://" + global.server + "/api/v1/token/catalog/apps/";
     }
 
     queryAppsPage(
-        url +
-        "?cid=" +  global.label["id"] +
-        "&q=" + global.search +
-        categoryFilter
+        url + "?cid=" +  global.label.id + "&q=" + global.search + categoryFilter
     );
 }
 
@@ -796,14 +790,12 @@ function renderRating(score) {
 function renderApp(item) {
     const fs = require("fs");
     const marked = require("marked");
-
     var renderer = new marked.Renderer();
 
     renderer.heading = function (text, level) {
         var escapedText = text.toLowerCase().replace(/[^\w]+/g, "-");
         return "<h" + (level + 3) + "><a name='" +
-             escapedText +
-             "' class='anchor' href='#" +
+             escapedText + "' class='anchor' href='#" +
              escapedText + "'></a><span>" + text +
              "</span></h" + (level + 3) + ">";
     };
@@ -815,8 +807,8 @@ function renderApp(item) {
 
         data = {
             server: global.server,
-            cid: global.label["id"],
-            computer: global.label["name"],
+            cid: global.label.id,
+            computer: global.label.name,
             project: global.project,
             uuid: global.uuid,
             app: item.name,
@@ -835,12 +827,11 @@ function renderApp(item) {
         rating: renderRating(item.score),
         txt_installed: _("installed"),
         exists_title: (truncatedDesc),
-        exists_description:  item.description.split("\n").length > 1
+        exists_description: item.description.split("\n").length > 1
     };
 
     return Mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
 }
-
 
 function showAppItem(data) {
     $.each(data.results, function(i, item) {
@@ -875,7 +866,6 @@ function changedCategory() {
     queryApps();
 }
 
-
 function changed_only_apps_installed(){
     global.only_apps_installed = $("#only_apps_installed").prop('checked');
     queryApps();
@@ -885,7 +875,6 @@ function changed_only_devs_assigned(){
     global.only_devs_assigned = $("#only_devs_assigned").prop('checked');
     queryDevices();
 }
-
 
 function getChar(event) {
     var keyCode = ("which" in event) ? event.which : event.keyCode;
@@ -905,10 +894,9 @@ function getCharPrint(event){
     }
 }
 
-
 function getDevs() {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/computers/"+global.cid+"/devices/",
+        url: "http://" + global.server + "/api/v1/token/computers/" + global.cid + "/devices/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -916,15 +904,15 @@ function getDevs() {
         success(data) {
             global.devs = [];
             global.inflicted = [];
-            data.assigned_logical_devices_to_cid.forEach( function(item) {
+            data.assigned_logical_devices_to_cid.forEach(function(item) {
                 global.devs.push(item.id);
-            } );
-            data.inflicted_logical_devices.forEach( function(item) {
+            });
+            data.inflicted_logical_devices.forEach(function(item) {
                 global.inflicted.push(item.id);
-            } );
+            });
         },
         error(jqXHR, textStatus, errorThrown) {
-            show_err(jqXHR.responseText);
+            showError(jqXHR.responseText);
         },
     });
 }
@@ -932,13 +920,14 @@ function getDevs() {
 
 function showDevices() {
     const fs = require("fs");
-
     var data = {
         txt_search: _("search"),
         txt_assigned: _("assigned")
     };
 
-    $("#container").html( Mustache.to_html(fs.readFileSync("templates/devices.html", "utf8"), data) );
+    $("#container").html(
+        Mustache.to_html(fs.readFileSync("templates/devices.html", "utf8"), data)
+    );
 
     spinner("devices");
     $("#only_devs_assigned").prop('checked', global.only_devs_assigned);
@@ -961,7 +950,9 @@ function showApps() {
         txt_installed: _("installed")
     };
 
-    $("#container").html( Mustache.to_html(fs.readFileSync("templates/apps.html", "utf8"), data) );
+    $("#container").html(
+        Mustache.to_html(fs.readFileSync("templates/apps.html", "utf8"), data)
+    );
     spinner("apps");
     $("#only_apps_installed").prop('checked', global.only_apps_installed);
 
@@ -984,13 +975,10 @@ function renderTag(tag) {
     return Mustache.to_html(fs.readFileSync("templates/tag.html", "utf8"), data);
 }
 
-
 function onDemand(application) {
-    const path = require("path");
-
     swal({
         title: application + " " + _("no available"),
-        html: global.label["helpdesk"] + "<br />" + global.label["name"] ,
+        html: global.label.helpdesk + "<br />" + global.label.name,
         type: "warning",
         showCancelButton: false,
         confirmButtonColor: colorTheme
@@ -1019,13 +1007,20 @@ function postAction(name, pkgs, level) {
 }
 
 function install(name, pkgs, level) {
-    Materialize.toast(_("installing {{name}}...", {name: name}), toastTime, "rounded grey");
     var cmd;
+
+    Materialize.toast(
+        _("installing {{name}}...", {name: name}), 
+        toastTime, 
+        "rounded grey"
+    );
+
     if (getOS() === "Linux") {
         cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
     } else if (getOS() === "Windows") {
         cmd = 'migasfree -ip "' + pkgs + '"';
     }
+
     global.TERMINAL.run(
         cmd,
         null,
@@ -1036,13 +1031,20 @@ function install(name, pkgs, level) {
 }
 
 function uninstall(name, pkgs, level) {
-    Materialize.toast(_("deleting {{name}}...", {name: name}), toastTime, "rounded grey");
     var cmd;
+
+    Materialize.toast(
+        _("deleting {{name}}...", {name: name}), 
+        toastTime, 
+        "rounded grey"
+    );
+
     if (getOS() === "Linux") {
         cmd = 'LANG_ALL=C echo "y"|migasfree -rp "' + pkgs + '"';
     } else if (getOS() === "Windows") {
         cmd = 'migasfree -rp "' + pkgs + '"';
     }
+
     global.TERMINAL.run(
         cmd,
         null,
@@ -1066,14 +1068,13 @@ function updateStatus(name, packagesToInstall, level) {
     }
 
     if (global.only_apps_installed && (installed == false)){
-        $("#card-action-"+slug).addClass("hide");
+        $("#card-action-" + slug).addClass("hide");
     } else {
-        $("#card-action-"+slug).removeClass("hide");
+        $("#card-action-" + slug).removeClass("hide");
     }
 
     try {
         if (packagesToInstall.split(" ").diff(global.pks_availables) == "") {  // AVAILABLE
-            var person = "";
             if ($("#auth").text() === "" && level === "A") {  // NO LOGIN
                 $(el).text("person");
                 $(el).off("click");
@@ -1126,12 +1127,12 @@ function showLabel() {
         "app_description": _(pk.description),
         "app_copyright": pk.copyright,
         "app_author": pk.author,
-        "cid":  global.label["id"],
-        "name": global.label["name"],
+        "cid":  global.label.id,
+        "name": global.label.name,
         "project": global.project,
         "user": global.user,
         "uuid": global.uuid,
-        "helpdesk": global.label["helpdesk"],
+        "helpdesk": global.label.helpdesk,
         "ip": global.ip,
         "mask": global.mask,
         "network": global.network,
@@ -1147,11 +1148,13 @@ function showLabel() {
         )
     };
 
-    $("#container").html(Mustache.to_html(fs.readFileSync("templates/information.html", "utf8"), data));
+    $("#container").html(
+        Mustache.to_html(fs.readFileSync("templates/information.html", "utf8"), data)
+    );
 
-    global.computer.tags.forEach( function(tag) {
+    global.computer.tags.forEach(function(tag) {
         $("#tags").append(renderTag(tag));
-    } );
+    });
 
     $("#print-label").click(printLabel);
 
@@ -1170,6 +1173,7 @@ function checkUser(user, password) {
         process.env._LOGIN_MP_USER = "";
         process.env._LOGIN_MP_PASS = "";
         $("#auth").text("yes");
+
         return true;
     }
     catch(err) {
@@ -1184,16 +1188,17 @@ function checkUser(user, password) {
             confirmButtonColor: colorTheme
         }).then(
             function () {},
-            function (dismiss){
+            function (dismiss) {
                 // dismiss can be 'overlay', 'cancel', 'close', 'esc', 'timer'
                 if (dismiss === "cancel") {
                     // nothing
                 }
-        });
+            }
+        );
+
         return false;
     }
 }
-
 
 // I18N
 function loadLocale(locale) {
@@ -1206,25 +1211,24 @@ function loadLocale(locale) {
     }
 }
 
-function _(txt,data = {}) {
-    if ( !(typeof global.strings === "undefined") &&  global.strings.hasOwnProperty(txt)) {
+function _(txt, data = {}) {
+    if (typeof global.strings !== "undefined" && global.strings.hasOwnProperty(txt)) {
         return Mustache.render(global.strings[txt], data);
     } else {
         return Mustache.render(txt, data);
     }
 }
 
-
 // SETTINGS
 function getSettings() {
-    global.settings["language"] = $("#language").val();
-    global.settings["theme"] = "dark";
-    global.settings["show_details_to_sync"] = $("#show_details_to_sync").is(":checked");
+    global.settings.language = $("#language").val();
+    global.settings.theme = "dark";
+    global.settings.show_details_to_sync = $("#show_details_to_sync").is(":checked");
 }
 
 function setSettings() {
-    $("#show_details_to_sync").prop("checked", global.settings["show_details_to_sync"]);
-    $("#language").val(global.settings["language"]);
+    $("#show_details_to_sync").prop("checked", global.settings.show_details_to_sync);
+    $("#language").val(global.settings.language);
 }
 
 function showSettings() {
@@ -1233,7 +1237,9 @@ function showSettings() {
         txt_synchronize: _("Show details to synchronize")
     };
 
-    $("#container").html( Mustache.to_html(fs.readFileSync("templates/settings.html", "utf8"), data) );
+    $("#container").html(
+        Mustache.to_html(fs.readFileSync("templates/settings.html", "utf8"), data)
+    );
 
     setSettings();
 
@@ -1251,19 +1257,19 @@ function showSettings() {
         text: 'Español'
     }));
 
-    $("#language").val(global.settings["language"]);
+    $("#language").val(global.settings.language);
     $("#language").material_select();
 
     $("#language").change(function() {
         getSettings();
         saveSettings(global.settings);
     });
-
 }
 
 function modalLogin(name, packagesToInstall, level) {
     const fs = require("fs");
     var resolve = [];
+
     swal({
         title: _("administrator"),
         html: fs.readFileSync("templates/login.html", "utf8"),
@@ -1280,27 +1286,25 @@ function modalLogin(name, packagesToInstall, level) {
     }).catch(swal.noop);
 }
 
-
 function loadTerminal() {
-    if (! global.sync) {
+    if (!global.sync) {
         $.each(global.terminal, function(i, term) {
-           $("#console").append(renderRun(i));
+            $("#console").append(renderRun(i));
         });
     }
     if (global.idx) {
         $('.collapsible').collapsible();
         $('#console > li:nth-child(' + global.idx + ') > div.collapsible-header').click();
-        window.scrollTo(0,document.body.scrollHeight);
+        window.scrollTo(0, document.body.scrollHeight);
     }
 }
 
-
 function padLeft(nr, n, str){
-    return Array(n-String(nr).length+1).join(str||'0')+nr;
+    return Array(n - String(nr).length + 1).join(str || '0') + nr;
 }
 
 function formatDate(date) {
-    return date.getFullYear()+ "/" + padLeft(parseInt(date.getMonth())+1,2) + "/" + padLeft(parseInt(date.getDate()),2) + "  " + padLeft(parseInt(date.getHours()),2) +":" + padLeft(parseInt(date.getMinutes()),2)+":"+ padLeft(parseInt(date.getSeconds()),2);
+    return date.getFullYear() + "/" + padLeft(parseInt(date.getMonth()) + 1, 2) + "/" + padLeft(parseInt(date.getDate()),2) + "  " + padLeft(parseInt(date.getHours()),2) +":" + padLeft(parseInt(date.getMinutes()), 2) + ":" + padLeft(parseInt(date.getSeconds()), 2);
 }
 
 function getGlobalData() {
@@ -1333,7 +1337,7 @@ function getGlobalData() {
         return {
             add(txt) {
                 try {
-                    global.terminal[global.run_idx]["body"] = replaceColors(global.terminal[global.run_idx]["body"] + txt);
+                    global.terminal[global.run_idx].body = replaceColors(global.terminal[global.run_idx].body + txt);
                     this.refresh();
                 }
                 catch(err) {
@@ -1341,17 +1345,17 @@ function getGlobalData() {
                 }
             },
             refresh() {
-                 try {
-                     $("#"+global.run_idx).html(global.terminal[global.run_idx]["body"]);
-                     if ($('#console').length > 0) {
-                         if ( $('#console > li:nth-child(' + global.idx + ') > div.collapsible-body').attr("style")!=="display: none;") {
-                             window.scrollTo(0,document.body.scrollHeight);
-                         }
-                     }
-                 }
-                 catch(err) {
+                try {
+                    $("#" + global.run_idx).html(global.terminal[global.run_idx].body);
+                    if ($('#console').length > 0) {
+                        if ($('#console > li:nth-child(' + global.idx + ') > div.collapsible-body').attr("style") !== "display: none;") {
+                            window.scrollTo(0, document.body.scrollHeight);
+                        }
+                    }
+                }
+                catch(err) {
                     // nothing
-                 }
+                }
             },
             run(cmd, beforeCallback=null, afterCallback=null, id, txt) {
                 if (global.running) {
@@ -1381,9 +1385,14 @@ function getGlobalData() {
 
                     var date = new Date();
 
-                    global.idx = global.idx+1;
-                    global.run_idx = "_run_"+ (global.idx).toString();
-                    global.terminal[global.run_idx]={"icon": $("#"+id).text(), "date": formatDate(date), "header": txt, "body": ""};
+                    global.idx += 1;
+                    global.run_idx = "_run_" + (global.idx).toString();
+                    global.terminal[global.run_idx] = {
+                        "icon": $("#" + id).text(), 
+                        "date": formatDate(date), 
+                        "header": txt, 
+                        "body": ""
+                    };
 
                     $("#console").append(renderRun(global.run_idx));
                     $('#console > li:nth-child(' + global.idx + ') > div.collapsible-header').click();
@@ -1499,40 +1508,39 @@ function getGlobalData() {
         {}
     ).done(function( data ) {
         global.label = data;
-        global.cid = global.label["id"];
+        global.cid = global.label.id;
         getAttributeCID();
         $.ajax({
-            url: "http://" + global.server + "/api/v1/token/computers/?id="+global.cid,
+            url: "http://" + global.server + "/api/v1/token/computers/?id=" + global.cid,
             type: "GET",
             beforeSend: addTokenHeader,
             data: {},
             success(data) {
                 if (data.count === 1) {
                     global.computer = data.results[0];
-                    global.computer.ram = (global.computer.ram/1024/1024/1024).toFixed(1)+ " GB";
-                    global.computer.storage = (global.computer.storage/1024/1024/1024).toFixed(1) + " GB";
-                    if (global.computer.machine = "V") {
+                    global.computer.ram = (global.computer.ram / 1024 / 1024 / 1024).toFixed(1) + " GB";
+                    global.computer.storage = (global.computer.storage / 1024 / 1024 / 1024).toFixed(1) + " GB";
+                    if (global.computer.machine == "V") {
                         global.computer.machine = "(virtual)" ;
                     } else {
-                        global.computer.machine="" ;
+                        global.computer.machine = "";
                     }
 
                     labelDone();
 
-                    if (! global.sync) {
-                        if (global.settings["show_menu_apps"]) {
+                    if (!global.sync) {
+                        if (global.settings.show_menu_apps) {
                             showApps();
-                        } else if (global.settings["show_menu_devices"]) {
+                        } else if (global.settings.show_menu_devices) {
                             showDevices();
                         } else {
                             showDetails();
                         }
                     }
-
                 }
             },
             error(jqXHR, textStatus, errorThrown) {
-                show_err(jqXHR.responseText);
+                showError(jqXHR.responseText);
             },
         });
 
@@ -1559,8 +1567,9 @@ function getGlobalData() {
 function ready() {
     const fs = require("fs");
     var gui = require('nw.gui');
+
     global.idx = 0;
-    win = gui.Window.get()
+    win = gui.Window.get();
     getGlobalData();
     $("#sync").click(sync);
     if (global.sync) {
@@ -1568,16 +1577,16 @@ function ready() {
             fs.unlinkSync(consoleLog);
             global.terminal = {};
         }
-        if (global.settings["show_details_to_sync"]) {
+        if (global.settings.show_details_to_sync) {
             win.show();
         } else {
             win.show();
             win.minimize();
         }
         showDetails();
-        sync_each_24();
+        syncEveryDay();
     } else {
-        setTimeout(sync_each_24, 24*60*60*1000);
+        setTimeout(syncEveryDay, 24 * 60 * 60 * 1000);
         fs.stat(consoleLog, function(err, stat) {
             if (err === null) {
                 // consoleLog exists
@@ -1590,27 +1599,27 @@ function ready() {
         win.show();
     }
 
-    if (! global.settings["show_menu_apps"]) {
+    if (!global.settings.show_menu_apps) {
        $("#menu-apps").addClass("hide");
     }
 
-    if (! global.settings["show_menu_devices"]) {
+    if (!global.settings.show_menu_devices) {
        $("#menu-devices").addClass("hide");
     }
 
-    if (! global.settings["show_menu_details"]) {
+    if (!global.settings.show_menu_details) {
        $("#menu-details").addClass("hide");
     }
 
-    if (! global.settings["show_menu_information"]) {
+    if (!global.settings.show_menu_information) {
        $("#menu-information").addClass("hide");
     }
 
-    if (! global.settings["show_menu_settings"]) {
+    if (!global.settings.show_menu_settings) {
        $("#menu-settings").addClass("hide");
     }
 
-    if (! global.settings["show_menu_help"]) {
+    if (!global.settings.show_menu_help) {
        $("#menu-help").addClass("hide");
     }
 
