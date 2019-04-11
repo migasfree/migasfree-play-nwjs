@@ -7,16 +7,17 @@
 // import Materialize from "materialize-css";
 // import qrcode from "qrcode";
 
-var gui = require("nw.gui");
-var path = require("path");
+const gui = require("nw.gui");
+const path = require("path");
 var win = gui.Window.get();
 var confFile = "settings.json";
 var consoleLog = path.join(gui.__dirname, "console.log");
+var colorTheme = "#009688";  //teal
+
 var toastTime = 3000;
 var toastInfo = "rounded grey";
 var toastSuccess = "rounded green";
 var toastError = "rounded red";
-var colorTheme = "#009688";  //teal
 
 function addTokenHeader(xhr) {
     xhr.setRequestHeader("authorization", global.token);
@@ -25,7 +26,6 @@ function addTokenHeader(xhr) {
 // I18N
 function loadLocale(locale) {
     const fs = require("fs");
-    const path = require("path");
     var filePath = path.join(".", "app", "locales", locale + ".json");
 
     if (fs.existsSync(filePath)) {
@@ -155,6 +155,7 @@ function slugify(value){
 
 function saveTerminal() {
     const fs = require("fs");
+
     fs.writeFile(consoleLog, JSON.stringify(global.terminal), function (err) {
         if (err) {throw err;}
     });
@@ -266,7 +267,6 @@ function getAttributeCID() {
 
 function saveSettings(settings) {
     const fs = require("fs");
-    const path = require("path");
     var filePath = path.join(confFile);
 
     fs.writeFileSync(filePath, JSON.stringify(settings));
@@ -274,7 +274,6 @@ function saveSettings(settings) {
 
 function readSettings() {
     const fs = require("fs");
-    const path = require("path");
     var filePath = path.join(confFile);
 
     if (fs.existsSync(filePath)) {
@@ -331,9 +330,8 @@ function getPkgNames() {
 }
 
 function execDir(directory) {
-    const execSync = require("child_process").execSync;
     const fs = require("fs");
-    const path = require("path");
+    const execSync = require("child_process").execSync;
 
     try {
         fs.accessSync(directory);
@@ -454,7 +452,6 @@ function supportExternalLinks(event) {
 
 // PMS
 function installedPkgs(pks) {
-    const path = require("path");
     const execSync = require("child_process").execSync;
     var script = '"' + path.join(gui.__dirname, "py", "installed.py") + '"';
     var cmd = "python " + script + ' "' + pks + '"';
@@ -530,9 +527,8 @@ function uninstall(name, pkgs, level) {
 }
 
 function checkUser(user, password) {
-    var path = require("path");
+    const execSync = require("child_process").execSync;
     var script = '"' + path.join(gui.__dirname, "py", "check_user.py") + '"';
-    var execSync = require("child_process").execSync;
 
     try {
         process.env._LOGIN_MP_USER = user;
@@ -1338,9 +1334,8 @@ function formatDate(date) {
 }
 
 function getGlobalData() {
-    const execSync = require("child_process").execSync;
     const fs = require("fs");
-    const path = require("path");
+    const execSync = require("child_process").execSync;
     var myArgs = gui.App.argv;
 
     if (typeof global.search === "undefined") {
