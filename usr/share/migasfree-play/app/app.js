@@ -13,6 +13,9 @@ var win = gui.Window.get();
 var confFile = "settings.json";
 var consoleLog = path.join(gui.__dirname, "console.log");
 var toastTime = 3000;
+var toastInfo = "rounded grey";
+var toastSuccess = "rounded green";
+var toastError = "rounded red";
 var colorTheme = "#009688";  //teal
 
 function addTokenHeader(xhr) {
@@ -41,10 +44,10 @@ function _(txt, data = {}) {
     }
 }
 
-function showError(txt) {
+function showError(text) {
     swal({
         title: "Error",
-        text: txt,
+        text,
         type: "error",
         confirmButtonColor: colorTheme,
         showCancelButton: false
@@ -52,7 +55,7 @@ function showError(txt) {
 }
 
 function getServerVersion() {
-    var url = "http://" + global.server + "/api/v1/public/server/info/";
+    var url = global.baseUrl + "/api/v1/public/server/info/";
     var errVersion = "migasfree-server version 4.16 is required";
 
     $.support.cors = true;
@@ -85,7 +88,6 @@ function getServerVersion() {
             showError(errVersion);
         }
     });
-
 }
 
 function getOS() {
@@ -131,7 +133,7 @@ function tooltip(id, text) {
 
     anchor.attr("data-tooltip", text);
     anchor.attr("delay", 100);
-    if (id == "#machine") {
+    if (id === "#machine") {
         anchor.attr("data-position", "bottom");
     } else {
         anchor.attr("data-position", "left");
@@ -177,7 +179,7 @@ gui.Window.get().on("close", function () {
          Materialize.toast(
             "<i class='material-icons'>warning</i>" + _("please wait, other process is running!!!"),
             toastTime,
-            "rounded red"
+            toastError
         );
     } else {
         exit();
@@ -211,7 +213,7 @@ function labelDone() {
 
 function getToken(username="migasfree-play", password="migasfree-play") {
     $.ajax({
-        url: "http://" + global.server + "/token-auth/",
+        url: global.baseUrl + "/token-auth/",
         type: "POST",
         data: {username, password},
         success(data) {
@@ -243,11 +245,11 @@ function getToken(username="migasfree-play", password="migasfree-play") {
 function getAttributeCID() {
     if (typeof global.label !== "undefined") {
         $.ajax({
-            url: "http://" + global.server + "/api/v1/token/attributes/",
+            url: global.baseApi + "/attributes/",
             type: "GET",
             beforeSend: addTokenHeader,
             data: {
-                "property_att__prefix": "CID", 
+                "property_att__prefix": "CID",
                 "value": global.cid
             },
             success(data) {
@@ -346,7 +348,7 @@ function execDir(directory) {
 }
 
 function beforeSync() {
-    Materialize.toast(_("synchronizing..."), toastTime, "rounded grey");
+    Materialize.toast(_("synchronizing..."), toastTime, toastInfo);
 }
 
 function afterSync() {
@@ -354,7 +356,7 @@ function afterSync() {
     Materialize.toast(
         "<i class='material-icons'>play_arrow</i>" + _("synchronized"),
         toastTime,
-        "rounded green"
+        toastSuccess
     );
     global.sync = false;
 }
@@ -362,10 +364,10 @@ function afterSync() {
 function sync() {
     global.TERMINAL.run(
         "migasfree -u",
-        beforeSync,
-        afterSync,
         "sync",
-        _("synchronization")
+        _("synchronization"),
+        beforeSync,
+        afterSync
     );
 }
 
@@ -423,12 +425,14 @@ function supportExternalLinks(event) {
 
     function crawlDom(element) {
         const mustache = require("mustache");
+
         if (element.nodeName.toLowerCase() === "a") {
             href = element.getAttribute("href");
         }
         if (element.classList.contains("js-external-link")) {
             isExternal = true;
         }
+
         if (href && isExternal) {
             event.preventDefault();
             var data = {
@@ -464,14 +468,14 @@ function postAction(name, pkgs, level) {
         Materialize.toast(
             "<i class='material-icons'>get_app</i> " + _("{{name}} installed", {name}),
             toastTime,
-            "rounded green"
+            toastSuccess
         );
     }
     else {
         Materialize.toast(
             "<i class='material-icons'>delete</i> " + _("{{name}} deleted", {name}),
             toastTime,
-            "rounded green"
+            toastSuccess
         );
     }
     updateStatus(name, pkgs, level);
@@ -481,23 +485,23 @@ function install(name, pkgs, level) {
     var cmd;
 
     Materialize.toast(
-        _("installing {{name}}...", {name}), 
-        toastTime, 
-        "rounded grey"
+        _("installing {{name}}...", {name}),
+        toastTime,
+        toastInfo
     );
 
     if (getOS() === "Linux") {
-        cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
+        cmd = 'LANG_ALL=C echo "y" | migasfree -ip "' + pkgs + '"';
     } else if (getOS() === "Windows") {
         cmd = 'migasfree -ip "' + pkgs + '"';
     }
 
     global.TERMINAL.run(
         cmd,
-        null,
-        function() {postAction(name, pkgs, level);},
         "action-" + slugify(name),
-        name
+        name,
+        null,
+        function() {postAction(name, pkgs, level);}
     );
 }
 
@@ -505,9 +509,9 @@ function uninstall(name, pkgs, level) {
     var cmd;
 
     Materialize.toast(
-        _("deleting {{name}}...", {name}), 
-        toastTime, 
-        "rounded grey"
+        _("deleting {{name}}...", {name}),
+        toastTime,
+        toastInfo
     );
 
     if (getOS() === "Linux") {
@@ -518,10 +522,10 @@ function uninstall(name, pkgs, level) {
 
     global.TERMINAL.run(
         cmd,
-        null,
-        function() {postAction(name, pkgs, level);},
         "action-" + slugify(name),
-        name
+        name,
+        null,
+        function() {postAction(name, pkgs, level);}
     );
 }
 
@@ -587,7 +591,7 @@ function modalLogin(name, packagesToInstall, level) {
 // DEVICES
 function getDevs() {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/computers/" + global.cid + "/devices/",
+        url: global.baseApi + "/computers/" + global.cid + "/devices/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -614,14 +618,14 @@ function queryDevices() {
     spinner("preload-next");
     getDevs();
     queryDevicesPage(
-        "http://" + global.server + "/api/v1/token/devices/devices/available/" +
+        global.baseApi + "/devices/devices/available/" +
         "?cid=" +  global.label.id + "&q=" + global.searchPrint
     );
 }
 
 function installDevice(dev, feature, id) {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
+        url: global.baseApi + "/devices/logical/" + id + "/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -638,7 +642,7 @@ function installDevice(dev, feature, id) {
 
 function uninstallDevice(dev, feature, id) {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
+        url: global.baseApi + "/devices/logical/" + id + "/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -700,14 +704,13 @@ function updateStatusDevice(dev, feature, id) {
             $(status).addClass("hide");
         }
     }
-    catch (err){
-        // nothing
+    catch (err) {
     }
 }
 
 function changeAttributesDevice(dev, feature, id, atts) {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
+        url: global.baseApi + "/devices/logical/" + id + "/",
         type: "PATCH",
         beforeSend: addTokenHeader,
         contentType: "application/json",
@@ -723,11 +726,12 @@ function changeAttributesDevice(dev, feature, id, atts) {
 }
 
 function renderDict(data) {
-    var ret= "";
+    var ret = "";
 
     for (var element in data) {
         ret += element + ": " + data[element] + "<br />";
     }
+
     return ret;
 }
 
@@ -804,7 +808,7 @@ function renderLogical(logical) {
 function getDevice(dev) {
     $("#devices").append(renderDevice(dev));
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/available/?cid=" + global.cid.toString() + "&did=" + dev.id,
+        url: global.baseApi + "/devices/logical/available/?cid=" + global.cid.toString() + "&did=" + dev.id,
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -873,7 +877,7 @@ function showCategories(categories) {
 
 function queryCategories() {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/catalog/apps/categories/",
+        url: global.baseApi + "/catalog/apps/categories/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -961,8 +965,20 @@ function updateStatus(name, packagesToInstall, level) {
         }
     }
     catch(err) {
-        // nothing
     }
+}
+
+function renderRating(score) {
+    var rating = "";
+
+    for (var i = 0; i < score; i++) {
+        rating += "<i class='material-icons tiny md-12'>star</i>";
+    }
+    for (var j = score; j < 5; j++) {
+        rating += "<i class='material-icons tiny md-12 blue-grey-text text-lighten-4'>star</i>";
+    }
+
+    return rating;
 }
 
 function renderApp(item) {
@@ -970,6 +986,8 @@ function renderApp(item) {
     const marked = require("marked");
     const mustache = require("mustache");
     var renderer = new marked.Renderer();
+    var data;
+    var truncatedDesc = "";
 
     renderer.heading = function (text, level) {
         var escapedText = text.toLowerCase().replace(/[^\w]+/g, "-");
@@ -979,8 +997,6 @@ function renderApp(item) {
              "</span></h" + (level + 3) + ">";
     };
 
-    var data;
-    var truncatedDesc = "";
     if (item.description) {
         truncatedDesc = item.description.split("\n")[0];
 
@@ -1031,56 +1047,57 @@ function showAppItem(data) {
 }
 
 function queryAppsPage(url) {
-  if (global.flagApps) {
-    global.flagApps = false;
-    $.ajax({
-        url,
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        success(data) {
-            $.each(data.results, function(i, item) {
-                $.each(item.packages_by_project, function(i, pkgs) {
-                    if (pkgs.project.name == global.project) {
-                        global.packages += " " + pkgs.packages_to_install.join(" ");
-                    }
-                });
-            });
-
-            global.packagesInstalled = installedPkgs(global.packages);
-
-            showAppItem(data);
-
-            if (data.next) {
-                var options = [{
-                    selector: "footer",
-                    offset: 0,
-                    callback() {
-                        if (data.next) {
-                            queryAppsPage(data.next);
+    if (global.flagApps) {
+        global.flagApps = false;
+        $.ajax({
+            url,
+            type: "GET",
+            beforeSend: addTokenHeader,
+            data: {},
+            success(data) {
+                $.each(data.results, function (i, item) {
+                    $.each(item.packages_by_project, function (i, pkgs) {
+                        if (pkgs.project.name == global.project) {
+                            global.packages += " " + pkgs.packages_to_install.join(" ");
                         }
-                    }
-                }];
-                Materialize.scrollFire(options);
-            } else {
-                $("#preload-next").hide();
-            }
-            global.flagApps = true;
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            showError(jqXHR.responseText);
-        },
-    });
-  }
+                    });
+                });
+
+                global.packagesInstalled = installedPkgs(global.packages);
+
+                showAppItem(data);
+
+                if (data.next) {
+                    var options = [{
+                        selector: "footer",
+                        offset: 0,
+                        callback() {
+                            if (data.next) {
+                                queryAppsPage(data.next);
+                            }
+                        }
+                    }];
+                    Materialize.scrollFire(options);
+                } else {
+                    $("#preload-next").hide();
+                }
+                global.flagApps = true;
+            },
+            error(jqXHR, textStatus, errorThrown) {
+                showError(jqXHR.responseText);
+            },
+        });
+    }
 }
 
 function queryApps() {
+    var url = "";
+    var categoryFilter = "";
+
     $("#apps").html("");
     $("#preload-next").show();
     global.packages = "";
 
-    var url = "";
-    var categoryFilter = "";
     if (global.category !== 0) {
         categoryFilter = "&category=" + global.category;
     }
@@ -1088,27 +1105,14 @@ function queryApps() {
     spinner("preload-next");
 
     if (global.serverVersion >= 4.16) {
-        url = "http://" + global.server + "/api/v1/token/catalog/apps/available/";
+        url = global.baseApi + "/catalog/apps/available/";
     } else {
-        url = "http://" + global.server + "/api/v1/token/catalog/apps/";
+        url = global.baseApi + "/catalog/apps/";
     }
 
     queryAppsPage(
         url + "?cid=" +  global.label.id + "&q=" + global.search + categoryFilter
     );
-}
-
-function renderRating(score) {
-    var rating = "";
-
-    for (var i = 0; i < score; i++) {
-        rating += "<i class='material-icons tiny md-12'>star</i>";
-    }
-    for (var j = score; j < 5; j++) {
-        rating += "<i class='material-icons tiny md-12 blue-grey-text text-lighten-4'>star</i>";
-    }
-
-    return rating;
 }
 
 function showDescription(id) {
@@ -1354,41 +1358,39 @@ function getGlobalData() {
         if (typeof global.terminal == "undefined") {
             global.terminal = {};
         }
-        var stderr = "";
+        var stdErr = "";
 
         function addToStdErr(txt) {
-            stderr += txt;
+            stdErr += txt;
         }
 
         return {
             add(txt) {
                 try {
-                    global.terminal[global.run_idx].body = replaceColors(global.terminal[global.run_idx].body + txt);
+                    global.terminal[global.runIdx].body = replaceColors(global.terminal[global.runIdx].body + txt);
                     this.refresh();
                 }
                 catch(err) {
-                    // nothing
                 }
             },
             refresh() {
                 try {
-                    $("#" + global.run_idx).html(global.terminal[global.run_idx].body);
+                    $("#" + global.runIdx).html(global.terminal[global.runIdx].body);
                     if ($("#console").length > 0) {
-                        if ($('#console > li:nth-child(' + global.idx + ') > div.collapsible-body').attr("style") !== "display: none;") {
+                        if ($("#console > li:nth-child(" + global.idx + ") > div.collapsible-body").attr("style") !== "display: none;") {
                             window.scrollTo(0, document.body.scrollHeight);
                         }
                     }
                 }
                 catch(err) {
-                    // nothing
                 }
             },
-            run(cmd, beforeCallback=null, afterCallback=null, id, txt) {
+            run(cmd, id, txt="", beforeCallback=null, afterCallback=null) {
                 if (global.running) {
                     Materialize.toast(
                         "<i class='material-icons'>warning</i>" + _("please wait, other process is running!!!"),
                         toastTime,
-                        "rounded red"
+                        toastError
                     );
                 }
                 else {
@@ -1412,18 +1414,20 @@ function getGlobalData() {
                     var date = new Date();
 
                     global.idx += 1;
-                    global.run_idx = "_run_" + (global.idx).toString();
-                    global.terminal[global.run_idx] = {
-                        "icon": $("#" + id).text(), 
-                        "date": formatDate(date), 
-                        "header": txt, 
+                    global.runIdx = "_run_" + (global.idx).toString();
+                    global.terminal[global.runIdx] = {
+                        "icon": $("#" + id).text(),
+                        "date": formatDate(date),
+                        "header": txt,
                         "body": ""
                     };
 
-                    $("#console").append(renderRun(global.run_idx));
-                    $('#console > li:nth-child(' + global.idx + ') > div.collapsible-header').click();
+                    $("#console").append(renderRun(global.runIdx));
+                    $("#console > li:nth-child(" + global.idx + ") > div.collapsible-header").click();
 
-                    process.stdout.on("data", function(data) {global.TERMINAL.add(data.toString());});
+                    process.stdout.on("data", function(data) {
+                        global.TERMINAL.add(data.toString());
+                    });
 
                     process.stderr.on("data", function(data) {
                         addToStdErr(data.toString());
@@ -1436,12 +1440,12 @@ function getGlobalData() {
                             Materialize.toast(
                                 "<i class='material-icons'>error</i> error:" + code + " " + cmd,
                                 toastTime,
-                                "rounded red"
+                                toastError
                             );
                             win.show();
                         }
                         else {
-                            if (stderr === "") {
+                            if (stdErr === "") {
                                 if (afterCallback) {
                                     afterCallback();
                                 }
@@ -1452,11 +1456,11 @@ function getGlobalData() {
                             }
                             else {
                                 Materialize.toast(
-                                    "<i class='material-icons'>error</i>" + replaceColors(stderr),
+                                    "<i class='material-icons'>error</i>" + replaceColors(stdErr),
                                     toastTime,
-                                    "rounded red"
+                                    toastError
                                 );
-                                stderr = "";
+                                stdErr = "";
                             }
                         }
 
@@ -1474,7 +1478,7 @@ function getGlobalData() {
     }());
 
     if (typeof global.sync === "undefined") {
-        global.sync = (myArgs == "sync");
+        global.sync = (myArgs === "sync");
     }
 
     if (typeof global.conf === "undefined") {
@@ -1484,6 +1488,9 @@ function getGlobalData() {
     if (typeof global.server === "undefined") {
         global.server = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_config; print(get_config(\'' + global.conf + '\', \'client\').get(\'server\', \'localhost\'), end=\'\')"');
     }
+
+    global.baseUrl = "http://" + global.server;
+    global.baseApi = global.baseUrl + "/api/v1/token";
 
     if (typeof global.token === "undefined") {
         var tokenfile =  path.join(process.cwd(), "token");
@@ -1530,14 +1537,14 @@ function getGlobalData() {
 
     // LABEL
     $.getJSON(
-        "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid,
+        global.baseUrl + "/get_computer_info/?uuid=" + global.uuid,
         {}
     ).done(function( data ) {
         global.label = data;
         global.cid = global.label.id;
         getAttributeCID();
         $.ajax({
-            url: "http://" + global.server + "/api/v1/token/computers/?id=" + global.cid,
+            url: global.baseApi + "/computers/?id=" + global.cid,
             type: "GET",
             beforeSend: addTokenHeader,
             data: {},
@@ -1587,7 +1594,6 @@ function getGlobalData() {
     if (typeof global.availablePkgs === "undefined") {
         global.availablePkgs = getPkgNames();
     }
-
 }
 
 function ready() {
