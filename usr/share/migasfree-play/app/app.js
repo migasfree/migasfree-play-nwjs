@@ -3,16 +3,17 @@
 /* globals $:false */
 "use strict";
 
-// import swal from "sweetalert2";
 // import Materialize from "materialize-css";
 // import qrcode from "qrcode";
+
+const swal = require("sweetalert2");
 
 const gui = require("nw.gui");
 const path = require("path");
 var win = gui.Window.get();
 var confFile = "settings.json";
 var consoleLog = path.join(gui.__dirname, "console.log");
-var colorTheme = "#009688";  //teal
+var colorTheme = "#009688";  // teal
 
 var toastTime = 3000;
 var toastInfo = "rounded grey";
