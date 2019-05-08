@@ -8,14 +8,13 @@ Packager:      Alberto Gacías
 Vendor:        migasfree team
 Source0:       %{name}-%{version}.tar.gz
 URL:           https://github.com/migasfree/migasfree-play
-Requires:      migasfree-client >= 4.14, sudo, bash, cronie
+Requires:      migasfree-client >= 4.17, sudo, bash, cronie
 BuildRoot:     %{_tmppath}/%{name}-%{version}
 
 %description
 migasfree play is a GUI for migasfree client
 
 %prep
-
 
 %setup -q
 make clean
@@ -42,7 +41,8 @@ cp -r * %{buildroot}
 rm -rf %{buildroot}
 
 %post
-if [ -f /usr/share/migasfree-play/nwjs.tar.gz ]; then
+if [ -f /usr/share/migasfree-play/nwjs.tar.gz ]
+then
     cd /usr/share/migasfree-play/
     rm -rf nwjs
     tar -xzvf nwjs.tar.gz > /dev/null
@@ -53,4 +53,3 @@ fi
 chmod +x /etc/xdg/autostart/migasfree-play-sync.desktop
 
 %changelog
-
