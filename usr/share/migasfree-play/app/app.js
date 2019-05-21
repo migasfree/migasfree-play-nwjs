@@ -164,6 +164,7 @@ Array.prototype.diff = function (a) {
 
 function addTokenHeader(xhr) {
      xhr.setRequestHeader("authorization", global.token);
+     xhr.setRequestHeader("Accept-Language", global.settings["language"])
 }
 
 function labelDone() {
@@ -1229,6 +1230,7 @@ function setSettings() {
 
 function showSettings() {
     const fs = require("fs");
+    const ISO6391 = require('iso-639-1');
     var data = {
         txt_synchronize: _("Show details to synchronize")
     };
@@ -1246,10 +1248,16 @@ function showSettings() {
         value: "en",
         text: 'English'
     }));
-    $('#language').append($('<option>', {
-        value: "es",
-        text: 'Español'
-    }));
+
+    fs.readdirSync("app/locales").forEach(file => {
+          var code = file.split('.').slice(0, -1).join('.');
+          $("#language").append(
+            $("<option>", {
+                value: code,
+                text: ISO6391.getNativeName(code)
+            })
+          );
+    });
 
     $("#language").val(global.settings["language"]);
     $("#language").material_select();
