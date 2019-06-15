@@ -66,11 +66,11 @@
         </div>
     </main>
 
-    <div class="fixed-action-btn">
-        <a class="btn-floating btn-large waves-effect waves-light right">
-            <i id="sync" class="material-icons md-36">play_arrow</i>
-        </a>
-    </div>
+        <div class="fixed-action-btn">
+            <a class="btn-floating btn-large waves-effect waves-light right">
+                <i id="sync" class="material-icons md-36">play_arrow</i>
+            </a>
+        </div>
 
     <footer id="footer-bar" class="page-footer grey lighten-4">
     </footer>
@@ -84,20 +84,20 @@
 
     <script type="text/javascript">
     onload = function() {
-        document.title = "migasfree play";
-        $("#version").text("migasfree play " + require("./package.json").version);
+        document.title="migasfree play";
+        $("#version").text("migasfree play "+ require('./package.json').version);
     }
 
     $(document).ready(function() {
-        $("select").material_select();
-        $(".tooltipped").tooltip({delay: 100});
-        spinner("machine");
-        spinner("connecting");
+        $('select').material_select();
+        $('.tooltipped').tooltip({delay: 100});
+        spinner('machine');
+        spinner('connecting');
         ready();
-        document.body.addEventListener("click", supportExternalLinks, false);
+        document.body.addEventListener('click', supportExternalLinks, false);
     });
 
-    $("select").on("contentChanged", function() {
+    $('select').on('contentChanged', function() {
         $(this).material_select();
     });
     </script>
