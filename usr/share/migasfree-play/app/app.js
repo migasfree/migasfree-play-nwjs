@@ -213,7 +213,7 @@ function getToken(username="migasfree-play", password="migasfree-play") {
     $.ajax({
         url: "http://" + global.server + "/token-auth/",
         type: "POST",
-        data: {username, password},
+        data: {"username": username, "password": password},
         success(data) {
             const fs = require("fs");
             global.token = "token " + data.token;
@@ -449,27 +449,18 @@ function supportExternalLinks(event) {
 }
 
 // PMS
-function installedPkgs(pks) {
-    const path = require("path");
-    const execSync = require("child_process").execSync;
-    var script = '"' + path.join(gui.__dirname, "py", "installed.py") + '"';
-    var cmd = "python " + script + ' "' + pks + '"';
-
-    return execSync(cmd);
-}
-
 function postAction(name, pkgs, level) {
     global.packagesInstalled = installedPkgs(global.packages);
-    if (pkgs.split(" ").diff(global.packagesInstalled).length === 0) {
+    if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
         Materialize.toast(
-            "<i class='material-icons'>get_app</i> " + _("{{name}} installed", {name}),
+            "<i class='material-icons'>get_app</i> " + _("{{name}} installed", {name: name}),
             toastTime,
             "rounded green"
         );
     }
     else {
         Materialize.toast(
-            "<i class='material-icons'>delete</i> " + _("{{name}} deleted", {name}),
+            "<i class='material-icons'>delete</i> " + _("{{name}} deleted", {name: name}),
             toastTime,
             "rounded green"
         );
@@ -481,7 +472,7 @@ function install(name, pkgs, level) {
     var cmd;
 
     Materialize.toast(
-        _("installing {{name}}...", {name}), 
+        _("installing {{name}}...", {name: name}), 
         toastTime, 
         "rounded grey"
     );
@@ -505,7 +496,7 @@ function uninstall(name, pkgs, level) {
     var cmd;
 
     Materialize.toast(
-        _("deleting {{name}}...", {name}), 
+        _("deleting {{name}}...", {name: name}), 
         toastTime, 
         "rounded grey"
     );
@@ -849,6 +840,15 @@ function queryCategories() {
     });
 }
 
+function installedPkgs(pks) {
+    const path = require("path");
+    const execSync = require("child_process").execSync;
+    var script = '"' + path.join(gui.__dirname, "py", "installed.py") + '"';
+    var cmd = "python " + script + ' "' + pks + '"';
+
+    return execSync(cmd);
+}
+
 function onDemand(application) {
     swal({
         title: application + " " + _("no available"),
@@ -1060,12 +1060,12 @@ function renderApp(item) {
         name: item.name,
         idaction: "action-" + slugify(item.name),
         icon: item.icon,
-        description: marked(item.description, {renderer}),
+        description: marked(item.description, {renderer: renderer}),
         truncated: truncatedDesc,
         category: item.category.name,
         rating: renderRating(item.score),
         txt_installed: _("installed"),
-        exists_title: truncatedDesc,
+        exists_title: (truncatedDesc),
         exists_description: item.description.split("\n").length > 1
     };
 
