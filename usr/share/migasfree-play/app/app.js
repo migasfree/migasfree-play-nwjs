@@ -540,7 +540,7 @@ function checkUser(user, password) {
 
         return true;
     }
-    catch (err) {
+    catch(err) {
         $("#auth").text("");
 
         swal({
@@ -701,7 +701,6 @@ function updateStatusDevice(dev, feature, id) {
         }
     }
     catch (err) {
-        // do nothing
     }
 }
 
@@ -961,8 +960,7 @@ function updateStatus(name, packagesToInstall, level) {
             $(el).click(function() {onDemand(name);});
         }
     }
-    catch (err) {
-        // do nothing
+    catch(err) {
     }
 }
 
@@ -1367,8 +1365,7 @@ function getGlobalData() {
                     global.terminal[global.runIdx].body = replaceColors(global.terminal[global.runIdx].body + txt);
                     this.refresh();
                 }
-                catch (err) {
-                    // do nothing
+                catch(err) {
                 }
             },
             refresh() {
@@ -1380,8 +1377,7 @@ function getGlobalData() {
                         }
                     }
                 }
-                catch (err) {
-                    // do nothing
+                catch(err) {
                 }
             },
             run(cmd, id, txt="", beforeCallback=null, afterCallback=null) {
