@@ -448,94 +448,6 @@ function supportExternalLinks(event) {
     crawlDom(event.target);
 }
 
-// PMS
-function postAction(name, pkgs, level) {
-    global.packagesInstalled = installedPkgs(global.packages);
-    if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
-        Materialize.toast(
-            "<i class='material-icons'>get_app</i> " + _("{{name}} installed", {name: name}),
-            toastTime,
-            "rounded green"
-        );
-    }
-    else {
-        Materialize.toast(
-            "<i class='material-icons'>delete</i> " + _("{{name}} deleted", {name: name}),
-            toastTime,
-            "rounded green"
-        );
-    }
-    updateStatus(name, pkgs, level);
-}
-
-function install(name, pkgs, level) {
-    var cmd;
-
-    Materialize.toast(
-        _("installing {{name}}...", {name: name}), 
-        toastTime, 
-        "rounded grey"
-    );
-
-    if (getOS() === "Linux") {
-        cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
-    } else if (getOS() === "Windows") {
-        cmd = 'migasfree -ip "' + pkgs + '"';
-    }
-
-    global.TERMINAL.run(
-        cmd,
-        null,
-        function() {postAction(name, pkgs, level);},
-        "action-" + slugify(name),
-        name
-    );
-}
-
-function uninstall(name, pkgs, level) {
-    var cmd;
-
-    Materialize.toast(
-        _("deleting {{name}}...", {name: name}), 
-        toastTime, 
-        "rounded grey"
-    );
-
-    if (getOS() === "Linux") {
-        cmd = 'LANG_ALL=C echo "y" | migasfree -rp "' + pkgs + '"';
-    } else if (getOS() === "Windows") {
-        cmd = 'migasfree -rp "' + pkgs + '"';
-    }
-
-    global.TERMINAL.run(
-        cmd,
-        null,
-        function() {postAction(name, pkgs, level);},
-        "action-" + slugify(name),
-        name
-    );
-}
-
-function modalLogin(name, packagesToInstall, level) {
-    const fs = require("fs");
-    var resolve = [];
-
-    swal({
-        title: _("administrator"),
-        html: fs.readFileSync("templates/login.html", "utf8"),
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonColor: colorTheme,
-        preConfirm() {
-            resolve=[$("#user").val(), $("#password").val()];
-        }
-    }).then(function (result) {
-        if (checkUser(resolve[0], resolve[1])) {
-            updateStatus(name, packagesToInstall, level);
-        }
-    }).catch(swal.noop);
-}
-
 // DEVICES
 function queryDevicesPage(url) {
     $.ajax({
@@ -847,17 +759,6 @@ function installedPkgs(pks) {
     var cmd = "python " + script + ' "' + pks + '"';
 
     return execSync(cmd);
-}
-
-function onDemand(application) {
-    swal({
-        title: application + " " + _("no available"),
-        html: global.label.helpdesk + "<br />" + global.label.name,
-        type: "warning",
-        showCancelButton: false,
-        confirmButtonColor: colorTheme
-    }, function() {
-    });
 }
 
 function updateStatus(name, packagesToInstall, level) {
@@ -1173,6 +1074,105 @@ function renderTag(tag) {
     };
 
     return mustache.to_html(fs.readFileSync("templates/tag.html", "utf8"), data);
+}
+
+function onDemand(application) {
+    swal({
+        title: application + " " + _("no available"),
+        html: global.label.helpdesk + "<br />" + global.label.name,
+        type: "warning",
+        showCancelButton: false,
+        confirmButtonColor: colorTheme
+    }, function() {
+    });
+}
+
+// PMS
+function postAction(name, pkgs, level) {
+    global.packagesInstalled = installedPkgs(global.packages);
+    if (pkgs.split(" ").diff(global.packagesInstalled).length == 0) {
+        Materialize.toast(
+            "<i class='material-icons'>get_app</i> " + _("{{name}} installed", {name: name}),
+            toastTime,
+            "rounded green"
+        );
+    }
+    else {
+        Materialize.toast(
+            "<i class='material-icons'>delete</i> " + _("{{name}} deleted", {name: name}),
+            toastTime,
+            "rounded green"
+        );
+    }
+    updateStatus(name, pkgs, level);
+}
+
+function install(name, pkgs, level) {
+    var cmd;
+
+    Materialize.toast(
+        _("installing {{name}}...", {name: name}), 
+        toastTime, 
+        "rounded grey"
+    );
+
+    if (getOS() === "Linux") {
+        cmd = 'LANG_ALL=C echo "y"|migasfree -ip "' + pkgs + '"';
+    } else if (getOS() === "Windows") {
+        cmd = 'migasfree -ip "' + pkgs + '"';
+    }
+
+    global.TERMINAL.run(
+        cmd,
+        null,
+        function() {postAction(name, pkgs, level);},
+        "action-" + slugify(name),
+        name
+    );
+}
+
+function uninstall(name, pkgs, level) {
+    var cmd;
+
+    Materialize.toast(
+        _("deleting {{name}}...", {name: name}), 
+        toastTime, 
+        "rounded grey"
+    );
+
+    if (getOS() === "Linux") {
+        cmd = 'LANG_ALL=C echo "y" | migasfree -rp "' + pkgs + '"';
+    } else if (getOS() === "Windows") {
+        cmd = 'migasfree -rp "' + pkgs + '"';
+    }
+
+    global.TERMINAL.run(
+        cmd,
+        null,
+        function() {postAction(name, pkgs, level);},
+        "action-" + slugify(name),
+        name
+    );
+}
+
+function modalLogin(name, packagesToInstall, level) {
+    const fs = require("fs");
+    var resolve = [];
+
+    swal({
+        title: _("administrator"),
+        html: fs.readFileSync("templates/login.html", "utf8"),
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonColor: colorTheme,
+        preConfirm() {
+            resolve=[$("#user").val(), $("#password").val()];
+        }
+    }).then(function (result) {
+        if (checkUser(resolve[0], resolve[1])) {
+            updateStatus(name, packagesToInstall, level);
+        }
+    }).catch(swal.noop);
 }
 
 // LABEL
