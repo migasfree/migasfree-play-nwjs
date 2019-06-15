@@ -80,6 +80,7 @@ function getServerVersion() {
                     showError(errVersion);
                 },
             });
+
         },
         error(jqXHR, textStatus, errorThrown) {
             // url not found
@@ -120,7 +121,7 @@ function replaceColors(txt) {
     txt = replaceAll(txt, "\u001b[92m", "<span class='console-section'>");
     txt = replaceAll(txt, "\u001b[93m", "<span class='console-warning'>");
     txt = replaceAll(txt, "\u001b[91m", "<span class='console-error'>");
-    txt = replaceAll(txt, "\u001b[32m", "<span class='console-info'>");
+    txt = replaceAll(txt, "\u001b[32m", "<span clas='console-info'>");
     txt = replaceAll(txt, "\u001b[0m", "</span>");
     txt = txt.replace(/(?:\r\n|\r|\n)/g, "<br />");
 
@@ -194,8 +195,7 @@ Array.prototype.diff = function (a) {
 function labelDone() {
     if (typeof global.label !== "undefined") {
         $("#machine").html(
-            "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>"
-            + global.label.name + "</a>"
+            "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label.name + "</a>"
         );
         tooltip("#machine", _("View computer in migasfree server"));
 
@@ -278,7 +278,6 @@ function readSettings() {
 
     if (fs.existsSync(filePath)) {
         var data = fs.readFileSync(filePath, "utf8");
-
         global.settings = JSON.parse(data);
         if (!global.settings.hasOwnProperty("showAppsMenu")) {
             global.settings.showAppsMenu = true;
@@ -735,7 +734,7 @@ function renderDict(data) {
 
 function deleteEmptyElement(obj) {
     for (const prop in obj) {
-        if (!obj[prop]) {
+        if (! obj[prop]) {
             delete obj[prop];
         }
     }
@@ -1328,10 +1327,12 @@ function loadTerminal() {
     }
 }
 
-function formatDate(date) {
-    var dateFormat = require("dateformat");
+function padLeft(nr, n, str){
+    return Array(n - String(nr).length + 1).join(str || "0") + nr;
+}
 
-    return dateFormat(date, "yyyy-mm-dd HH:MM:ss");
+function formatDate(date) {
+    return date.getFullYear() + "/" + padLeft(parseInt(date.getMonth()) + 1, 2) + "/" + padLeft(parseInt(date.getDate()),2) + "  " + padLeft(parseInt(date.getHours()),2) +":" + padLeft(parseInt(date.getMinutes()), 2) + ":" + padLeft(parseInt(date.getSeconds()), 2);
 }
 
 function getGlobalData() {
@@ -1537,7 +1538,7 @@ function getGlobalData() {
     $.getJSON(
         global.baseUrl + "/get_computer_info/?uuid=" + global.uuid,
         {}
-    ).done(function (data) {
+    ).done(function( data ) {
         global.label = data;
         global.cid = global.label.id;
         getAttributeCID();
