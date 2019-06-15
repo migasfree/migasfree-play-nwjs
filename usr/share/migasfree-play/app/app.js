@@ -525,45 +525,6 @@ function uninstall(name, pkgs, level) {
     );
 }
 
-function checkUser(user, password) {
-    var path = require("path");
-    var script = '"' + path.join(gui.__dirname, "py", "check_user.py") + '"';
-    var execSync = require("child_process").execSync;
-
-    try {
-        process.env._LOGIN_MP_USER = user;
-        process.env._LOGIN_MP_PASS = password;
-        execSync("python " + script);
-        process.env._LOGIN_MP_USER = "";
-        process.env._LOGIN_MP_PASS = "";
-        $("#auth").text("yes");
-
-        return true;
-    }
-    catch(err) {
-        $("#auth").text("");
-
-        swal({
-            title: _("Cancelled"),
-            html: _("Autentication error"),
-            type: "error",
-            showCancelButton: false,
-            confirmButtonText: "OK",
-            confirmButtonColor: colorTheme
-        }).then(
-            function () {},
-            function (dismiss) {
-                // dismiss can be 'overlay', 'cancel', 'close', 'esc', 'timer'
-                if (dismiss === "cancel") {
-                    // nothing
-                }
-            }
-        );
-
-        return false;
-    }
-}
-
 function modalLogin(name, packagesToInstall, level) {
     const fs = require("fs");
     var resolve = [];
@@ -585,6 +546,35 @@ function modalLogin(name, packagesToInstall, level) {
 }
 
 // DEVICES
+function queryDevicesPage(url) {
+    $.ajax({
+        url,
+        type: "GET",
+        beforeSend: addTokenHeader,
+        data: {},
+        success(data) {
+            showDeviceItem(data);
+            if (data.next) {
+                var options = [{
+                    selector: "footer",
+                    offset: 0,
+                    callback() {
+                        if (data.next) {
+                            queryDevicesPage(data.next);
+                        }
+                    }
+                }];
+                Materialize.scrollFire(options);
+            } else {
+                $("#preload-next").hide();
+            }
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            showError(jqXHR.responseText);
+        },
+    });
+}
+
 function getDevs() {
     $.ajax({
         url: "http://" + global.server + "/api/v1/token/computers/" + global.cid + "/devices/",
@@ -617,6 +607,23 @@ function queryDevices() {
         "http://" + global.server + "/api/v1/token/devices/devices/available/" +
         "?cid=" +  global.label.id + "&q=" + global.searchPrint
     );
+}
+
+function changeAttributesDevice(dev, feature, id, atts) {
+    $.ajax({
+        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
+        type: "PATCH",
+        beforeSend: addTokenHeader,
+        contentType: "application/json",
+        data: JSON.stringify({"attributes": atts}),
+        success(data) {
+           getDevs();
+           updateStatusDevice(dev, feature, id);
+        },
+        error(jqXHR, textStatus, errorThrown) {
+            showError("changeAttributesDevice:" + jqXHR.responseText);
+        },
+    });
 }
 
 function installDevice(dev, feature, id) {
@@ -703,23 +710,6 @@ function updateStatusDevice(dev, feature, id) {
     catch (err){
         // nothing
     }
-}
-
-function changeAttributesDevice(dev, feature, id, atts) {
-    $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
-        type: "PATCH",
-        beforeSend: addTokenHeader,
-        contentType: "application/json",
-        data: JSON.stringify({"attributes": atts}),
-        success(data) {
-           getDevs();
-           updateStatusDevice(dev, feature, id);
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            showError("changeAttributesDevice:" + jqXHR.responseText);
-        },
-    });
 }
 
 function renderDict(data) {
@@ -831,35 +821,6 @@ function showDeviceItem(data) {
     $(".collapsible").collapsible();  // FIXME
 }
 
-function queryDevicesPage(url) {
-    $.ajax({
-        url,
-        type: "GET",
-        beforeSend: addTokenHeader,
-        data: {},
-        success(data) {
-            showDeviceItem(data);
-            if (data.next) {
-                var options = [{
-                    selector: "footer",
-                    offset: 0,
-                    callback() {
-                        if (data.next) {
-                            queryDevicesPage(data.next);
-                        }
-                    }
-                }];
-                Materialize.scrollFire(options);
-            } else {
-                $("#preload-next").hide();
-            }
-        },
-        error(jqXHR, textStatus, errorThrown) {
-            showError(jqXHR.responseText);
-        },
-    });
-}
-
 // APPS
 function showCategories(categories) {
     $.each(categories, function(key, value) {
@@ -912,7 +873,7 @@ function updateStatus(name, packagesToInstall, level) {
         installed = (packagesToInstall.split(" ").diff(global.packagesInstalled).length === 0);
     }
 
-    if (global.onlyInstalledApps && (installed === false)){
+    if (global.onlyInstalledApps && (installed == false)){
         $("#card-action-" + slug).addClass("hide");
     } else {
         $("#card-action-" + slug).removeClass("hide");
@@ -963,53 +924,6 @@ function updateStatus(name, packagesToInstall, level) {
     catch(err) {
         // nothing
     }
-}
-
-function renderApp(item) {
-    const fs = require("fs");
-    const marked = require("marked");
-    const mustache = require("mustache");
-    var renderer = new marked.Renderer();
-
-    renderer.heading = function (text, level) {
-        var escapedText = text.toLowerCase().replace(/[^\w]+/g, "-");
-        return "<h" + (level + 3) + "><a name='" +
-             escapedText + "' class='anchor' href='#" +
-             escapedText + "'></a><span>" + text +
-             "</span></h" + (level + 3) + ">";
-    };
-
-    var data;
-    var truncatedDesc = "";
-    if (item.description) {
-        truncatedDesc = item.description.split("\n")[0];
-
-        data = {
-            server: global.server,
-            cid: global.label.id,
-            computer: global.label.name,
-            project: global.project,
-            uuid: global.uuid,
-            app: item.name,
-            _app: slugify(item.name)
-        };
-        item.description = mustache.render(item.description, data);
-    }
-
-    data = {
-        name: item.name,
-        idaction: "action-" + slugify(item.name),
-        icon: item.icon,
-        description: marked(item.description, {renderer}),
-        truncated: truncatedDesc,
-        category: item.category.name,
-        rating: renderRating(item.score),
-        txt_installed: _("installed"),
-        exists_title: truncatedDesc,
-        exists_description: item.description.split("\n").length > 1
-    };
-
-    return mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
 }
 
 function showAppItem(data) {
@@ -1109,6 +1023,53 @@ function renderRating(score) {
     }
 
     return rating;
+}
+
+function renderApp(item) {
+    const fs = require("fs");
+    const marked = require("marked");
+    const mustache = require("mustache");
+    var renderer = new marked.Renderer();
+
+    renderer.heading = function (text, level) {
+        var escapedText = text.toLowerCase().replace(/[^\w]+/g, "-");
+        return "<h" + (level + 3) + "><a name='" +
+             escapedText + "' class='anchor' href='#" +
+             escapedText + "'></a><span>" + text +
+             "</span></h" + (level + 3) + ">";
+    };
+
+    var data;
+    var truncatedDesc = "";
+    if (item.description) {
+        truncatedDesc = item.description.split("\n")[0];
+
+        data = {
+            server: global.server,
+            cid: global.label.id,
+            computer: global.label.name,
+            project: global.project,
+            uuid: global.uuid,
+            app: item.name,
+            _app: slugify(item.name)
+        };
+        item.description = mustache.render(item.description, data);
+    }
+
+    data = {
+        name: item.name,
+        idaction: "action-" + slugify(item.name),
+        icon: item.icon,
+        description: marked(item.description, {renderer}),
+        truncated: truncatedDesc,
+        category: item.category.name,
+        rating: renderRating(item.score),
+        txt_installed: _("installed"),
+        exists_title: truncatedDesc,
+        exists_description: item.description.split("\n").length > 1
+    };
+
+    return mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
 }
 
 function showDescription(id) {
@@ -1264,6 +1225,45 @@ function showLabel() {
     labelDone();
 }
 
+function checkUser(user, password) {
+    var path = require("path");
+    var script = '"' + path.join(gui.__dirname, "py", "check_user.py") + '"';
+    var execSync = require("child_process").execSync;
+
+    try {
+        process.env._LOGIN_MP_USER = user;
+        process.env._LOGIN_MP_PASS = password;
+        execSync("python " + script);
+        process.env._LOGIN_MP_USER = "";
+        process.env._LOGIN_MP_PASS = "";
+        $("#auth").text("yes");
+
+        return true;
+    }
+    catch(err) {
+        $("#auth").text("");
+
+        swal({
+            title: _("Cancelled"),
+            html: _("Autentication error"),
+            type: "error",
+            showCancelButton: false,
+            confirmButtonText: "OK",
+            confirmButtonColor: colorTheme
+        }).then(
+            function () {},
+            function (dismiss) {
+                // dismiss can be 'overlay', 'cancel', 'close', 'esc', 'timer'
+                if (dismiss === "cancel") {
+                    // nothing
+                }
+            }
+        );
+
+        return false;
+    }
+}
+
 // SETTINGS
 function getSettings() {
     global.settings.language = $("#language").val();
@@ -1326,7 +1326,7 @@ function loadTerminal() {
 }
 
 function padLeft(nr, n, str){
-    return Array(n - String(nr).length + 1).join(str || "0") + nr;
+    return Array(n - String(nr).length + 1).join(str || '0') + nr;
 }
 
 function formatDate(date) {
