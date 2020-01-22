@@ -1,7 +1,7 @@
 {
   "name": "migasfree-play",
   "description": "A front-end for migasfree client",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "main": "index.html",
   "repository": "tofill",
   "chromium-args": "--disable-gpu --disable-ios-password-suggestions --enable-logging --remote-debugging-port=9999",
@@ -16,7 +16,7 @@
   },
   "author": "Alberto Gacías & José Antonio Chavarría",
   "license": "GPL-3.0",
-  "copyright": "© 2017-2018 migasfree team",
+  "copyright": "© 2017-2020 migasfree team",
   "dependencies": {
     "jquery": "^3.0.0",
     "marked": "^0.3.6",

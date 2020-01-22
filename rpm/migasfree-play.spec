@@ -1,14 +1,14 @@
 BuildArchitectures: x86_64
 Name:          migasfree-play
 Version:       1
-Release:       6
+Release:       7
 Summary:       GUI for migasfree client
 License:       GPL
 Packager:      Alberto Gacías
 Vendor:        migasfree team
 Source0:       %{name}-%{version}.tar.gz
 URL:           https://github.com/migasfree/migasfree-play
-Requires:      migasfree-client >= 4.14, sudo, bash, cronie
+Requires:      migasfree-client >= 4.16, sudo, bash, cronie
 BuildRoot:     %{_tmppath}/%{name}-%{version}
 
 %description
