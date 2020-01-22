@@ -15,12 +15,12 @@ def has_ip_address():
         time.sleep(1)
         _cont -= 1
     return get_gateway() != '' and get_gateway() is not None
-print has_ip_address()
+print(has_ip_address())
 "
 
 _CONECTIVITY=$(python -c "$_wait_ip_src")
 
-_USER=$(python -c "from migasfree_client import utils; print utils.get_graphic_user(utils.get_graphic_pid()[0])")
+_USER=$(python -c "from migasfree_client import utils; print(utils.get_graphic_user(utils.get_graphic_pid()[0]))")
 
 if [ "$1" = "sync" ]; then #  Cron -> 24 hours
     _FILE="/tmp/migasfree-sync.txt"
@@ -35,5 +35,3 @@ fi
 if [ "$_CONECTIVITY" = "True" ]; then
     /usr/share/migasfree-play/nwjs/nw /usr/share/migasfree-play "$1"
 fi
-
-
