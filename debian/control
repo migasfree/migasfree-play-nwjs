@@ -1,16 +1,13 @@
 Source: migasfree-play
 Section: utils
-Priority: extra
+Priority: optional
 Maintainer: Alberto Gacías <alberto@migasfree.org>
 Build-Depends: debhelper (>= 8.0.0), devscripts
 Standards-Version: 3.9.3
 Homepage: http://github.com/migasfree/migasfree-play
 
 Package: migasfree-play
-Architecture: any
-Section: admin
+Architecture: all
 Depends: migasfree-client (>= 4.16), sudo, bash, cron
 Description: GUI for migasfree client
  migasfree play is a GUI for migasfree client
-
-
