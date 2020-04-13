@@ -9,6 +9,22 @@ var toastTime = 3000;
 var colorTheme = "#009688"; //teal
 
 
+function getPython() {
+    const execSync = require("child_process").execSync;
+    var cmd;
+
+    if (getOS() === "Linux") {
+        cmd = '_PYTHON=$(which python2); ' +
+            '[ -n "$_PYTHON" ] && $_PYTHON -c "import migasfree_client" 2&> /dev/null || false; ' +
+            'if [ $? -ne 0 -o -z "$_PYTHON" ]; then _PYTHON=$(which python3); fi; echo $_PYTHON';
+    } else if (getOS() === "Windows") {
+        cmd = '';  // TODO
+        return 'python';
+    }
+
+    return execSync(cmd).toString().replace("\n", "");
+}
+
 function getServerVersion() {
     var url = "http://" + global.server + "/api/v1/public/server/info/";
     var err_version = "migasfree-server version 4.16 is required";
@@ -195,14 +211,13 @@ function getToken(username="migasfree-play", password="migasfree-play") {
         data: {"username": username, "password": password},
         success(data) {
             const fs = require("fs");
-            const path = require("path");
             global.token = "token " + data.token;
             fs.writeFileSync("token", data.token);
         },
         error(jqXHR, textStatus, errorThrown) {
             swal({
-                title: "Server: " + global.server ,
-                text:  "Token:" + jqXHR.responseText ,
+                title: "Server: " + global.server,
+                text: "Token:" + jqXHR.responseText,
                 type: "error",
                 confirmButtonColor: colorTheme,
                 showCancelButton: false
@@ -299,8 +314,8 @@ function readSettings() {
 }
 
 function getPkgNames() {
-    var execSync = require("child_process").execSync;
-    var packages = execSync('python -c "from __future__ import print_function; from migasfree_client.client import MigasFreeClient; print(MigasFreeClient().pms.available_packages(), end=\'\')"').toString();
+    const execSync = require("child_process").execSync;
+    var packages = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client.client import MigasFreeClient; print(MigasFreeClient().pms.available_packages(), end=\'\')"').toString();
     packages = replaceAll(packages, "'", '"');
     return JSON.parse(packages);
 }
@@ -411,7 +426,7 @@ function supportExternalLinks(event) {
                 "uuid": global.uuid
             };
             href = Mustache.render(href, data);
-            runAsUser('python -c "import webbrowser; webbrowser.open(\'' + href + '\')"');
+            runAsUser(global.python + ' -c "import webbrowser; webbrowser.open(\'' + href + '\')"');
         } else if (element.parentElement) {
             crawlDom(element.parentElement);
         }
@@ -652,7 +667,7 @@ function getDevice(dev) {
         data: {},
         success(logicalDevs) {
             $.each(logicalDevs.results, function(i, logical) {
-                $("#logicals-dev-"+slugify(logical.device.name)).append(renderLogical(logical));
+                $("#logicals-dev-" + slugify(logical.device.name)).append(renderLogical(logical));
                 updateStatusDevice(
                     logical.device.name, logical.feature.name,
                     logical.id
@@ -705,7 +720,7 @@ function installedPkgs(pks) {
     const path = require("path");
     const execSync = require("child_process").execSync;
     var script = '"' + path.join(gui.__dirname, "py", "installed.py") + '"';
-    var cmd = "python " + script + ' "' + pks + '"';
+    var cmd = global.python + " " + script + ' "' + pks + '"';
     return execSync(cmd);
 }
 
@@ -836,7 +851,7 @@ function renderApp(item) {
         rating: renderRating(item.score),
         txt_installed: _("installed"),
         exists_title: (truncatedDesc),
-        exists_description:  item.description.split("\n").length > 1
+        exists_description: item.description.split("\n").length > 1
     };
 
     return Mustache.to_html(fs.readFileSync("templates/app.html", "utf8"), data);
@@ -987,11 +1002,9 @@ function renderTag(tag) {
 
 
 function onDemand(application) {
-    const path = require("path");
-
     swal({
         title: application + " " + _("no available"),
-        html: global.label["helpdesk"] + "<br />" + global.label["name"] ,
+        html: global.label["helpdesk"] + "<br />" + global.label["name"],
         type: "warning",
         showCancelButton: false,
         confirmButtonColor: colorTheme
@@ -1167,7 +1180,7 @@ function checkUser(user, password) {
     try {
         process.env._LOGIN_MP_USER = user;
         process.env._LOGIN_MP_PASS = password;
-        execSync("python " + script);
+        execSync(global.python + " " + script);
         process.env._LOGIN_MP_USER = "";
         process.env._LOGIN_MP_PASS = "";
         $("#auth").text("yes");
@@ -1266,7 +1279,6 @@ function showSettings() {
         getSettings();
         saveSettings(global.settings);
     });
-
 }
 
 function modalLogin(name, packagesToInstall, level) {
@@ -1317,6 +1329,8 @@ function getGlobalData() {
     const path = require("path");
     var myArgs = gui.App.argv;
 
+    global.python = getPython();
+    
     if (typeof global.search === "undefined") {
         global.search = "";
     }
@@ -1350,7 +1364,7 @@ function getGlobalData() {
             },
             refresh() {
                  try {
-                     $("#"+global.run_idx).html(global.terminal[global.run_idx]["body"]);
+                     $("#" + global.run_idx).html(global.terminal[global.run_idx]["body"]);
                      if ($('#console').length > 0) {
                          if ( $('#console > li:nth-child(' + global.idx + ') > div.collapsible-body').attr("style")!=="display: none;") {
                              window.scrollTo(0,document.body.scrollHeight);
@@ -1389,9 +1403,14 @@ function getGlobalData() {
 
                     var date = new Date();
 
-                    global.idx = global.idx+1;
-                    global.run_idx = "_run_"+ (global.idx).toString();
-                    global.terminal[global.run_idx]={"icon": $("#"+id).text(), "date": formatDate(date), "header": txt, "body": ""};
+                    global.idx = global.idx + 1;
+                    global.run_idx = "_run_" + (global.idx).toString();
+                    global.terminal[global.run_idx] = {
+                        "icon": $("#" + id).text(), 
+                        "date": formatDate(date), 
+                        "header": txt, 
+                        "body": ""
+                    };
 
                     $("#console").append(renderRun(global.run_idx));
                     $('#console > li:nth-child(' + global.idx + ') > div.collapsible-header').click();
@@ -1451,11 +1470,11 @@ function getGlobalData() {
     }
 
     if (typeof global.conf === "undefined") {
-        global.conf = execSync('python -c "from __future__ import print_function; from migasfree_client import settings; print(settings.CONF_FILE, end=\'\')"');
+        global.conf = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client import settings; print(settings.CONF_FILE, end=\'\')"');
     }
 
     if (typeof global.server === "undefined") {
-        global.server = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_config; print(get_config(\'' + global.conf + '\', \'client\').get(\'server\', \'localhost\'), end=\'\')"');
+        global.server = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client.utils import get_config; print(get_config(\'' + global.conf + '\', \'client\').get(\'server\', \'localhost\'), end=\'\')"');
     }
 
     if (typeof global.token === "undefined") {
@@ -1468,31 +1487,31 @@ function getGlobalData() {
     }
 
     if (typeof global.uuid === "undefined") {
-        global.uuid = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_hardware_uuid; print(get_hardware_uuid(), end=\'\')"');
+        global.uuid = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client.utils import get_hardware_uuid; print(get_hardware_uuid(), end=\'\')"');
     }
 
     if (typeof global.project === "undefined") {
-        global.project = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_project; print(get_mfc_project(), end=\'\')"');
+        global.project = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_project; print(get_mfc_project(), end=\'\')"');
     }
 
     if (typeof global.computername === "undefined") {
-        global.computername = execSync('python -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_computer_name; print(get_mfc_computer_name(), end=\'\')"');
+        global.computername = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client.utils import get_mfc_computer_name; print(get_mfc_computer_name(), end=\'\')"');
     }
 
     if (typeof global.network === "undefined") {
-        global.network = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_net, get_iface_cidr, get_ifname; _ifname = get_ifname(); print(\'%s/%s\' % (get_iface_net(_ifname), get_iface_cidr(_ifname)), end=\'\')"');
+        global.network = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client.network import get_iface_net, get_iface_cidr, get_ifname; _ifname = get_ifname(); print(\'%s/%s\' % (get_iface_net(_ifname), get_iface_cidr(_ifname)), end=\'\')"');
     }
 
     if (typeof global.mask === "undefined") {
-        global.mask = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_mask, get_ifname; _ifname = get_ifname(); print(get_iface_mask(_ifname), end=\'\')"');
+        global.mask = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client.network import get_iface_mask, get_ifname; _ifname = get_ifname(); print(get_iface_mask(_ifname), end=\'\')"');
     }
 
     if (typeof global.ip === "undefined") {
-        global.ip = execSync('python -c "from __future__ import print_function; from migasfree_client.network import get_iface_address, get_ifname; _ifname = get_ifname(); print(get_iface_address(_ifname), end=\'\')"');
+        global.ip = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client.network import get_iface_address, get_ifname; _ifname = get_ifname(); print(get_iface_address(_ifname), end=\'\')"');
     }
 
     if (typeof global.user === "undefined") {
-        global.user = execSync('python -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"');
+        global.user = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client import utils; _graphic_pid, _graphic_process = utils.get_graphic_pid(); print(utils.get_graphic_user(_graphic_pid), end=\'\')"');
     }
 
     if (typeof global.serverversion === "undefined") {
@@ -1561,7 +1580,6 @@ function getGlobalData() {
     if (typeof global.pks_availables === "undefined") {
         global.pks_availables = getPkgNames();
     }
-
 }
 
 function ready() {
