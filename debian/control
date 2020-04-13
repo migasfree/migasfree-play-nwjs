@@ -7,7 +7,7 @@ Standards-Version: 3.9.3
 Homepage: http://github.com/migasfree/migasfree-play
 
 Package: migasfree-play
-Architecture: all
+Architecture: any
 Depends: migasfree-client (>= 4.16), sudo, bash, cron
 Description: GUI for migasfree client
  migasfree play is a GUI for migasfree client
