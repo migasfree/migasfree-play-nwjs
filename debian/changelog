@@ -1,9 +1,8 @@
 migasfree-play (1.7.0-1) unstable; urgency=low
 
-  * Changed dependency migasfree-client>=1.6
+  * Changed dependency migasfree-client>=4.16
 
  -- Alberto Gacías <alberto@migasfree.org>  Wed, 22 Jan 2020 14:01:47 +0200
-
 
 migasfree-play (1.6.0-1) unstable; urgency=low
 
