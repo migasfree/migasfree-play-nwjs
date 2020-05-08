@@ -11,18 +11,20 @@ var colorTheme = "#009688"; //teal
 
 function getPython() {
     const execSync = require("child_process").execSync;
-    var cmd;
+    var cmd, shell;
 
     if (getOS() === "Linux") {
         cmd = '_PYTHON=$(which python2); ' +
             '[ -n "$_PYTHON" ] && $_PYTHON -c "import migasfree_client" 2&> /dev/null || false; ' +
             'if [ $? -ne 0 -o -z "$_PYTHON" ]; then _PYTHON=$(which python3); fi; echo $_PYTHON';
+        shell = '/bin/bash';
     } else if (getOS() === "Windows") {
-        cmd = '';  // TODO
+        // cmd = '';  // TODO
+        // shell = process.env.ComSpec; // TODO
         return 'python';
     }
 
-    return execSync(cmd).toString().replace("\n", "");
+    return execSync(cmd, {shell}).toString().replace("\n", "");
 }
 
 function getServerVersion() {
@@ -1330,7 +1332,7 @@ function getGlobalData() {
     var myArgs = gui.App.argv;
 
     global.python = getPython();
-    
+
     if (typeof global.search === "undefined") {
         global.search = "";
     }
@@ -1406,9 +1408,9 @@ function getGlobalData() {
                     global.idx = global.idx + 1;
                     global.run_idx = "_run_" + (global.idx).toString();
                     global.terminal[global.run_idx] = {
-                        "icon": $("#" + id).text(), 
-                        "date": formatDate(date), 
-                        "header": txt, 
+                        "icon": $("#" + id).text(),
+                        "date": formatDate(date),
+                        "header": txt,
                         "body": ""
                     };
 
