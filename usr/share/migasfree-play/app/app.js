@@ -28,7 +28,7 @@ function getPython() {
 }
 
 function getServerVersion() {
-    var url = "http://" + global.server + "/api/v1/public/server/info/";
+    var url = global.protocol + "://" + global.server + "/api/v1/public/server/info/";
     var err_version = "migasfree-server version 4.16 is required";
     $.support.cors = true;
     $.ajax({
@@ -188,7 +188,7 @@ function addTokenHeader(xhr) {
 function labelDone() {
     if (typeof global.label !== "undefined") {
         $("#machine").html(
-            "<a class='js-external-link' href='http://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label["name"] + "</a>"
+            "<a class='js-external-link' href='" + global.protocol + "://{{server}}/admin/server/computer/{{cid}}/change/'>" + global.label["name"] + "</a>"
         );
         tooltip("#machine", _("View computer in migasfree server"));
 
@@ -208,7 +208,7 @@ function labelDone() {
 
 function getToken(username="migasfree-play", password="migasfree-play") {
     $.ajax({
-        url: "http://" + global.server + "/token-auth/",
+        url: global.protocol + "://" + global.server + "/token-auth/",
         type: "POST",
         data: {"username": username, "password": password},
         success(data) {
@@ -241,7 +241,7 @@ function getToken(username="migasfree-play", password="migasfree-play") {
 function getAttributeCID() {
     if (typeof global.label !== "undefined") {
         $.ajax({
-            url: "http://" + global.server + "/api/v1/token/attributes/",
+            url: global.protocol + "://" + global.server + "/api/v1/token/attributes/",
             type: "GET",
             beforeSend: addTokenHeader,
             data: {"property_att__prefix": "CID", "value": global.cid},
@@ -473,14 +473,14 @@ function queryDevices() {
     spinner("preload-next");
     getDevs();
     queryDevicesPage(
-        "http://" + global.server + "/api/v1/token/devices/devices/available/" +
+        global.protocol + "://" + global.server + "/api/v1/token/devices/devices/available/" +
         "?cid=" +  global.label["id"] + "&q=" + global.searchPrint
     );
 }
 
 function changeAttributesDevice(dev, feature, id, atts) {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
+        url: global.protocol + "://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "PATCH",
         beforeSend: addTokenHeader,
         contentType: "application/json",
@@ -497,7 +497,7 @@ function changeAttributesDevice(dev, feature, id, atts) {
 
 function installDevice(dev, feature, id) {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
+        url: global.protocol + "://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -514,7 +514,7 @@ function installDevice(dev, feature, id) {
 
 function uninstallDevice(dev, feature, id) {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
+        url: global.protocol + "://" + global.server + "/api/v1/token/devices/logical/" + id + "/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -663,7 +663,7 @@ function renderLogical(logical) {
 function getDevice(dev) {
     $("#devices").append(renderDevice(dev));
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/devices/logical/available/?cid=" + global.cid.toString() + "&did=" + dev.id,
+        url: global.protocol + "://" + global.server + "/api/v1/token/devices/logical/available/?cid=" + global.cid.toString() + "&did=" + dev.id,
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -703,7 +703,7 @@ function showCategories(categories) {
 
 function queryCategories() {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/catalog/apps/categories/",
+        url: global.protocol + "://" + global.server + "/api/v1/token/catalog/apps/categories/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -784,9 +784,9 @@ function queryApps() {
     spinner("preload-next");
 
     if (global.serverversion >= 4.16) {
-        url = "http://" + global.server + "/api/v1/token/catalog/apps/available/"
+        url = global.protocol + "://" + global.server + "/api/v1/token/catalog/apps/available/"
     } else {
-        url = "http://" + global.server + "/api/v1/token/catalog/apps/"
+        url = global.protocol + "://" + global.server + "/api/v1/token/catalog/apps/"
     }
 
     queryAppsPage(
@@ -926,7 +926,7 @@ function getCharPrint(event){
 
 function getDevs() {
     $.ajax({
-        url: "http://" + global.server + "/api/v1/token/computers/"+global.cid+"/devices/",
+        url: global.protocol + "://" + global.server + "/api/v1/token/computers/"+global.cid+"/devices/",
         type: "GET",
         beforeSend: addTokenHeader,
         data: {},
@@ -1479,6 +1479,12 @@ function getGlobalData() {
         global.server = execSync(global.python + ' -c "from __future__ import print_function; from migasfree_client.utils import get_config; print(get_config(\'' + global.conf + '\', \'client\').get(\'server\', \'localhost\'), end=\'\')"');
     }
 
+    if (global.server.indexOf(':443') > -1) {
+        global.protocol = 'https';
+    }else{
+	global.protocol = 'http';
+    }
+   
     if (typeof global.token === "undefined") {
         var tokenfile =  path.join(process.cwd(), "token");
         if (fs.existsSync(tokenfile)) {
@@ -1524,14 +1530,14 @@ function getGlobalData() {
 
     // LABEL
     $.getJSON(
-        "http://" + global.server + "/get_computer_info/?uuid=" + global.uuid,
+        global.protocol + "://" + global.server + "/get_computer_info/?uuid=" + global.uuid,
         {}
     ).done(function( data ) {
         global.label = data;
         global.cid = global.label["id"];
         getAttributeCID();
         $.ajax({
-            url: "http://" + global.server + "/api/v1/token/computers/?id="+global.cid,
+            url: global.protocol + "://" + global.server + "/api/v1/token/computers/?id="+global.cid,
             type: "GET",
             beforeSend: addTokenHeader,
             data: {},
