@@ -1,3 +1,9 @@
+migasfree-play (1.8.1) unstable; urgency=low
+
+  * Enable https protocol
+
+ -- Alberto Gacías <alberto@migasfree.org>  Fri, 15 Jan 2021 08:30:47 +0100
+
 migasfree-play (1.7.1-1) unstable; urgency=low
 
   * Closes #4.
