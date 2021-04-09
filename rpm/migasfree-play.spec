@@ -1,7 +1,7 @@
 BuildArchitectures: x86_64
 Name:          migasfree-play
 Version:       1
-Release:       8
+Release:       9
 Summary:       GUI for migasfree client
 License:       GPL
 Packager:      Alberto Gacías

@@ -1,3 +1,9 @@
+migasfree-play (1.9.1) unstable; urgency=low
+
+  * Fix: Syncronization 24h
+
+ -- Alberto Gacías <alberto@migasfree.org>  Fri, 9 Apr 2021 08:45:47 +0100
+
 migasfree-play (1.8.1) unstable; urgency=low
 
   * Enable https protocol
