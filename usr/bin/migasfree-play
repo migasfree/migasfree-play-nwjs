@@ -35,6 +35,8 @@ _USER=$($_PYTHON -c "from migasfree_client import utils; print(utils.get_graphic
 
 if [ "$1" = "sync" ]
 then
+    # user root enabled in X
+    xhost si:localuser:root
     # Cron every 24 hours
     _FILE="/tmp/migasfree-sync.txt"
     _TASK="sudo /usr/bin/migasfree-play sync"
