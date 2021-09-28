@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Alberto Gacías <alberto@migasfree.org>
 Build-Depends: debhelper (>= 8.0.0), devscripts
 Standards-Version: 3.9.3
-Homepage: http://github.com/migasfree/migasfree-play
+Homepage: https://github.com/migasfree/migasfree-play
 
 Package: migasfree-play
 Architecture: any
