@@ -1,3 +1,9 @@
+migasfree-play (1.10.1) unstable; urgency=low
+
+  * Wait until server connection is available
+
+ -- Jose Antonio Chavarría <jachavar@gmail.com>  Tue, 18 Sep 2021 08:54:47 +0200
+
 migasfree-play (1.9.1) unstable; urgency=low
 
   * Fix: Syncronization 24h
@@ -15,7 +21,7 @@ migasfree-play (1.7.1-1) unstable; urgency=low
   * Closes #4.
 
  -- Jose Antonio Chavarría <jachavar@gmail.com>  Thu, 3 Dec 2020 10:24:47 +0100
- 
+
  migasfree-play (1.7.0-1) unstable; urgency=low
 
   * Changed dependency migasfree-client>=4.16
@@ -64,4 +70,3 @@ migasfree-play (1.0-1) unstable; urgency=low
   * First release
 
  -- Alberto Gacías <alberto@migasfree.org>  Fri, 15 Sep 2017 08:16:47 +0200
-
