@@ -1,7 +1,7 @@
 BuildArchitectures: x86_64
 Name:          migasfree-play
 Version:       1
-Release:       9
+Release:       10
 Summary:       GUI for migasfree client
 License:       GPL
 Packager:      Alberto Gacías
@@ -42,7 +42,8 @@ cp -r * %{buildroot}
 rm -rf %{buildroot}
 
 %post
-if [ -f /usr/share/migasfree-play/nwjs.tar.gz ]; then
+if [ -f /usr/share/migasfree-play/nwjs.tar.gz ]
+then
     cd /usr/share/migasfree-play/
     rm -rf nwjs
     tar -xzvf nwjs.tar.gz > /dev/null
@@ -53,4 +54,3 @@ fi
 chmod +x /etc/xdg/autostart/migasfree-play-sync.desktop
 
 %changelog
-
