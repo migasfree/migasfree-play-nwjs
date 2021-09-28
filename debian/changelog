@@ -23,7 +23,7 @@ migasfree-play (1.7.1-1) unstable; urgency=low
 
  -- Jose Antonio Chavarría <jachavar@gmail.com>  Thu, 3 Dec 2020 10:24:47 +0100
 
- migasfree-play (1.7.0-1) unstable; urgency=low
+migasfree-play (1.7.0-1) unstable; urgency=low
 
   * Changed dependency migasfree-client>=4.16
 
