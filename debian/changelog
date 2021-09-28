@@ -3,7 +3,7 @@ migasfree-play (1.10.1) unstable; urgency=low
   * Wait until server connection is available
   * Added curl dependency
 
- -- Jose Antonio Chavarría <jachavar@gmail.com>  Tue, 18 Sep 2021 09:24:47 +0200
+ -- Jose Antonio Chavarría <jachavar@gmail.com>  Tue, 28 Sep 2021 09:47:47 +0200
 
 migasfree-play (1.9.1) unstable; urgency=low
 
