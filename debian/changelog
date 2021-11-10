@@ -1,3 +1,9 @@
+migasfree-play (1.11.1) unstable; urgency=low
+
+  * Only configures crontab for root (closes #7)
+
+ -- Jose Antonio Chavarría <jachavar@gmail.com>  Wed, 10 Nov 2021 09:40:47 +0100
+
 migasfree-play (1.10.1) unstable; urgency=low
 
   * Wait until server connection is available
