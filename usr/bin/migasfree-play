@@ -49,7 +49,7 @@ _SERVER=$($_PYTHON -c "$_SRC")
 
 while true
 do
-    _STATUS=$(curl --write-out %{http_code} --silent --output /dev/null $_SERVER) || :
+    _STATUS=$(curl --write-out %{http_code} --silent --output /dev/null "$_SERVER") || :
     if [ $_STATUS = 200 ]
     then
        break
@@ -57,9 +57,6 @@ do
 
     sleep 1
 done
-
-
-_USER=$($_PYTHON -c "from migasfree_client import utils; print(utils.get_graphic_user(utils.get_graphic_pid()[0]))")
 
 if [ "$1" = "sync" ]
 then
@@ -69,10 +66,10 @@ then
     # Cron every 24 hours
     _FILE="/tmp/migasfree-sync.txt"
     _TASK="sudo /usr/bin/migasfree-play sync"
-    su -c "crontab -l | grep -v '$_TASK' > $_FILE" -l "$_USER"
+    crontab -l | grep --invert-match "$_TASK" > "$_FILE"
     _TIME=$(date "+%M %H")
-    su -c "echo '$_TIME * * * export DISPLAY=$DISPLAY; $_TASK' >> $_FILE" -l "$_USER"
-    su -c "crontab $_FILE" -l "$_USER"
+    echo "$_TIME * * * export DISPLAY=$DISPLAY; $_TASK" >> "$_FILE"
+    crontab "$_FILE"
     rm "$_FILE"
 fi
 
