@@ -9,10 +9,6 @@ else
 fi
 
 cd usr/share/migasfree-play
-npm config set ca ""
-npm config set registry="http://registry.npmjs.org/"
-npm config set strict-ssl false
-npm install
 
 echo "Downloading nwjs-v${_NWJS_VERSION}-linux-${_ARCH}.tar.gz"
 wget --quiet --tries=3 -O nwjs.tar.gz https://dl.nwjs.io/v${_NWJS_VERSION}/nwjs-v${_NWJS_VERSION}-linux-${_ARCH}.tar.gz
