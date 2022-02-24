@@ -19,7 +19,7 @@
   "copyright": "© 2017-2021 migasfree team",
   "dependencies": {
     "jquery": "^3.0.0",
-    "marked": "^0.3.6",
+    "marked": "^4.0.12",
     "roboto-fontface": "^0.9.0",
     "materialize-css": "^0.100.2",
     "sweetalert2": "^7.25.6",
