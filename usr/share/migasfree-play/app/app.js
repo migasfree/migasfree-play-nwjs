@@ -811,6 +811,19 @@ function renderRating(score) {
     return rating;
 }
 
+function tryAny() {
+    for (let i = 0; i < arguments.length; i++){
+        let ret
+        try{
+            ret = arguments[i]()
+            return ret
+        }catch(err){
+            // pass
+        }
+    }
+    return undefined
+}
+
 function renderApp(item) {
     const fs = require("fs");
     const marked = require("marked");
@@ -847,7 +860,14 @@ function renderApp(item) {
         name: item.name,
         idaction: "action-" + slugify(item.name),
         icon: item.icon,
-        description: marked(item.description, {renderer: renderer}),
+        description: tryAny(
+            (function(){
+                return marked(item.description, {renderer: renderer})
+            }),
+            (function(){
+                return marked.parse(item.description, {renderer: renderer})
+            })
+        ),
         truncated: truncatedDesc,
         category: item.category.name,
         rating: renderRating(item.score),
