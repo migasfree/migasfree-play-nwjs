@@ -1,3 +1,9 @@
+migasfree-play (1.13.1) unstable; urgency=low
+
+  * Merged pull requests (#9 and #10).
+
+ -- Jose Antonio Chavarría <jachavar@gmail.com>  Thu, 8 Sep 2022 17:38:47 +0200
+
 migasfree-play (1.12.1) unstable; urgency=low
 
   * Added euskara translation.
