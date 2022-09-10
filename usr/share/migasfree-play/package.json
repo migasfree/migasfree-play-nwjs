@@ -16,7 +16,7 @@
   },
   "author": "Alberto Gacías & José Antonio Chavarría",
   "license": "GPL-3.0",
-  "copyright": "© 2017-2021 migasfree team",
+  "copyright": "© 2017-2022 migasfree team",
   "dependencies": {
     "jquery": "^3.0.0",
     "marked": "^4.0.12",
