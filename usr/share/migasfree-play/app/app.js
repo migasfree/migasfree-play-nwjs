@@ -1572,6 +1572,16 @@ function getGlobalData() {
                         global.computer.machine="" ;
                     }
 
+                    // Format MACs
+                    if (global.computer.mac_address) {
+                        global.computer.mac_list = global.computer.mac_address.match(/.{1,12}/g)    
+                        global.computer.mac_list.forEach((element, index) => {
+							global.computer.mac_list[index] = element.replace(/(.{2})/g,"$1:").slice(0, -1);
+						});	    
+				    } else {
+						global.computer.mac_list = [];
+					}
+
                     labelDone();
 
                     if (! global.sync) {

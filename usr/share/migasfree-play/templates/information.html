@@ -91,7 +91,11 @@
                 </div>
                 <div class="row">
                     <div class="col s12 m12">
-                        {{computer.mac_address}}
+                        <ul>
+							{{#computer.mac_list}}
+								<li>mac: {{.}}</li>
+							{{/computer.mac_list}}
+						</ul>
                     </div>
                 </div>
             </div>
